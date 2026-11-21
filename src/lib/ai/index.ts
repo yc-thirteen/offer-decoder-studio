@@ -11,6 +11,13 @@ export * from "./types";
 export { HttpAIClient, type HttpAIConfig } from "./HttpAIClient";
 export { MockAIClient } from "./MockAIClient";
 export {
+  INVALID_EXPLAIN_REQUEST,
+  assertExplainRequest,
+  buildExplainRequest,
+  explainTemplate,
+  type ExplainInput,
+} from "./explainTemplate";
+export {
   MISSING_NOTES,
   SAMPLE_EMPLOYERS,
   UNKNOWN_LETTER_NOTE,

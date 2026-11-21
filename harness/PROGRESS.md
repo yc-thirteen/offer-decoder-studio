@@ -297,3 +297,17 @@ What changed: New `src/lib/ai/letterParser.ts` (pure): parseLetter(text) reads e
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 29 files/324 tests, build).
 Screens checked: no (no UI change).
 Next: `MockAIClient.explainStub`, a templated 3–4 sentence summary built only from engine numbers.
+
+## 2026-11-21T09:40:00Z | iteration 29
+Task: `MockAIClient.explainStub`, a templated 3–4 sentence summary built only from engine numbers. Add a test.
+Result: done
+What changed: New `src/lib/ai/explainTemplate.ts` (pure):
+- buildExplainRequest(inputs, winners, mode) copies the CalcResult numbers for the chosen elections, the plan name, matchCapPct, and the checklist ids into an ExplainRequest. This is the request builder that iteration 27 deferred, and the HTTP client and summary UI will use it too.
+- assertExplainRequest throws the directive AIError "Load two offers to get a plain-English summary." unless there are exactly two distinct offers with finite numbers and winner ids that belong to them, with winnerId matching the mode.
+- explainTemplate writes four sentences: (1) the winner, its bottom line, and the gap; (2) the winner's net pay, employer match, and expected medical bills on its plan; (3) the average federal rate on the salary against the bracket rate; (4) the flip ("Elect correctly and X comes out ahead instead…" / "With the defaults X looked better, so your elections, not the salaries, decide this choice."), or the elections it assumes.
+
+MockAIClient.explainStub uses it and rejects an aborted signal. The AI index re-exports it. 23 new tests in `explainStub.test.ts`: the builder against runCase, the exact chicago-vs-austin sentences in both modes, all 6 samples × 2 modes (3–4 sentences, and every $ and % figure is one of the request's numbers or the gap), parenthetical names dropped, the "come out even" wording with no flip, rephrasings for a $0 match, $0 medical bills, and 0%, bad requests rejected, and abort. The placeholder test in index.test.ts now covers only HttpAIClient.
+- Decisions: the gap is Math.round(winner − loser), the same as the memo line, so the two always agree. The loser's own bottom line is left out because its rounded figure could look $1 off the gap (one-income-family: $75,494 − $68,821 vs a $6,672 gap); the stubs show it anyway. Zero amounts are reworded, never printed as $0. The template lives in lib/ai with its own money formatter and name trimming (same rule as memoName), so lib doesn't import from components.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 30 files/344 tests, build).
+Screens checked: no (no UI change). I read all 12 sample summaries in a throwaway test (deleted, not committed).
+Next: `HttpAIClient`, which POSTs to the two edge functions with the publishable key header, a 20s timeout, and a directive error.

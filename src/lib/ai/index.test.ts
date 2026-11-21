@@ -79,9 +79,7 @@ describe("AI types", () => {
     const http = new HttpAIClient({ supabaseUrl: URL, publishableKey: "pk" });
     await expect(http.extractOffer()).rejects.toBeInstanceOf(AIError);
     await expect(http.extractOffer()).rejects.toThrow(/by hand/);
-    for (const c of [new MockAIClient(), http]) {
-      await expect(c.explainStub()).rejects.toBeInstanceOf(AIError);
-      await expect(c.explainStub()).rejects.toThrow(/Read the stubs/);
-    }
+    await expect(http.explainStub()).rejects.toBeInstanceOf(AIError);
+    await expect(http.explainStub()).rejects.toThrow(/Read the stubs/);
   });
 });
