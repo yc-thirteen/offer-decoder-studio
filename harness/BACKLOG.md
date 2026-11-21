@@ -46,7 +46,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [x] `supabase/functions/decode-offer/index.ts` and `supabase/functions/explain-stub/index.ts` (Deno). They read `Deno.env.get("ANTHROPIC_API_KEY")`, call `https://api.anthropic.com/v1/messages` (model `claude-sonnet-5-5`, `anthropic-version: 2023-06-01`), and ask for JSON only that matches the types. Validate the output, return 400 on invalid input, and handle CORS. Never log the letter text. The explain function must instruct the model to use only the numbers provided.
 - [x] The "Read offer letter" panel (paste text or drop a .txt file), the review state with "from letter" markers and missing-field underlines, and the sample-reader note.
 - [x] The "Plain-English summary" under the memo line.
-- [ ] `docs/AI_SETUP_LOVABLE.md`: the exact steps and a copy-paste prompt for Lovable to enable Cloud, deploy the two existing functions unchanged, and add the `ANTHROPIC_API_KEY` secret, plus how to confirm it's working.
+- [x] `docs/AI_SETUP_LOVABLE.md`: the exact steps and a copy-paste prompt for Lovable to enable Cloud, deploy the two existing functions unchanged, and add the `ANTHROPIC_API_KEY` secret, plus how to confirm it's working.
 
 ## Phase 6: content and finish
 - [ ] `/method` page per DESIGN.md (the rules, the constants table with slide references, and the simplifications list).

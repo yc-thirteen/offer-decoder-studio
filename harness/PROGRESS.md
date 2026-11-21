@@ -384,3 +384,22 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 35 files/414 tests, build). One full run failed LetterReader's focus assertion, a test that doesn't render MemoLine. It passed in 3 isolated runs and 4 more full runs, so it is flaky under load; I added a deflake task to BACKLOG. a11y: serious 0, critical 0.
 Screens checked: yes. home-defaults at 1280 and home-recommended at 375: the heading, summary, and note sit under the memo at prose width, with no overflow. The comma nit was found and fixed.
 Next: `docs/AI_SETUP_LOVABLE.md`.
+
+## 2026-11-21T11:25:00Z | iteration 34
+Task: `docs/AI_SETUP_LOVABLE.md`: the exact steps and a copy-paste prompt for Lovable to enable Cloud, deploy the two existing functions unchanged, and add the `ANTHROPIC_API_KEY` secret, plus how to confirm it's working.
+Result: done
+What changed: New `docs/AI_SETUP_LOVABLE.md` with these sections:
+- A copy-paste Lovable prompt: enable Cloud, deploy decode-offer, explain-stub, and _shared unchanged, set `verify_jwt = false` for both, expose VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to the build, and add nothing else.
+- The secret step, the only human step.
+- How to confirm in the app: the sample notes disappear, the summary button appears, and a fictional non-sample test letter reads in.
+- An optional curl check.
+- A troubleshooting table that quotes the real error messages.
+- A mock vs real table.
+New `src/test/aiSetupDoc.test.ts` (4 tests) checks the doc against the code: the quoted messages match, the function paths, secret name, and env names match, there is no real-looking key, and the mock reader doesn't recognize the test letter.
+Decisions:
+- `verify_jwt = false` goes in the Lovable prompt (not a hand edit), following iteration 31's note, because new `sb_publishable_` keys aren't JWTs. `supabase/config.toml` doesn't exist in the repo yet, and I didn't create it (hard rule).
+- `.gitignore` ignores `.env`. If Lovable writes the Supabase vars only to a committed `.env`, the build could stay on the mock. The prompt asks Lovable to make the vars available to the build, and troubleshooting covers it. I left the ignore in place because it is a Phase 0 rule.
+- Lovable menu names ("Cloud → Secrets") can't be checked from here, so the doc gives a fallback: Lovable asks for the secret itself.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 36 files/418 tests, build).
+Screens checked: no (no UI change).
+Next: the `/method` page per DESIGN.md.
