@@ -136,4 +136,26 @@ describe("AboutYou", () => {
     expect(btn.textContent).toBe("Hide your details");
     expect(document.getElementById(btn.getAttribute("aria-controls") ?? "")).toBeTruthy();
   });
+
+  it("says plainly under Filing that head of household isn't supported, linking to the simplifications", () => {
+    setup();
+    const filing = screen.getByLabelText("Filing") as HTMLSelectElement;
+    const values = Array.from(filing.options).map((o) => o.value);
+    expect(values).toEqual(["single", "mfj"]);
+    expect(filing).toHaveAccessibleDescription(
+      "Head of household isn't supported. What the site leaves out",
+    );
+    const link = screen.getByRole("link", { name: "What the site leaves out" });
+    expect(link.getAttribute("href")).toBe("/method#simplifications");
+  });
+
+  it("uses the link it is given for the simplifications", () => {
+    render(
+      <DecoderProvider initialSampleId="chicago-vs-austin">
+        <AboutYou simplificationsLink={<a href="/custom">Custom link</a>} />
+      </DecoderProvider>,
+    );
+    expect(screen.getByRole("link", { name: "Custom link" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "What the site leaves out" })).toBeNull();
+  });
 });

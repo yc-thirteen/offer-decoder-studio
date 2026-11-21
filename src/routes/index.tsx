@@ -10,6 +10,7 @@ import {
 } from "@/components/decoder";
 import { GuillocheBackground } from "@/components/stub";
 import { WhyElections } from "@/components/why";
+import { LINK_CLASS, SIMPLIFICATIONS_LINK_TEXT } from "@/components/decoder/simplificationsLink";
 import { HOME_TITLE, SITE_DESCRIPTION } from "@/lib/siteMeta";
 
 export const Route = createFileRoute("/")({
@@ -44,7 +45,13 @@ function Index() {
         <main>
           <h1 className="sr-only">Compare two job offers after taxes and benefits</h1>
           <DecoderControls />
-          <AboutYou />
+          <AboutYou
+            simplificationsLink={
+              <Link to="/method" hash="simplifications" className={LINK_CLASS}>
+                {SIMPLIFICATIONS_LINK_TEXT}
+              </Link>
+            }
+          />
           <OfferStubs />
           <MemoLine />
           <Checklist />

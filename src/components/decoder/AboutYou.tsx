@@ -3,24 +3,33 @@
  * One compact row of labeled fields (labels above, 13px ink-soft). Every change goes
  * straight to the store, so the stubs recompute as you type. Below md the fields
  * collapse behind a "Change your details" disclosure with a one-line summary.
+ *
+ * Head of household isn't offered (FINANCE_SPEC: the lectures don't give its standard
+ * deduction), and a note under Filing says so. Its link to the Method page's
+ * simplifications comes in through `simplificationsLink`, the way DecoderHeader takes
+ * `nav`, so the component stays router-free; without one it falls back to a plain link.
  */
 import { useEffect, useId, useState, type ReactNode } from "react";
 import type { CoverageTier, FilingStatus, Profile } from "@/lib/engine";
 import { groupDigits, parseAge, parseDollars, profileSummary } from "./profileFormat";
 import { useDecoder } from "@/state/DecoderContext";
+import { LINK_CLASS, SIMPLIFICATIONS_HREF, SIMPLIFICATIONS_LINK_TEXT } from "./simplificationsLink";
 
 const CONTROL = "h-10 border border-ink bg-stub px-2";
 const ERROR_ID = (id: string) => `${id}-error`;
+const NOTE_ID = (id: string) => `${id}-note`;
 
 function Field({
   id,
   label,
   error,
+  note,
   children,
 }: {
   id: string;
   label: string;
   error?: string | null;
+  note?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -29,6 +38,11 @@ function Field({
         {label}
       </label>
       {children}
+      {note ? (
+        <p id={NOTE_ID(id)} className="m-0 max-w-[14rem] pt-1 text-xs text-ink-soft">
+          {note}
+        </p>
+      ) : null}
       {error ? (
         <p id={ERROR_ID(id)} className="m-0 max-w-[16rem] pt-1 text-xs text-correction">
           {error}
@@ -43,18 +57,21 @@ function SelectField<T extends string>({
   value,
   options,
   onChange,
+  note,
 }: {
   label: string;
   value: T;
   options: { value: T; label: string }[];
   onChange: (v: T) => void;
+  note?: ReactNode;
 }) {
   const id = useId();
   return (
-    <Field id={id} label={label}>
+    <Field id={id} label={label} note={note}>
       <select
         id={id}
         value={value}
+        aria-describedby={note ? NOTE_ID(id) : undefined}
         onChange={(e) => onChange(e.target.value as T)}
         className={CONTROL}
       >
@@ -186,7 +203,7 @@ const COVERAGE: { value: CoverageTier; label: string }[] = [
   { value: "family", label: "My family" },
 ];
 
-export function AboutYou() {
+export function AboutYou({ simplificationsLink }: { simplificationsLink?: ReactNode } = {}) {
   const { state, dispatch } = useDecoder();
   const p = state.profile;
   const set = (patch: Partial<Profile>) => dispatch({ type: "setProfile", patch });
@@ -226,6 +243,16 @@ export function AboutYou() {
           value={p.filingStatus}
           options={FILING}
           onChange={(filingStatus) => set({ filingStatus })}
+          note={
+            <>
+              Head of household isn't supported.{" "}
+              {simplificationsLink ?? (
+                <a href={SIMPLIFICATIONS_HREF} className={LINK_CLASS}>
+                  {SIMPLIFICATIONS_LINK_TEXT}
+                </a>
+              )}
+            </>
+          }
         />
         {p.filingStatus === "mfj" ? (
           <MoneyField

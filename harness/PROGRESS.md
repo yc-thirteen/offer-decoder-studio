@@ -525,3 +525,14 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/457 tests, build).
 Screens checked: no. This is docs only, with no UI change.
 Next: the head-of-household note in About you.
+
+## 2026-11-21T11:05:00Z | iteration 42
+Task: Say plainly in About you that head of household isn't supported, with a 13px ink-soft note under the Filing select linking to `/method#simplifications`.
+Result: done
+What changed: `AboutYou.tsx`'s `Field`/`SelectField` take an optional `note`, shown under the control in 13px ink-soft (max 14rem) and wired as the select's `aria-describedby`. Filing's note reads "Head of household isn't supported. What the site leaves out". The link comes in through a new `simplificationsLink` prop. `src/routes/index.tsx` passes a TanStack `<Link to="/method" hash="simplifications">`, and without the prop it falls back to a plain `<a href="/method#simplifications">`. The shared href, text, and link class are in the new `src/components/decoder/simplificationsLink.ts`. Two new tests in `AboutYou.test.tsx` cover the options (single and mfj only), the accessible description, the fallback href, and an injected link.
+Decisions:
+- The route passes the link in, the same way `DecoderHeader` takes `nav`, so AboutYou stays router-free and the existing tests that render it without a router keep working. A client-side Link matters here because the store sits in `__root.tsx`. A plain anchor would reload the page and drop the user's edits.
+- The constants are in their own module, so react-refresh's only-export-components lint adds no new warning.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/459 tests, build). a11y: serious 0, critical 0, keyboard problems 0. responsive: 0 problems.
+Screens checked: yes. Close-ups of About you at 1280, at 768, and with the disclosure open at 375. The note sits under Filing, wraps cleanly, and overlaps nothing. At 1280 it adds about 40px to the first row, and the row was already wrapping to two lines before. In the browser: clicking the link goes to /method#simplifications and scrolls to the section (it's last on the page, so it stops at the page bottom), and Back keeps a changed Filing value. No issues found.
+Next: per-test timeouts for the two heaviest render tests.
