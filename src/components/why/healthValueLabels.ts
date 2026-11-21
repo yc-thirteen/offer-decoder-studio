@@ -87,16 +87,29 @@ function candidates(dot: ValueLabelInput, xs: number): { label: ValueLabel; step
   return out;
 }
 
-/** Whether a line crosses the box: over the box's width it spans lineY(right) to lineY(left). */
+/** Px around a label box that another plan's line, drawn up to 2.5px wide, must stay out of. */
+const LINE_CLEAR = 1.5;
+
+/**
+ * Whether a line touches the box, padded by LINE_CLEAR. A plan line never falls as x rises
+ * (in px its y never grows), so over the padded width it takes every y from lineY(right) to
+ * lineY(left), and it touches the box exactly when that span meets the box's padded height.
+ */
 export function lineCrosses(lineY: (x: number) => number, box: Box): boolean {
-  return lineY(box[2]) < box[3] && box[1] < lineY(box[0]);
+  const [l, t, r, b] = [
+    box[0] - LINE_CLEAR,
+    box[1] - LINE_CLEAR,
+    box[2] + LINE_CLEAR,
+    box[3] + LINE_CLEAR,
+  ];
+  return lineY(r) < b && t < lineY(l);
 }
 
 /**
  * One label per dot, in input order. Dots are placed from the top down. Each takes the spot
- * that breaks the fewest rules, weighted: inside the plot first, then clear of the line
- * labels and earlier value labels, then clear of other plans' lines and on the same side of
- * them as its own line, then nearest. Ties go to the earlier try. No spot ever crosses the
+ * that breaks the fewest rules, weighted: inside the plot first, then clear of other plans'
+ * lines, then clear of the line labels and earlier value labels, then on the same side of
+ * other lines as its own line, then nearest. Ties go to the earlier try. No spot ever crosses the
  * dot's own line.
  */
 export function placeValueLabels(
@@ -125,7 +138,7 @@ export function placeValueLabels(
         return (oy - own) * (oy - cy) < 0;
       });
       const score =
-        (outside ? 8 : 0) + (clash ? 4 : 0) + (crosses ? 2 : 0) + (apart ? 2 : 0) + step * 0.5;
+        (outside ? 8 : 0) + (crosses ? 6 : 0) + (clash ? 4 : 0) + (apart ? 2 : 0) + step * 0.5;
       if (score < bestScore) {
         best = label;
         bestScore = score;

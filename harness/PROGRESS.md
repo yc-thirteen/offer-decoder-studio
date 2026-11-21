@@ -712,3 +712,14 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/483 tests, build).
 Screens checked: yes. Looked at home recommended at 1280 (2 slices) and at 375, contact sheets of every chart crop at 375 for all 5 chart samples, a 1280 tax sheet, and a 2x zoom of the new-grad-roth offer 2 health chart. Issues: the health cost label collision above.
 Next: the health chart cost-label task from critique round 4.
+
+## 2026-11-21T16:50:00Z | iteration 54
+Task: Rubric 6. In `healthValueLabels.ts` (`placeValueLabels`), keep each cost label off other plans' lines (new-grad-roth offer 2 at 375: the ink HSA Plan 3200 line ran through the blue "$2,000"), and extend the `HealthCostsPanel.test.tsx` sweep to check every plan's polyline.
+Result: done
+What changed: The sweep in `HealthCostsPanel.test.tsx` now checks every value label against every plan's polyline, not just its own (every sample at 300/420/560/700px). Before the fix it failed for new-grad-roth "$2,000" on the hdhp line at 300 and 700px. In `healthValueLabels.ts`, `lineCrosses` now pads the label box by 1.5px (the drawn stroke is up to 2.5px wide). A crossing now weighs 6, above a clash (4), so a crossed spot never beats a clear one that is only farther away. The sweep passes.
+Decisions:
+- I didn't switch to sampling the line. A plan line's px y never grows as x rises, so over the box's width it takes every y from lineY(right) to lineY(left). The edge-span test is exact for that kind of line. The miss came from the touch margin (the box had no padding, while the drawn stroke and the test allow ~1px) and from the low weight. I updated the doc comment to say so.
+- In new-grad-roth offer 2 at 375, "$800" still sits above "$2,000", about 4 steps above its dot. Every spot nearer its dot is outside the plot, under the x axis, or on the blue line. The ink-above-blue order matches the lines' order to the right, and each label is in its own plan's color, so it stands.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/483 tests, build).
+Screens checked: yes. `npm run shots` (0 failed), plus fresh 2x crops of every chart (ignored scratch `harness/shots/crops/cropall.mjs`). Looked at both new-grad-roth health charts at 375 and a contact sheet of the other 4 samples' health charts at 375. "$2,000" now sits above-right of its dot, clear of the ink line. Issues: none new.
+Next: the backlog is empty, so next comes critique round 5.

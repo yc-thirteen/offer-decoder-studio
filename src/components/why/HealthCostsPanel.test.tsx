@@ -255,7 +255,7 @@ describe("the cost beside each dot", () => {
   }
 
   for (const width of [300, 420, 560, 700]) {
-    it(`keeps every cost off its own line, the $0 line, and the other costs, at ${width}px`, () => {
+    it(`keeps every cost off every plan line, the $0 line, and the other costs, at ${width}px`, () => {
       stubWidth(width);
       for (const sample of SAMPLE_CASES) {
         const { unmount, container } = render(
@@ -276,17 +276,21 @@ describe("the cost beside each dot", () => {
               t.getAttribute("text-anchor") as "start" | "end",
             ),
           );
-          labels.forEach((t, i) => {
-            const id = t.getAttribute("data-value-label");
-            const line = svg.querySelector(`polyline[data-plan-id="${id}"]`)!;
-            const points = line
+          const lines = [...svg.querySelectorAll("polyline[data-plan-id]")].map((line) => ({
+            id: line.getAttribute("data-plan-id"),
+            points: line
               .getAttribute("points")!
               .split(" ")
-              .map((p) => p.split(",").map(Number) as [number, number]);
-            expect(
-              lineTouches(points, boxes[i]!),
-              `${sample.id} at ${width}px: ${t.textContent} on its own line`,
-            ).toBe(false);
+              .map((p) => p.split(",").map(Number) as [number, number]),
+          }));
+          labels.forEach((t, i) => {
+            const id = t.getAttribute("data-value-label");
+            for (const line of lines) {
+              expect(
+                lineTouches(line.points, boxes[i]!),
+                `${sample.id} at ${width}px: ${t.textContent} on ${line.id === id ? "its own" : `the ${line.id}`} line`,
+              ).toBe(false);
+            }
             const zero = svg.querySelector("[data-zero-line]");
             if (zero) {
               const zy = Number(zero.getAttribute("y1"));
