@@ -48,7 +48,7 @@ export function SamplePicker() {
           id={selectId}
           value={choice}
           onChange={(e) => setChoice(e.target.value)}
-          className="h-10 w-full min-w-0 border border-ink px-2 sm:w-96"
+          className="h-10 w-full min-w-0 border border-ink px-2 sm:w-96 lg:w-64"
         >
           {SAMPLE_CASES.map((c) => (
             <option key={c.id} value={c.id}>
@@ -64,6 +64,23 @@ export function SamplePicker() {
         Load sample
       </button>
     </form>
+  );
+}
+
+/**
+ * Empties both stubs and forgets the sample (the profile stays). Always enabled, so focus
+ * never drops to the page when it empties; the memo line announces the empty state.
+ */
+export function ClearOffersButton() {
+  const { dispatch } = useDecoder();
+  return (
+    <button
+      type="button"
+      onClick={() => dispatch({ type: "clearOffers" })}
+      className="h-10 shrink-0 self-end border border-ink bg-stub px-4 font-semibold underline-offset-3 hover:underline"
+    >
+      Clear offers
+    </button>
   );
 }
 
@@ -131,9 +148,10 @@ export function DecoderControls() {
     <div
       role="group"
       aria-label="Decoder controls"
-      className="flex flex-wrap items-end gap-x-6 gap-y-3 py-4"
+      className="flex flex-wrap items-end gap-x-6 gap-y-3 py-4 lg:gap-x-5"
     >
       <SamplePicker />
+      <ClearOffersButton />
       <PeriodToggle />
       <RecommendedSwitch />
     </div>

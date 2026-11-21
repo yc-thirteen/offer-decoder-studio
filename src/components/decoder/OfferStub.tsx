@@ -160,6 +160,47 @@ function FilledStub({
   );
 }
 
+/** A blank amount: the line a value would be written on, hidden from screen readers. */
+function BlankAmount() {
+  return <span aria-hidden="true" className="inline-block w-24 border-b border-ink-soft" />;
+}
+
+/**
+ * An empty stub (harness/DESIGN.md "Empty and error states"): one sentence of direction,
+ * then the stub's line labels with blank amounts, so the page still reads as a pay stub.
+ */
+function EmptyStub({ perPaycheck }: { perPaycheck: boolean }) {
+  const blank = <BlankAmount />;
+  return (
+    <>
+      <p className="m-0 mb-3">Load a sample or read an offer letter to fill this stub.</p>
+      <div className="text-ink-soft" data-testid="empty-stub-lines">
+        <dl className="m-0">
+          <LineItem label="Gross pay" amount={blank} />
+          <LineItem label="401(k)" amount={blank} />
+          <LineItem label="Health plan" amount={blank} />
+          <LineItem label="Federal income tax" amount={blank} />
+          <LineItem label="Social Security" amount={blank} />
+          <LineItem label="Medicare" amount={blank} />
+          <LineItem label="State income tax" amount={blank} />
+          <LineItem variant="total" rule="heavy" label="Net pay" amount={blank} />
+        </dl>
+        <h3 className="mb-1 mt-6 text-base font-semibold">Employer adds (not in your pay)</h3>
+        <dl className="m-0">
+          <LineItem label="401(k) match" amount={blank} />
+          <LineItem rule="light" label="Expected medical bills" amount={blank} />
+          <LineItem
+            variant="grand"
+            rule="heavy"
+            label={perPaycheck ? "Your bottom line per paycheck" : "Your yearly bottom line"}
+            amount={blank}
+          />
+        </dl>
+      </div>
+    </>
+  );
+}
+
 /**
  * One stub: filled from the engine, the engine's error, empty, or in edit mode. "Save
  * offer" writes the offer to the store and the header then reads "Offer saved" until the
@@ -168,10 +209,13 @@ function FilledStub({
 export function OfferStub({
   view,
   corrected,
+  perPaycheck = false,
   onSave,
 }: {
   view: StubView;
   corrected: boolean;
+  /** Only used by the empty stub's bottom-line label; a filled stub reads its divisor. */
+  perPaycheck?: boolean;
   onSave: (offer: Offer) => void;
 }) {
   const headingId = `offer-stub-${view.slot + 1}`;
@@ -234,9 +278,7 @@ export function OfferStub({
       ) : error ? (
         <p className="m-0 text-correction">{error}</p>
       ) : (
-        <p className="m-0 text-ink-soft">
-          Load a sample or read an offer letter to fill this stub.
-        </p>
+        <EmptyStub perPaycheck={perPaycheck} />
       )}
     </StubShell>
   );
@@ -249,13 +291,24 @@ export function OfferStub({
 export function OfferStubs() {
   const { state, view, dispatch } = useDecoder();
   const corrected = state.electionsMode === "recommended";
+  const perPaycheck = state.periodMode === "perPaycheck";
   const save = (slot: 0 | 1) => (offer: Offer) => dispatch({ type: "setOffer", slot, offer });
   return (
     <div className="mt-8 flex flex-col items-stretch lg:flex-row" data-testid="offer-stubs">
-      <OfferStub view={view.stubs[0]} corrected={corrected} onSave={save(0)} />
+      <OfferStub
+        view={view.stubs[0]}
+        corrected={corrected}
+        perPaycheck={perPaycheck}
+        onSave={save(0)}
+      />
       <Perforation orientation="horizontal" className="lg:hidden" />
       <Perforation orientation="vertical" className="hidden lg:flex" />
-      <OfferStub view={view.stubs[1]} corrected={corrected} onSave={save(1)} />
+      <OfferStub
+        view={view.stubs[1]}
+        corrected={corrected}
+        perPaycheck={perPaycheck}
+        onSave={save(1)}
+      />
     </div>
   );
 }

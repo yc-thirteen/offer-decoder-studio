@@ -30,7 +30,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [x] Memo line (the winner sentence, plus the flip sentence when the default and recommended winners differ).
 - [x] Back-of-stub checklist with the offer tabs and all copy from DESIGN.md, with dynamic values and zero amounts omitted.
 - [x] Edit offer mode: inline fields in `--carbon`, add and remove health plans and match tiers, choose the vesting type, and validation with directive error messages. "Save offer" leads to "Offer saved".
-- [ ] Empty state (blank stubs with direction) and a "Clear offers" control.
+- [x] Empty state (blank stubs with direction) and a "Clear offers" control.
 
 ## Phase 4: why these elections
 - [ ] Health plan costs chart (SVG, from the engine's breakpoints, dominated plans dashed red, recommended in carbon, an expected-spending marker, direct labels).

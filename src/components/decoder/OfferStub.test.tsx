@@ -139,6 +139,49 @@ describe("OfferStubs bound to the engine (chicago-vs-austin)", () => {
     ).toHaveLength(2);
     expect(screen.getByRole("region", { name: "Offer 1 of 2" })).toBeTruthy();
   });
+
+  it("empty stubs show the line labels with blank amounts", () => {
+    setup(null);
+    const empty = screen.getByRole("region", { name: "Offer 1 of 2" });
+    const labels = within(empty)
+      .getAllByRole("term")
+      .map((t) => t.textContent);
+    expect(labels).toEqual([
+      "Gross pay",
+      "401(k)",
+      "Health plan",
+      "Federal income tax",
+      "Social Security",
+      "Medicare",
+      "State income tax",
+      "Net pay",
+      "401(k) match",
+      "Expected medical bills",
+      "Your yearly bottom line",
+    ]);
+    for (const dd of within(empty).getAllByRole("definition")) {
+      expect(dd.textContent).toBe("");
+    }
+    expect(within(empty).queryByText(/\$/)).toBeNull();
+    expect(within(empty).getByRole("button", { name: "Fill in offer" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("radio", { name: /per paycheck/i }));
+    expect(within(empty).getByText("Your bottom line per paycheck")).toBeTruthy();
+  });
+
+  it("Clear offers empties both stubs and Load sample fills them again", () => {
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Clear offers" }));
+    expect(screen.queryByRole("region", { name: /Northfield Health/ })).toBeNull();
+    expect(
+      screen.getAllByText("Load a sample or read an offer letter to fill this stub."),
+    ).toHaveLength(2);
+    expect(screen.getAllByTestId("empty-stub-lines")).toHaveLength(2);
+    // Clearing again is harmless, and the picker still remembers the sample.
+    fireEvent.click(screen.getByRole("button", { name: "Clear offers" }));
+    fireEvent.click(screen.getByRole("button", { name: "Load sample" }));
+    const n = screen.getByRole("region", { name: /Northfield Health/ });
+    expect(rowAmount(n, /^Net pay/)).toBe(formatMoney(north.default.netPay));
+  });
 });
 
 describe("stub words", () => {
