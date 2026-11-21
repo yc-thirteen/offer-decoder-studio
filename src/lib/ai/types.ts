@@ -16,7 +16,7 @@ import type {
 /* ---------- Read offer letter ---------- */
 
 export interface ExtractRequest {
-  /** Letter text, pasted or read from a .txt file. Never logged. */
+  /** Letter text, pasted or read from a .txt, PDF, or Word file. Never logged. */
   text: string;
 }
 

@@ -78,7 +78,8 @@ export class HttpAIClient implements AIClient {
   async extractOffer(req: ExtractRequest, signal?: AbortSignal): Promise<ExtractResult> {
     if (signal?.aborted) throw new AIError(READER_ERRORS.cancelled);
     const text = typeof req?.text === "string" ? req.text : "";
-    if (!text.trim()) throw new AIError("The letter is empty. Paste its text or drop a .txt file.");
+    if (!text.trim())
+      throw new AIError("The letter is empty. Paste its text or drop the letter's file.");
     const body = await this.post("decode-offer", { text }, READER_ERRORS, signal);
     const result = validateExtractResult(body);
     if (!result) throw new AIError(READER_ERRORS.invalid);

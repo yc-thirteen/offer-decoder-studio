@@ -11,7 +11,7 @@ export const SUMMARY_COPY = {
   prompt:
     "A model words the numbers on the stubs in three or four sentences. It does no math of its own.",
   sampleNote:
-    "Sample writer: a fixed template words the engine's numbers until an API key is connected.",
+    "Sample writer: a fixed template words the engine's numbers until the AI is connected.",
   failed: "The summary writer didn't answer. Ask again, or read the stubs and checklist.",
 } as const;
 

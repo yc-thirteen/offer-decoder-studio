@@ -25,7 +25,8 @@ export class MockAIClient implements AIClient {
   async extractOffer(req: ExtractRequest, signal?: AbortSignal): Promise<ExtractResult> {
     checkAborted(signal, "Reading the letter was cancelled. Read it again.");
     const text = typeof req?.text === "string" ? req.text : "";
-    if (!text.trim()) throw new AIError("The letter is empty. Paste its text or drop a .txt file.");
+    if (!text.trim())
+      throw new AIError("The letter is empty. Paste its text or drop the letter's file.");
     return { fields: sampleEmployer(text) ? parseLetter(text) : allMissing() };
   }
 

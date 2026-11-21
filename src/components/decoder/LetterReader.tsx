@@ -1,6 +1,7 @@
 /**
  * The "Read offer letter" panel (harness/DESIGN.md "AI elements"), set like an inbox tray
- * inside the stub: paste the letter's text or drop a .txt file, then the reader fills a
+ * inside the stub: paste the letter's text or drop a .txt, PDF, or Word file (its text is
+ * pulled out in the browser, src/lib/letterFile.ts), then the reader fills a
  * review draft for the editor. When it can read nothing, the panel says so and opens no
  * form; it never fakes success. On the mock client a note says it only reads the samples.
  */
@@ -9,6 +10,7 @@ import cascadeLetter from "@/data/letters/cascade.txt?raw";
 import lakeshoreLetter from "@/data/letters/lakeshore.txt?raw";
 import northfieldLetter from "@/data/letters/northfield.txt?raw";
 import { AIError } from "@/lib/ai";
+import { LETTER_FILE_ACCEPT, LetterFileError, readLetterFile } from "@/lib/letterFile";
 import { useAIClient } from "@/state/AIClientContext";
 import { draftFromLetter, type LetterReview } from "./letterDraft";
 
@@ -16,15 +18,14 @@ import { draftFromLetter, type LetterReview } from "./letterDraft";
 export const MAX_LETTER_CHARS = 40_000;
 
 export const READER_COPY = {
-  sampleNote: "Sample reader: works on the three sample letters until an API key is connected.",
-  empty: "The letter is empty. Paste its text or drop a .txt file.",
+  sampleNote: "Sample reader: works on the three sample letters until the AI is connected.",
+  empty: "The letter is empty. Paste its text or drop the letter's file.",
   long: "This letter is too long to read. Paste only the offer and benefits sections.",
-  notText: "Only .txt files can be read. Open the letter, copy its text, and paste it here.",
-  unreadableFile: "That file couldn't be opened. Paste the letter's text instead.",
   nothingFound:
     "Nothing in this text reads as an offer letter. Paste the letter itself, or fill in the offer by hand.",
   failed: "The letter couldn't be read. Read it again, or fill in the offer by hand.",
   reading: "Reading the letter…",
+  opening: "Opening the file…",
 } as const;
 
 const SAMPLE_LETTERS = [
@@ -34,19 +35,6 @@ const SAMPLE_LETTERS = [
 ];
 
 const BUTTON = "h-10 border border-ink bg-stub px-3 font-semibold disabled:text-ink-soft";
-
-function readTextFile(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
-    reader.onerror = () => reject(reader.error);
-    reader.readAsText(file);
-  });
-}
-
-function isTextFile(file: File): boolean {
-  return file.type === "text/plain" || /\.txt$/i.test(file.name);
-}
 
 export function LetterReader({
   slot,
@@ -61,6 +49,7 @@ export function LetterReader({
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [opening, setOpening] = useState(false);
   const textId = useId();
   const fileId = useId();
   const errorId = useId();
@@ -75,21 +64,20 @@ export function LetterReader({
   }, []);
 
   const loadFile = async (file: File | undefined) => {
-    if (!file) return;
-    if (!isTextFile(file)) {
-      setError(READER_COPY.notText);
-      return;
-    }
+    if (!file || opening) return;
+    setOpening(true);
     try {
-      setText(await readTextFile(file));
+      setText(await readLetterFile(file));
       setError(null);
-    } catch {
-      setError(READER_COPY.unreadableFile);
+    } catch (e) {
+      setError(e instanceof LetterFileError ? e.message : READER_COPY.failed);
+    } finally {
+      setOpening(false);
     }
   };
 
   const read = async () => {
-    if (busy) return;
+    if (busy || opening) return;
     if (!text.trim()) return setError(READER_COPY.empty);
     if (text.length > MAX_LETTER_CHARS) return setError(READER_COPY.long);
     setError(null);
@@ -141,7 +129,7 @@ export function LetterReader({
         }}
       >
         <label htmlFor={textId} className="text-xs text-ink-soft">
-          Letter text (paste it, or drop a .txt file here)
+          Letter text (paste it, or drop a .txt, PDF, or Word file here)
         </label>
         <textarea
           id={textId}
@@ -164,12 +152,13 @@ export function LetterReader({
 
         <div className="mt-3 flex min-w-0 flex-col">
           <label htmlFor={fileId} className="text-xs text-ink-soft">
-            Or choose a .txt file
+            Or choose a file (.txt, PDF, or Word)
           </label>
           <input
             id={fileId}
             type="file"
-            accept=".txt,text/plain"
+            accept={LETTER_FILE_ACCEPT}
+            disabled={opening}
             onChange={(e) => {
               void loadFile(e.target.files?.[0]);
               e.target.value = "";
@@ -205,13 +194,15 @@ export function LetterReader({
           </p>
         ) : null}
         <p role="status" className="m-0 text-sm text-ink-soft">
-          {busy ? <span className="mt-3 block">{READER_COPY.reading}</span> : null}
+          {busy || opening ? (
+            <span className="mt-3 block">{busy ? READER_COPY.reading : READER_COPY.opening}</span>
+          ) : null}
         </p>
 
         <div className="mt-4 flex flex-wrap gap-3 border-t-2 border-ink pt-4">
           <button
             type="submit"
-            disabled={busy}
+            disabled={busy || opening}
             className="h-10 border border-ink bg-ink px-4 font-semibold text-stub underline-offset-3 hover:underline disabled:bg-ink-soft"
           >
             Read offer letter

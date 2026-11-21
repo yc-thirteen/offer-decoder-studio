@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   AIError,
   MISSING_NOTES,
@@ -11,11 +11,38 @@ import {
   type ExtractedFields,
 } from "@/lib/ai";
 import { UNKNOWN_LETTER_NOTE } from "@/lib/ai/letterParser";
+import { FILE_COPY, LETTER_FILE_ACCEPT } from "@/lib/letterFile";
 import { AIClientProvider } from "@/state/AIClientContext";
 import { DecoderProvider } from "@/state/DecoderContext";
 import { DecoderControls } from "./DecoderHeader";
 import { MAX_LETTER_CHARS, READER_COPY } from "./LetterReader";
 import { OfferStubs } from "./OfferStub";
+
+vi.mock("pdfjs-dist", () => ({
+  GlobalWorkerOptions: {},
+  getDocument: () => ({
+    destroy: async () => {},
+    promise: Promise.resolve({
+      numPages: 1,
+      getPage: async () => ({
+        getTextContent: async () => ({
+          items: [{ str: "Acme Corp offers you $135,000 a year.", hasEOL: true }],
+        }),
+      }),
+    }),
+  }),
+}));
+vi.mock("pdfjs-dist/build/pdf.worker.min.mjs?url", () => ({ default: "/pdf.worker.js" }));
+vi.mock("mammoth", () => ({
+  extractRawText: async () => ({ value: "A Word letter from Birch Labs.", messages: [] }),
+}));
+
+/** A PDF or Word file; the mocked libraries ignore its bytes. */
+function binaryFile(name: string, type: string): File {
+  const f = new File(["x"], name, { type });
+  Object.defineProperty(f, "arrayBuffer", { value: async () => new ArrayBuffer(1) });
+  return f;
+}
 
 const letterText = (file: string) =>
   readFileSync(path.resolve(__dirname, "../../data/letters", file), "utf8");
@@ -73,9 +100,9 @@ describe("Read offer letter", () => {
     expect(within(s).getByRole("heading", { name: "Read offer letter" })).toBeInTheDocument();
     expect(within(s).getByText(READER_COPY.sampleNote)).toBeInTheDocument();
     expect(letterBox(s)).toHaveFocus();
-    expect(within(s).getByLabelText("Or choose a .txt file")).toHaveAttribute(
+    expect(within(s).getByLabelText("Or choose a file (.txt, PDF, or Word)")).toHaveAttribute(
       "accept",
-      ".txt,text/plain",
+      LETTER_FILE_ACCEPT,
     );
     // The header buttons step aside while the panel is open.
     expect(within(s).queryByRole("button", { name: "Fill in offer" })).toBeNull();
@@ -137,11 +164,11 @@ describe("Read offer letter", () => {
     );
   });
 
-  it("reads a dropped or chosen .txt file into the box, and refuses other files", async () => {
+  it("reads a dropped or chosen .txt, PDF, or Word file into the box, and refuses other files", async () => {
     setup();
     const s = stub(1);
     fireEvent.click(within(s).getByRole("button", { name: "Read offer letter" }));
-    const input = within(s).getByLabelText("Or choose a .txt file");
+    const input = within(s).getByLabelText("Or choose a file (.txt, PDF, or Word)");
     const text = letterText("northfield.txt");
     fireEvent.change(input, {
       target: { files: [new File([text], "offer.txt", { type: "text/plain" })] },
@@ -150,9 +177,17 @@ describe("Read offer letter", () => {
     expect((letterBox(s) as HTMLTextAreaElement).value).toBe(text);
 
     fireEvent.change(input, {
-      target: { files: [new File(["%PDF"], "offer.pdf", { type: "application/pdf" })] },
+      target: { files: [new File(["{\\rtf1"], "offer.doc", { type: "application/msword" })] },
     });
-    expect(await within(s).findByRole("alert")).toHaveTextContent(READER_COPY.notText);
+    expect(await within(s).findByRole("alert")).toHaveTextContent(FILE_COPY.unsupported);
+    expect((letterBox(s) as HTMLTextAreaElement).value).toBe(text);
+
+    fireEvent.change(input, { target: { files: [binaryFile("offer.pdf", "application/pdf")] } });
+    await within(s).findByDisplayValue(/Acme Corp/);
+    expect(within(s).queryByRole("alert")).not.toBeInTheDocument();
+
+    fireEvent.change(input, { target: { files: [binaryFile("offer.docx", "")] } });
+    await within(s).findByDisplayValue(/Word letter from Birch Labs/);
 
     type(letterBox(s), "");
     fireEvent.drop(letterBox(s), {

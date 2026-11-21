@@ -68,7 +68,7 @@ Publish (or update) the site so the build picks up the Cloud URL and publishable
 ### In the app
 
 1. Open the site and choose **Read offer letter** on either stub.
-2. The panel should no longer say "Sample reader: works on the three sample letters until an API key is connected." If that note is still there, the build is still on the mock. See Troubleshooting below.
+2. The panel should no longer say "Sample reader: works on the three sample letters until the AI is connected." If that note is still there, the build is still on the mock. See Troubleshooting below.
 3. Paste the test letter below and choose **Read offer letter**. After a few seconds:
    - The stub fills in.
    - Each field the letter stated shows a "from letter" marker.
@@ -118,7 +118,7 @@ A working setup returns `{"fields": {...}}`:
 - Every field has `"source": "letter"` or `"source": "missing"`.
 - For this short text, most fields are missing.
 
-An empty `text` returns HTTP 400 with `{"error": "The letter is empty. Paste its text or drop a .txt file."}`. That error shows the function is deployed even before the secret is added.
+An empty `text` returns HTTP 400 with `{"error": "The letter is empty. Paste its text or drop the letter's file."}`. That error shows the function is deployed even before the secret is added.
 
 ## Troubleshooting
 

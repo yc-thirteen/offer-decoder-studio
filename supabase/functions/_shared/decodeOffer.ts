@@ -39,7 +39,7 @@ export const DECODE_COPY: FailureCopy & {
   long: string;
 } = {
   badJson: 'Send the letter as JSON: {"text": "..."}.',
-  empty: "The letter is empty. Paste its text or drop a .txt file.",
+  empty: "The letter is empty. Paste its text or drop the letter's file.",
   long: "This letter is too long to read. Paste only the offer and benefits sections.",
   notConnected:
     "The letter reader isn't connected yet. Add the ANTHROPIC_API_KEY secret in Lovable Cloud, or type the offer in by hand.",
