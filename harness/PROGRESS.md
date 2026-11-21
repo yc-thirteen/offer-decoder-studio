@@ -99,3 +99,13 @@ What changed: New `src/lib/engine/calculate.ts`: r2 (cents, +1e-9 nudge like eng
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 10 files/139 tests + 2 todo, build)
 Screens checked: no (no UI change)
 Next: `life.ts` and `checklist.ts`, and replace the two lecture-checks `it.todo` entries.
+
+## 2026-11-21T04:56:38Z | iteration 11
+Task: `life.ts` (human capital and coverage) and `checklist.ts` (ordered ids), and replace the two `it.todo` entries in lecture-checks.test.ts.
+Result: done
+What changed: New `src/lib/engine/life.ts`: humanCapital (growing annuity; r = g uses the limit salary×n/(1+r) instead of dividing by zero), insuredFraction (0 when L/W or γ ≤ 0), lifeInsurance(offer, profile, params?) with optional LifeParams overrides (risk aversion, markups, …) for the Phase 4 sliders; null without dependents; age ≥ 67 gives all-zero coverage, not NaN (engine.py would divide by zero). New `checklist.ts`: checklist(offer, profile, {defaults, recommended, defaultCalc}?) mirroring engine.py order; precomputed pieces are optional so runCase can pass them.
+- Tests: `life.test.ts` (edges, cap on supplemental, single ignores spouse, overrides, all 12 offers' LifeResult vs expected.json within $1), `checklist.test.ts` (ready/not-ready, unclaimed match, vesting, precomputed = computed, all 12 offers exact and in funds-hierarchy order). Lecture checks: both todos replaced.
+- Decision: the fixture's human-capital tolerance (±5,000 of 1.6M) can't be met even by engine.py itself (got 1,607,435.08, $7,435 off). The spec only says "≈ 1.6M". The test now asserts the stricter thing (within $1 of the oracle's `got`) and that the value rounds to $1.6M at the slide's printed precision. The fixture is unchanged. The life fractions use the fixture tolerance as written (0.90/0.48 ± 0.01).
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 12 files/178 tests, build)
+Screens checked: no (no UI change)
+Next: `runCase()` in `index.ts` plus `fixtures.test.ts` against expected.json.
