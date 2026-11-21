@@ -1,0 +1,8 @@
+{
+  "note": "The AI reader (and the mock reader) must turn each letter into these Offer fields. Compare against fixtures/cases.json offers with the same id. Fields the letter does not state must come back as null with a 'missing' note, never guessed.",
+  "letters": [
+    {"file": "northfield.txt", "caseId": "chicago-vs-austin", "offerId": "northfield"},
+    {"file": "lakeshore.txt", "caseId": "chicago-vs-austin", "offerId": "lakeshore"},
+    {"file": "cascade.txt", "caseId": "new-grad-roth", "offerId": "cascade"}
+  ]
+}

@@ -1,0 +1,1491 @@
+{
+  "generatedBy": "harness/reference/engine.py",
+  "toleranceDollars": 1,
+  "cases": [
+    {
+      "id": "chicago-vs-austin",
+      "offers": [
+        {
+          "offerId": "northfield",
+          "dominatedPlanIds": [
+            "ppo"
+          ],
+          "recommendedElections": {
+            "planId": "hdhp",
+            "employeePct": 12,
+            "accountType": "traditional",
+            "employeeHsa": 3400
+          },
+          "default": {
+            "planId": "ppo",
+            "employeePct": 3,
+            "accountType": "traditional",
+            "grossPay": 150000.0,
+            "employee401k": 4500.0,
+            "hitsLimit401k": false,
+            "traditional401k": 4500.0,
+            "roth401k": 0.0,
+            "healthPremium": 2400.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 23078.0,
+            "socialSecurity": 9151.2,
+            "medicare": 2140.2,
+            "stateIncomeTax": 7083.45,
+            "netPay": 101647.15,
+            "netPayPerPaycheck": 3909.51,
+            "employerMatch": 2250.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 6750.0,
+            "savingsAfterFutureTax": 5737.5,
+            "expectedOutOfPocket": 800.0,
+            "bottomLine": 106584.65,
+            "federalMarginalRate": 0.24,
+            "federalAverageRateOnJob": 15.39
+          },
+          "recommended": {
+            "planId": "hdhp",
+            "employeePct": 12,
+            "accountType": "traditional",
+            "grossPay": 150000.0,
+            "employee401k": 18000.0,
+            "hitsLimit401k": false,
+            "traditional401k": 18000.0,
+            "roth401k": 0.0,
+            "healthPremium": 600.0,
+            "employeeHsa": 3400.0,
+            "federalIncomeTax": 19454.0,
+            "socialSecurity": 9052.0,
+            "medicare": 2117.0,
+            "stateIncomeTax": 6336.0,
+            "netPay": 91041.0,
+            "netPayPerPaycheck": 3501.58,
+            "employerMatch": 4500.0,
+            "employerHsa": 1000.0,
+            "savingsInYourName": 26900.0,
+            "savingsAfterFutureTax": 23525.0,
+            "expectedOutOfPocket": 2000.0,
+            "bottomLine": 112566.0,
+            "federalMarginalRate": 0.24,
+            "federalAverageRateOnJob": 12.97
+          },
+          "matchCapPct": 6,
+          "maxMatchPctOfSalary": 3.0,
+          "vestedPctByYear": [
+            0,
+            0,
+            0,
+            100,
+            100,
+            100,
+            100
+          ],
+          "planCostCurves": {
+            "ppo": [
+              [
+                0.0,
+                2400.0
+              ],
+              [
+                500.0,
+                2900.0
+              ],
+              [
+                3000.0,
+                3400.0
+              ],
+              [
+                13000.0,
+                5400.0
+              ],
+              [
+                20500.0,
+                5400.0
+              ]
+            ],
+            "hdhp": [
+              [
+                0.0,
+                -400.0
+              ],
+              [
+                500.0,
+                100.0
+              ],
+              [
+                3000.0,
+                2600.0
+              ],
+              [
+                13000.0,
+                4600.0
+              ],
+              [
+                20500.0,
+                4600.0
+              ]
+            ]
+          },
+          "lifeInsurance": null,
+          "checklist": [
+            "raise-401k",
+            "unclaimed-match",
+            "switch-health-plan",
+            "default-plan-dominated",
+            "open-hsa",
+            "choose-traditional",
+            "skip-extra-life-insurance",
+            "check-w4",
+            "note-vesting-date"
+          ]
+        },
+        {
+          "offerId": "lakeshore",
+          "dominatedPlanIds": [],
+          "recommendedElections": {
+            "planId": "ppo",
+            "employeePct": 11,
+            "accountType": "traditional",
+            "employeeHsa": 0
+          },
+          "default": {
+            "planId": "ppo",
+            "employeePct": 4,
+            "accountType": "traditional",
+            "grossPay": 140000.0,
+            "employee401k": 5600.0,
+            "hitsLimit401k": false,
+            "traditional401k": 5600.0,
+            "roth401k": 0.0,
+            "healthPremium": 1800.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 20558.0,
+            "socialSecurity": 8568.4,
+            "medicare": 2003.9,
+            "stateIncomeTax": 0.0,
+            "netPay": 101469.7,
+            "netPayPerPaycheck": 3902.68,
+            "employerMatch": 5600.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 11200.0,
+            "savingsAfterFutureTax": 9520.0,
+            "expectedOutOfPocket": 1200.0,
+            "bottomLine": 109789.7,
+            "federalMarginalRate": 0.24,
+            "federalAverageRateOnJob": 14.68
+          },
+          "recommended": {
+            "planId": "ppo",
+            "employeePct": 11,
+            "accountType": "traditional",
+            "grossPay": 140000.0,
+            "employee401k": 15400.0,
+            "hitsLimit401k": false,
+            "traditional401k": 15400.0,
+            "roth401k": 0.0,
+            "healthPremium": 1800.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 18206.0,
+            "socialSecurity": 8568.4,
+            "medicare": 2003.9,
+            "stateIncomeTax": 0.0,
+            "netPay": 94021.7,
+            "netPayPerPaycheck": 3616.22,
+            "employerMatch": 5600.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 21000.0,
+            "savingsAfterFutureTax": 17850.0,
+            "expectedOutOfPocket": 1200.0,
+            "bottomLine": 110671.7,
+            "federalMarginalRate": 0.24,
+            "federalAverageRateOnJob": 13.0
+          },
+          "matchCapPct": 4,
+          "maxMatchPctOfSalary": 4.0,
+          "vestedPctByYear": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "planCostCurves": {
+            "ppo": [
+              [
+                0.0,
+                1800.0
+              ],
+              [
+                1000.0,
+                2800.0
+              ],
+              [
+                16000.0,
+                5800.0
+              ],
+              [
+                25000.0,
+                5800.0
+              ]
+            ]
+          },
+          "lifeInsurance": null,
+          "checklist": [
+            "raise-401k",
+            "choose-traditional",
+            "skip-extra-life-insurance",
+            "check-w4"
+          ]
+        }
+      ],
+      "winnerBy_default": "lakeshore",
+      "winnerBy_recommended": "northfield"
+    },
+    {
+      "id": "new-grad-roth",
+      "offers": [
+        {
+          "offerId": "cascade",
+          "dominatedPlanIds": [],
+          "recommendedElections": {
+            "planId": "hdhp",
+            "employeePct": 5,
+            "accountType": "roth",
+            "employeeHsa": 0
+          },
+          "default": {
+            "planId": "hdhp",
+            "employeePct": 0,
+            "accountType": "traditional",
+            "grossPay": 58000.0,
+            "employee401k": 0.0,
+            "hitsLimit401k": false,
+            "traditional401k": 0.0,
+            "roth401k": 0.0,
+            "healthPremium": 0.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 4780.0,
+            "socialSecurity": 3596.0,
+            "medicare": 841.0,
+            "stateIncomeTax": 0.0,
+            "netPay": 48783.0,
+            "netPayPerPaycheck": 1876.27,
+            "employerMatch": 0.0,
+            "employerHsa": 500.0,
+            "savingsInYourName": 500.0,
+            "savingsAfterFutureTax": 500.0,
+            "expectedOutOfPocket": 500.0,
+            "bottomLine": 48783.0,
+            "federalMarginalRate": 0.12,
+            "federalAverageRateOnJob": 8.24
+          },
+          "recommended": {
+            "planId": "hdhp",
+            "employeePct": 5,
+            "accountType": "roth",
+            "grossPay": 58000.0,
+            "employee401k": 2900.0,
+            "hitsLimit401k": false,
+            "traditional401k": 0.0,
+            "roth401k": 2900.0,
+            "healthPremium": 0.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 4780.0,
+            "socialSecurity": 3596.0,
+            "medicare": 841.0,
+            "stateIncomeTax": 0.0,
+            "netPay": 45883.0,
+            "netPayPerPaycheck": 1764.73,
+            "employerMatch": 2320.0,
+            "employerHsa": 500.0,
+            "savingsInYourName": 5720.0,
+            "savingsAfterFutureTax": 5372.0,
+            "expectedOutOfPocket": 500.0,
+            "bottomLine": 50755.0,
+            "federalMarginalRate": 0.12,
+            "federalAverageRateOnJob": 8.24
+          },
+          "matchCapPct": 5,
+          "maxMatchPctOfSalary": 4.0,
+          "vestedPctByYear": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "planCostCurves": {
+            "hdhp": [
+              [
+                0.0,
+                -500.0
+              ],
+              [
+                1700.0,
+                1200.0
+              ],
+              [
+                24700.0,
+                3500.0
+              ],
+              [
+                38050.0,
+                3500.0
+              ]
+            ]
+          },
+          "lifeInsurance": null,
+          "checklist": [
+            "raise-401k",
+            "unclaimed-match",
+            "pay-high-interest-debt",
+            "build-emergency-fund",
+            "choose-roth",
+            "skip-extra-life-insurance",
+            "check-w4"
+          ]
+        },
+        {
+          "offerId": "prairie",
+          "dominatedPlanIds": [],
+          "recommendedElections": {
+            "planId": "ppo",
+            "employeePct": 8,
+            "accountType": "roth",
+            "employeeHsa": 0
+          },
+          "default": {
+            "planId": "ppo",
+            "employeePct": 5,
+            "accountType": "traditional",
+            "grossPay": 62000.0,
+            "employee401k": 3100.0,
+            "hitsLimit401k": false,
+            "traditional401k": 3100.0,
+            "roth401k": 0.0,
+            "healthPremium": 1500.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 4708.0,
+            "socialSecurity": 3751.0,
+            "medicare": 877.25,
+            "stateIncomeTax": 2841.3,
+            "netPay": 45222.45,
+            "netPayPerPaycheck": 1884.27,
+            "employerMatch": 1550.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 4650.0,
+            "savingsAfterFutureTax": 3952.5,
+            "expectedOutOfPocket": 500.0,
+            "bottomLine": 48674.95,
+            "federalMarginalRate": 0.12,
+            "federalAverageRateOnJob": 7.59
+          },
+          "recommended": {
+            "planId": "ppo",
+            "employeePct": 8,
+            "accountType": "roth",
+            "grossPay": 62000.0,
+            "employee401k": 4960.0,
+            "hitsLimit401k": false,
+            "traditional401k": 0.0,
+            "roth401k": 4960.0,
+            "healthPremium": 1500.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 5080.0,
+            "socialSecurity": 3751.0,
+            "medicare": 877.25,
+            "stateIncomeTax": 2994.75,
+            "netPay": 42837.0,
+            "netPayPerPaycheck": 1784.88,
+            "employerMatch": 2480.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 7440.0,
+            "savingsAfterFutureTax": 7068.0,
+            "expectedOutOfPocket": 500.0,
+            "bottomLine": 49405.0,
+            "federalMarginalRate": 0.12,
+            "federalAverageRateOnJob": 8.19
+          },
+          "matchCapPct": 8,
+          "maxMatchPctOfSalary": 4.0,
+          "vestedPctByYear": [
+            0,
+            20,
+            40,
+            60,
+            80,
+            100,
+            100
+          ],
+          "planCostCurves": {
+            "ppo": [
+              [
+                0.0,
+                1500.0
+              ],
+              [
+                750.0,
+                2250.0
+              ],
+              [
+                3200.0,
+                2740.0
+              ],
+              [
+                14500.0,
+                5000.0
+              ],
+              [
+                17200.0,
+                5000.0
+              ],
+              [
+                26800.0,
+                5000.0
+              ]
+            ],
+            "hdhp": [
+              [
+                0.0,
+                300.0
+              ],
+              [
+                750.0,
+                1050.0
+              ],
+              [
+                3200.0,
+                3500.0
+              ],
+              [
+                14500.0,
+                5760.0
+              ],
+              [
+                17200.0,
+                6300.0
+              ],
+              [
+                26800.0,
+                6300.0
+              ]
+            ]
+          },
+          "lifeInsurance": null,
+          "checklist": [
+            "raise-401k",
+            "unclaimed-match",
+            "pay-high-interest-debt",
+            "build-emergency-fund",
+            "choose-roth",
+            "skip-extra-life-insurance",
+            "check-w4",
+            "note-vesting-date"
+          ]
+        }
+      ],
+      "winnerBy_default": "cascade",
+      "winnerBy_recommended": "cascade"
+    },
+    {
+      "id": "high-earner-family",
+      "offers": [
+        {
+          "offerId": "harbor",
+          "dominatedPlanIds": [
+            "ppo"
+          ],
+          "recommendedElections": {
+            "planId": "hdhp",
+            "employeePct": 10,
+            "accountType": "traditional",
+            "employeeHsa": 7250
+          },
+          "default": {
+            "planId": "ppo",
+            "employeePct": 6,
+            "accountType": "traditional",
+            "grossPay": 260000.0,
+            "employee401k": 15600.0,
+            "hitsLimit401k": false,
+            "traditional401k": 15600.0,
+            "roth401k": 0.0,
+            "healthPremium": 6000.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 53444.0,
+            "socialSecurity": 11439.0,
+            "medicare": 4799.0,
+            "stateIncomeTax": 0.0,
+            "netPay": 168718.0,
+            "netPayPerPaycheck": 7029.92,
+            "employerMatch": 13000.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 28600.0,
+            "savingsAfterFutureTax": 24310.0,
+            "expectedOutOfPocket": 2000.0,
+            "bottomLine": 191028.0,
+            "federalMarginalRate": 0.24,
+            "federalAverageRateOnJob": 20.56
+          },
+          "recommended": {
+            "planId": "hdhp",
+            "employeePct": 10,
+            "accountType": "traditional",
+            "grossPay": 260000.0,
+            "employee401k": 24500.0,
+            "hitsLimit401k": true,
+            "traditional401k": 24500.0,
+            "roth401k": 0.0,
+            "healthPremium": 3000.0,
+            "employeeHsa": 7250.0,
+            "federalIncomeTax": 50288.0,
+            "socialSecurity": 11439.0,
+            "medicare": 4699.13,
+            "stateIncomeTax": 0.0,
+            "netPay": 158823.88,
+            "netPayPerPaycheck": 6617.66,
+            "employerMatch": 13000.0,
+            "employerHsa": 1500.0,
+            "savingsInYourName": 46250.0,
+            "savingsAfterFutureTax": 40625.0,
+            "expectedOutOfPocket": 3920.0,
+            "bottomLine": 195528.88,
+            "federalMarginalRate": 0.24,
+            "federalAverageRateOnJob": 19.34
+          },
+          "matchCapPct": 5,
+          "maxMatchPctOfSalary": 5.0,
+          "vestedPctByYear": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "planCostCurves": {
+            "ppo": [
+              [
+                0.0,
+                6000.0
+              ],
+              [
+                1000.0,
+                7000.0
+              ],
+              [
+                3400.0,
+                7480.0
+              ],
+              [
+                21400.0,
+                11080.0
+              ],
+              [
+                26000.0,
+                12000.0
+              ],
+              [
+                40000.0,
+                12000.0
+              ]
+            ],
+            "hdhp": [
+              [
+                0.0,
+                1500.0
+              ],
+              [
+                1000.0,
+                2500.0
+              ],
+              [
+                3400.0,
+                4900.0
+              ],
+              [
+                21400.0,
+                8500.0
+              ],
+              [
+                26000.0,
+                8500.0
+              ],
+              [
+                40000.0,
+                8500.0
+              ]
+            ]
+          },
+          "lifeInsurance": {
+            "humanCapital": 4079810.23,
+            "householdWealth": 6112799.56,
+            "lossShare": 0.67,
+            "fractionEmployer": 0.9,
+            "fractionIndividual": 0.5,
+            "recommendedCoverageEmployer": 3672290.26,
+            "recommendedCoverageIndividual": 2042210.37,
+            "basicCoverage": 520000.0,
+            "recommendedSupplemental": 1560000.0,
+            "recommendedIndividualPolicy": 0.0,
+            "totalRecommendedCoverage": 2080000.0
+          },
+          "checklist": [
+            "raise-401k",
+            "switch-health-plan",
+            "default-plan-dominated",
+            "open-hsa",
+            "choose-traditional",
+            "life-insurance",
+            "check-w4"
+          ]
+        },
+        {
+          "offerId": "evergreen",
+          "dominatedPlanIds": [],
+          "recommendedElections": {
+            "planId": "hdhp",
+            "employeePct": 11,
+            "accountType": "traditional",
+            "employeeHsa": 6750
+          },
+          "default": {
+            "planId": "hdhp",
+            "employeePct": 4,
+            "accountType": "traditional",
+            "grossPay": 245000.0,
+            "employee401k": 9800.0,
+            "hitsLimit401k": false,
+            "traditional401k": 9800.0,
+            "roth401k": 0.0,
+            "healthPremium": 2400.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 52100.0,
+            "socialSecurity": 11439.0,
+            "medicare": 4531.1,
+            "stateIncomeTax": 0.0,
+            "netPay": 164729.9,
+            "netPayPerPaycheck": 6335.77,
+            "employerMatch": 4900.0,
+            "employerHsa": 2000.0,
+            "savingsInYourName": 16700.0,
+            "savingsAfterFutureTax": 14495.0,
+            "expectedOutOfPocket": 3660.0,
+            "bottomLine": 175564.9,
+            "federalMarginalRate": 0.24,
+            "federalAverageRateOnJob": 21.27
+          },
+          "recommended": {
+            "planId": "hdhp",
+            "employeePct": 11,
+            "accountType": "traditional",
+            "grossPay": 245000.0,
+            "employee401k": 24500.0,
+            "hitsLimit401k": true,
+            "traditional401k": 24500.0,
+            "roth401k": 0.0,
+            "healthPremium": 2400.0,
+            "employeeHsa": 6750.0,
+            "federalIncomeTax": 46952.0,
+            "socialSecurity": 11439.0,
+            "medicare": 4372.48,
+            "stateIncomeTax": 0.0,
+            "netPay": 148586.53,
+            "netPayPerPaycheck": 5714.87,
+            "employerMatch": 9800.0,
+            "employerHsa": 2000.0,
+            "savingsInYourName": 43050.0,
+            "savingsAfterFutureTax": 37905.0,
+            "expectedOutOfPocket": 3660.0,
+            "bottomLine": 182831.53,
+            "federalMarginalRate": 0.24,
+            "federalAverageRateOnJob": 19.16
+          },
+          "matchCapPct": 8,
+          "maxMatchPctOfSalary": 4.0,
+          "vestedPctByYear": [
+            0,
+            0,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "planCostCurves": {
+            "hdhp": [
+              [
+                0.0,
+                400.0
+              ],
+              [
+                3400.0,
+                3800.0
+              ],
+              [
+                37400.0,
+                7200.0
+              ],
+              [
+                57100.0,
+                7200.0
+              ]
+            ]
+          },
+          "lifeInsurance": {
+            "humanCapital": 3844436.56,
+            "householdWealth": 5877425.9,
+            "lossShare": 0.65,
+            "fractionEmployer": 0.9,
+            "fractionIndividual": 0.49,
+            "recommendedCoverageEmployer": 3452608.17,
+            "recommendedCoverageIndividual": 1885294.6,
+            "basicCoverage": 245000.0,
+            "recommendedSupplemental": 1225000.0,
+            "recommendedIndividualPolicy": 415294.6,
+            "totalRecommendedCoverage": 1885294.6
+          },
+          "checklist": [
+            "raise-401k",
+            "unclaimed-match",
+            "open-hsa",
+            "choose-traditional",
+            "life-insurance",
+            "check-w4",
+            "note-vesting-date"
+          ]
+        }
+      ],
+      "winnerBy_default": "harbor",
+      "winnerBy_recommended": "harbor"
+    },
+    {
+      "id": "university-staff",
+      "offers": [
+        {
+          "offerId": "midway",
+          "dominatedPlanIds": [],
+          "recommendedElections": {
+            "planId": "ppo",
+            "employeePct": 7,
+            "accountType": "traditional",
+            "employeeHsa": 0
+          },
+          "default": {
+            "planId": "ppo",
+            "employeePct": 3,
+            "accountType": "traditional",
+            "grossPay": 95000.0,
+            "employee401k": 2850.0,
+            "hitsLimit401k": false,
+            "traditional401k": 2850.0,
+            "roth401k": 0.0,
+            "healthPremium": 1800.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 11047.0,
+            "socialSecurity": 5778.4,
+            "medicare": 1351.4,
+            "stateIncomeTax": 4472.33,
+            "netPay": 67700.88,
+            "netPayPerPaycheck": 2820.87,
+            "employerMatch": 3800.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 6650.0,
+            "savingsAfterFutureTax": 5652.5,
+            "expectedOutOfPocket": 900.0,
+            "bottomLine": 72453.38,
+            "federalMarginalRate": 0.22,
+            "federalAverageRateOnJob": 11.63
+          },
+          "recommended": {
+            "planId": "ppo",
+            "employeePct": 7,
+            "accountType": "traditional",
+            "grossPay": 95000.0,
+            "employee401k": 6650.0,
+            "hitsLimit401k": false,
+            "traditional401k": 6650.0,
+            "roth401k": 0.0,
+            "healthPremium": 1800.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 10211.0,
+            "socialSecurity": 5778.4,
+            "medicare": 1351.4,
+            "stateIncomeTax": 4284.23,
+            "netPay": 64924.98,
+            "netPayPerPaycheck": 2705.21,
+            "employerMatch": 7600.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 14250.0,
+            "savingsAfterFutureTax": 12112.5,
+            "expectedOutOfPocket": 900.0,
+            "bottomLine": 76137.48,
+            "federalMarginalRate": 0.22,
+            "federalAverageRateOnJob": 10.75
+          },
+          "matchCapPct": 5,
+          "maxMatchPctOfSalary": 8.0,
+          "vestedPctByYear": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "planCostCurves": {
+            "ppo": [
+              [
+                0.0,
+                1800.0
+              ],
+              [
+                750.0,
+                2550.0
+              ],
+              [
+                14500.0,
+                5300.0
+              ],
+              [
+                22750.0,
+                5300.0
+              ]
+            ]
+          },
+          "lifeInsurance": null,
+          "checklist": [
+            "raise-401k",
+            "unclaimed-match",
+            "choose-traditional",
+            "skip-extra-life-insurance",
+            "check-w4"
+          ]
+        },
+        {
+          "offerId": "lakeview",
+          "dominatedPlanIds": [],
+          "recommendedElections": {
+            "planId": "ppo",
+            "employeePct": 12,
+            "accountType": "traditional",
+            "employeeHsa": 0
+          },
+          "default": {
+            "planId": "ppo",
+            "employeePct": 6,
+            "accountType": "traditional",
+            "grossPay": 98000.0,
+            "employee401k": 5880.0,
+            "hitsLimit401k": false,
+            "traditional401k": 5880.0,
+            "roth401k": 0.0,
+            "healthPremium": 2100.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 10974.4,
+            "socialSecurity": 5945.8,
+            "medicare": 1390.55,
+            "stateIncomeTax": 4455.99,
+            "netPay": 67253.26,
+            "netPayPerPaycheck": 2586.66,
+            "employerMatch": 2940.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 8820.0,
+            "savingsAfterFutureTax": 7497.0,
+            "expectedOutOfPocket": 1100.0,
+            "bottomLine": 73650.26,
+            "federalMarginalRate": 0.22,
+            "federalAverageRateOnJob": 11.2
+          },
+          "recommended": {
+            "planId": "ppo",
+            "employeePct": 12,
+            "accountType": "traditional",
+            "grossPay": 98000.0,
+            "employee401k": 11760.0,
+            "hitsLimit401k": false,
+            "traditional401k": 11760.0,
+            "roth401k": 0.0,
+            "healthPremium": 2100.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 9680.8,
+            "socialSecurity": 5945.8,
+            "medicare": 1390.55,
+            "stateIncomeTax": 4164.93,
+            "netPay": 62957.92,
+            "netPayPerPaycheck": 2421.46,
+            "employerMatch": 2940.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 14700.0,
+            "savingsAfterFutureTax": 12495.0,
+            "expectedOutOfPocket": 1100.0,
+            "bottomLine": 74352.92,
+            "federalMarginalRate": 0.22,
+            "federalAverageRateOnJob": 9.88
+          },
+          "matchCapPct": 6,
+          "maxMatchPctOfSalary": 3.0,
+          "vestedPctByYear": [
+            0,
+            0,
+            0,
+            100,
+            100,
+            100,
+            100
+          ],
+          "planCostCurves": {
+            "ppo": [
+              [
+                0.0,
+                2100.0
+              ],
+              [
+                1000.0,
+                3100.0
+              ],
+              [
+                16000.0,
+                6100.0
+              ],
+              [
+                25000.0,
+                6100.0
+              ]
+            ]
+          },
+          "lifeInsurance": null,
+          "checklist": [
+            "raise-401k",
+            "choose-traditional",
+            "skip-extra-life-insurance",
+            "check-w4",
+            "note-vesting-date"
+          ]
+        }
+      ],
+      "winnerBy_default": "lakeview",
+      "winnerBy_recommended": "midway"
+    },
+    {
+      "id": "plan-crossover",
+      "offers": [
+        {
+          "offerId": "remote",
+          "dominatedPlanIds": [],
+          "recommendedElections": {
+            "planId": "ppo",
+            "employeePct": 12,
+            "accountType": "traditional",
+            "employeeHsa": 0
+          },
+          "default": {
+            "planId": "hdhp",
+            "employeePct": 3,
+            "accountType": "traditional",
+            "grossPay": 120000.0,
+            "employee401k": 3600.0,
+            "hitsLimit401k": false,
+            "traditional401k": 3600.0,
+            "roth401k": 0.0,
+            "healthPremium": 900.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 16580.0,
+            "socialSecurity": 7384.2,
+            "medicare": 1726.95,
+            "stateIncomeTax": 5775.0,
+            "netPay": 84033.85,
+            "netPayPerPaycheck": 3232.07,
+            "employerMatch": 3600.0,
+            "employerHsa": 500.0,
+            "savingsInYourName": 7700.0,
+            "savingsAfterFutureTax": 6620.0,
+            "expectedOutOfPocket": 6050.0,
+            "bottomLine": 84603.85,
+            "federalMarginalRate": 0.22,
+            "federalAverageRateOnJob": 13.82
+          },
+          "recommended": {
+            "planId": "ppo",
+            "employeePct": 12,
+            "accountType": "traditional",
+            "grossPay": 120000.0,
+            "employee401k": 14400.0,
+            "hitsLimit401k": false,
+            "traditional401k": 14400.0,
+            "roth401k": 0.0,
+            "healthPremium": 3600.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 13610.0,
+            "socialSecurity": 7216.8,
+            "medicare": 1687.8,
+            "stateIncomeTax": 5100.0,
+            "netPay": 74385.4,
+            "netPayPerPaycheck": 2860.98,
+            "employerMatch": 3600.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 18000.0,
+            "savingsAfterFutureTax": 15300.0,
+            "expectedOutOfPocket": 1425.0,
+            "bottomLine": 88260.4,
+            "federalMarginalRate": 0.22,
+            "federalAverageRateOnJob": 11.34
+          },
+          "matchCapPct": 3,
+          "maxMatchPctOfSalary": 3.0,
+          "vestedPctByYear": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "planCostCurves": {
+            "ppo": [
+              [
+                0.0,
+                3600.0
+              ],
+              [
+                250.0,
+                3850.0
+              ],
+              [
+                3500.0,
+                4175.0
+              ],
+              [
+                15166.666666666668,
+                5341.67
+              ],
+              [
+                17750.0,
+                5600.0
+              ],
+              [
+                27625.0,
+                5600.0
+              ]
+            ],
+            "hdhp": [
+              [
+                0.0,
+                400.0
+              ],
+              [
+                250.0,
+                650.0
+              ],
+              [
+                3500.0,
+                3900.0
+              ],
+              [
+                15166.666666666668,
+                7400.0
+              ],
+              [
+                17750.0,
+                7400.0
+              ],
+              [
+                27625.0,
+                7400.0
+              ]
+            ]
+          },
+          "lifeInsurance": null,
+          "checklist": [
+            "raise-401k",
+            "switch-health-plan",
+            "choose-traditional",
+            "skip-extra-life-insurance",
+            "check-w4"
+          ]
+        },
+        {
+          "offerId": "nashville",
+          "dominatedPlanIds": [],
+          "recommendedElections": {
+            "planId": "hdhp",
+            "employeePct": 9,
+            "accountType": "traditional",
+            "employeeHsa": 3650
+          },
+          "default": {
+            "planId": "hdhp",
+            "employeePct": 3,
+            "accountType": "traditional",
+            "grossPay": 112000.0,
+            "employee401k": 3360.0,
+            "hitsLimit401k": false,
+            "traditional401k": 3360.0,
+            "roth401k": 0.0,
+            "healthPremium": 1200.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 14806.8,
+            "socialSecurity": 6869.6,
+            "medicare": 1606.6,
+            "stateIncomeTax": 0.0,
+            "netPay": 84157.0,
+            "netPayPerPaycheck": 3236.81,
+            "employerMatch": 3360.0,
+            "employerHsa": 750.0,
+            "savingsInYourName": 7470.0,
+            "savingsAfterFutureTax": 6462.0,
+            "expectedOutOfPocket": 4400.0,
+            "bottomLine": 86219.0,
+            "federalMarginalRate": 0.22,
+            "federalAverageRateOnJob": 13.22
+          },
+          "recommended": {
+            "planId": "hdhp",
+            "employeePct": 9,
+            "accountType": "traditional",
+            "grossPay": 112000.0,
+            "employee401k": 10080.0,
+            "hitsLimit401k": false,
+            "traditional401k": 10080.0,
+            "roth401k": 0.0,
+            "healthPremium": 1200.0,
+            "employeeHsa": 3650.0,
+            "federalIncomeTax": 12525.4,
+            "socialSecurity": 6643.3,
+            "medicare": 1553.68,
+            "stateIncomeTax": 0.0,
+            "netPay": 76347.63,
+            "netPayPerPaycheck": 2936.45,
+            "employerMatch": 6720.0,
+            "employerHsa": 750.0,
+            "savingsInYourName": 21200.0,
+            "savingsAfterFutureTax": 18680.0,
+            "expectedOutOfPocket": 4400.0,
+            "bottomLine": 90627.63,
+            "federalMarginalRate": 0.22,
+            "federalAverageRateOnJob": 11.18
+          },
+          "matchCapPct": 6,
+          "maxMatchPctOfSalary": 6.0,
+          "vestedPctByYear": [
+            0,
+            0,
+            50,
+            100,
+            100,
+            100,
+            100
+          ],
+          "planCostCurves": {
+            "hdhp": [
+              [
+                0.0,
+                450.0
+              ],
+              [
+                2500.0,
+                2950.0
+              ],
+              [
+                20000.0,
+                6450.0
+              ],
+              [
+                31000.0,
+                6450.0
+              ]
+            ]
+          },
+          "lifeInsurance": null,
+          "checklist": [
+            "raise-401k",
+            "unclaimed-match",
+            "open-hsa",
+            "choose-traditional",
+            "skip-extra-life-insurance",
+            "check-w4",
+            "note-vesting-date"
+          ]
+        }
+      ],
+      "winnerBy_default": "nashville",
+      "winnerBy_recommended": "nashville"
+    },
+    {
+      "id": "one-income-family",
+      "offers": [
+        {
+          "offerId": "summit",
+          "dominatedPlanIds": [
+            "ppo"
+          ],
+          "recommendedElections": {
+            "planId": "hdhp",
+            "employeePct": 11,
+            "accountType": "roth",
+            "employeeHsa": 7750
+          },
+          "default": {
+            "planId": "ppo",
+            "employeePct": 4,
+            "accountType": "traditional",
+            "grossPay": 88000.0,
+            "employee401k": 3520.0,
+            "hitsLimit401k": false,
+            "traditional401k": 3520.0,
+            "roth401k": 0.0,
+            "healthPremium": 5200.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 5153.6,
+            "socialSecurity": 5133.6,
+            "medicare": 1200.6,
+            "stateIncomeTax": 0.0,
+            "netPay": 67792.2,
+            "netPayPerPaycheck": 2607.39,
+            "employerMatch": 3520.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 7040.0,
+            "savingsAfterFutureTax": 5984.0,
+            "expectedOutOfPocket": 1400.0,
+            "bottomLine": 72376.2,
+            "federalMarginalRate": 0.12,
+            "federalAverageRateOnJob": 5.86
+          },
+          "recommended": {
+            "planId": "hdhp",
+            "employeePct": 11,
+            "accountType": "roth",
+            "grossPay": 88000.0,
+            "employee401k": 9680.0,
+            "hitsLimit401k": false,
+            "traditional401k": 0.0,
+            "roth401k": 9680.0,
+            "healthPremium": 2600.0,
+            "employeeHsa": 7750.0,
+            "federalIncomeTax": 4958.0,
+            "socialSecurity": 4814.3,
+            "medicare": 1125.93,
+            "stateIncomeTax": 0.0,
+            "netPay": 57071.78,
+            "netPayPerPaycheck": 2195.07,
+            "employerMatch": 3520.0,
+            "employerHsa": 1000.0,
+            "savingsInYourName": 21950.0,
+            "savingsAfterFutureTax": 21422.0,
+            "expectedOutOfPocket": 3000.0,
+            "bottomLine": 75493.78,
+            "federalMarginalRate": 0.12,
+            "federalAverageRateOnJob": 5.63
+          },
+          "matchCapPct": 4,
+          "maxMatchPctOfSalary": 4.0,
+          "vestedPctByYear": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "planCostCurves": {
+            "hdhp": [
+              [
+                0.0,
+                1600.0
+              ],
+              [
+                1000.0,
+                2600.0
+              ],
+              [
+                3400.0,
+                5000.0
+              ],
+              [
+                21000.0,
+                8520.0
+              ],
+              [
+                23900.0,
+                9100.0
+              ],
+              [
+                36850.0,
+                9100.0
+              ]
+            ],
+            "ppo": [
+              [
+                0.0,
+                5200.0
+              ],
+              [
+                1000.0,
+                6200.0
+              ],
+              [
+                3400.0,
+                6680.0
+              ],
+              [
+                21000.0,
+                10200.0
+              ],
+              [
+                23900.0,
+                10200.0
+              ],
+              [
+                36850.0,
+                10200.0
+              ]
+            ]
+          },
+          "lifeInsurance": {
+            "humanCapital": 1430245.47,
+            "householdWealth": 1470245.47,
+            "lossShare": 0.97,
+            "fractionEmployer": 0.93,
+            "fractionIndividual": 0.66,
+            "recommendedCoverageEmployer": 1332229.11,
+            "recommendedCoverageIndividual": 940163.65,
+            "basicCoverage": 88000.0,
+            "recommendedSupplemental": 440000.0,
+            "recommendedIndividualPolicy": 412163.65,
+            "totalRecommendedCoverage": 940163.65
+          },
+          "checklist": [
+            "raise-401k",
+            "switch-health-plan",
+            "default-plan-dominated",
+            "open-hsa",
+            "choose-roth",
+            "life-insurance",
+            "check-w4"
+          ]
+        },
+        {
+          "offerId": "riverbend",
+          "dominatedPlanIds": [],
+          "recommendedElections": {
+            "planId": "ppo",
+            "employeePct": 12,
+            "accountType": "roth",
+            "employeeHsa": 0
+          },
+          "default": {
+            "planId": "ppo",
+            "employeePct": 6,
+            "accountType": "traditional",
+            "grossPay": 84000.0,
+            "employee401k": 5040.0,
+            "hitsLimit401k": false,
+            "traditional401k": 5040.0,
+            "roth401k": 0.0,
+            "healthPremium": 4200.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 4611.2,
+            "socialSecurity": 4947.6,
+            "medicare": 1157.1,
+            "stateIncomeTax": 0.0,
+            "netPay": 64044.1,
+            "netPayPerPaycheck": 2463.23,
+            "employerMatch": 2520.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 7560.0,
+            "savingsAfterFutureTax": 6426.0,
+            "expectedOutOfPocket": 1800.0,
+            "bottomLine": 68670.1,
+            "federalMarginalRate": 0.12,
+            "federalAverageRateOnJob": 5.49
+          },
+          "recommended": {
+            "planId": "ppo",
+            "employeePct": 12,
+            "accountType": "roth",
+            "grossPay": 84000.0,
+            "employee401k": 10080.0,
+            "hitsLimit401k": false,
+            "traditional401k": 0.0,
+            "roth401k": 10080.0,
+            "healthPremium": 4200.0,
+            "employeeHsa": 0.0,
+            "federalIncomeTax": 5216.0,
+            "socialSecurity": 4947.6,
+            "medicare": 1157.1,
+            "stateIncomeTax": 0.0,
+            "netPay": 58399.3,
+            "netPayPerPaycheck": 2246.13,
+            "employerMatch": 2520.0,
+            "employerHsa": 0.0,
+            "savingsInYourName": 12600.0,
+            "savingsAfterFutureTax": 12222.0,
+            "expectedOutOfPocket": 1800.0,
+            "bottomLine": 68821.3,
+            "federalMarginalRate": 0.12,
+            "federalAverageRateOnJob": 6.21
+          },
+          "matchCapPct": 6,
+          "maxMatchPctOfSalary": 3.0,
+          "vestedPctByYear": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "planCostCurves": {
+            "ppo": [
+              [
+                0.0,
+                4200.0
+              ],
+              [
+                1500.0,
+                5700.0
+              ],
+              [
+                24000.0,
+                10200.0
+              ],
+              [
+                37000.0,
+                10200.0
+              ]
+            ]
+          },
+          "lifeInsurance": {
+            "humanCapital": 1365234.31,
+            "householdWealth": 1405234.31,
+            "lossShare": 0.97,
+            "fractionEmployer": 0.93,
+            "fractionIndividual": 0.66,
+            "recommendedCoverageEmployer": 1271552.03,
+            "recommendedCoverageIndividual": 896822.88,
+            "basicCoverage": 0.0,
+            "recommendedSupplemental": 0.0,
+            "recommendedIndividualPolicy": 896822.88,
+            "totalRecommendedCoverage": 896822.88
+          },
+          "checklist": [
+            "raise-401k",
+            "choose-roth",
+            "life-insurance",
+            "check-w4"
+          ]
+        }
+      ],
+      "winnerBy_default": "summit",
+      "winnerBy_recommended": "summit"
+    }
+  ]
+}

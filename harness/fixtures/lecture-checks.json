@@ -1,0 +1,40 @@
+{
+  "mfjTaxOn150kTaxable": {
+    "slide": "4B-11",
+    "expected": 22424,
+    "got": 22424.0
+  },
+  "mfjAverageRateOn150k": {
+    "slide": "4B-11",
+    "expected": 0.15,
+    "got": 0.15
+  },
+  "mfjTaxAtTopOf22Bracket": {
+    "slide": "4B-8",
+    "expected": 35932,
+    "got": 35932.0
+  },
+  "singleTaxOn9525": {
+    "slide": "4B-29",
+    "expected": 952.5,
+    "got": 952.5
+  },
+  "humanCapital100k35yrs": {
+    "slide": "7A-27",
+    "expected": 1600000,
+    "tolerance": 5000,
+    "got": 1607435.08
+  },
+  "lifeFractionEmployer": {
+    "slide": "7A-28",
+    "expected": 0.9,
+    "tolerance": 0.01,
+    "got": 0.9
+  },
+  "lifeFractionIndividual": {
+    "slide": "7A-28",
+    "expected": 0.48,
+    "tolerance": 0.01,
+    "got": 0.48
+  }
+}
