@@ -39,7 +39,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [x] Marginal vs average tax panel.
 
 ## Phase 5: AI features (mock first)
-- [ ] `src/lib/ai/`: `types.ts` (ExtractRequest, ExtractResult with per-field `source: "letter" | "missing"`, and ExplainRequest/ExplainResult), an `AIClient` interface, and a `getAIClient()` factory. The factory returns the HTTP client when the env vars for the Lovable Cloud (Supabase) URL and publishable key are present (check `VITE_SUPABASE_URL`, plus `VITE_SUPABASE_PUBLISHABLE_KEY` or `VITE_SUPABASE_ANON_KEY`), and the mock otherwise.
+- [x] `src/lib/ai/`: `types.ts` (ExtractRequest, ExtractResult with per-field `source: "letter" | "missing"`, and ExplainRequest/ExplainResult), an `AIClient` interface, and a `getAIClient()` factory. The factory returns the HTTP client when the env vars for the Lovable Cloud (Supabase) URL and publishable key are present (check `VITE_SUPABASE_URL`, plus `VITE_SUPABASE_PUBLISHABLE_KEY` or `VITE_SUPABASE_ANON_KEY`), and the mock otherwise.
 - [ ] `MockAIClient.extractOffer`, using deterministic parsing that extracts the 3 sample letters exactly into the matching fixture offers. Unknown text returns every field as missing, never invented values. Add tests for all 3 letters.
 - [ ] `MockAIClient.explainStub`, a templated 3–4 sentence summary built only from engine numbers. Add a test.
 - [ ] `HttpAIClient`, which POSTs to `<supabaseUrl>/functions/v1/decode-offer` and `/functions/v1/explain-stub` with the publishable key header, and has a 20s timeout and a directive error message.

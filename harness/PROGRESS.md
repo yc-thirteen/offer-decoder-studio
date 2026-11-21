@@ -276,3 +276,15 @@ The engine index also re-exports `incomeTax`, `marginalRate`, `taxableIncome`, a
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 27 files/304 tests, build). a11y: 0 serious, 0 critical.
 Screens checked: yes, full shots (0 failed), plus one-off panel shots of chicago-vs-austin, new-grad-roth, high-earner-family, and one-income-family at 375 and 1280 (script deleted, not committed). scrollWidth equals the viewport in all 8. The first pass had a y axis up to 60%, the average label running through the steps and the 22% riser, and "$200,000$300,000" colliding at 375. Fixed with a 10-point rate grid sized to the top step, the average label placed past the marker (shortened to "Average 20.6%" when the long form doesn't fit), and compact "$100k" ticks under 480px. Left as is: at 375 the dashed average line passes through the "12%" label (the knockout outline keeps it legible), and long row labels wrap to two lines at 375.
 Next: Phase 5, `src/lib/ai/` types, AIClient interface, and the getAIClient() factory.
+
+## 2026-11-21T08:25:00Z | iteration 27
+Task: `src/lib/ai/` types, AIClient interface, and the getAIClient() factory.
+Result: done
+What changed: New `src/lib/ai/`:
+- `types.ts`: ExtractRequest ({text}), and `ExtractedField<T>` as a union, either {source:"letter", value} or {source:"missing", value:null, note}, so a missing field can't carry a guessed value. ExtractedOfferValues lists the 14 Offer fields a letter can state, and EXTRACT_FIELD_KEYS, ExtractedFields, and ExtractResult build on it. ExplainRequest (the mode, an ExplainOffer of engine numbers per offer, and the winner ids) and ExplainResult ({summary}). The file also has the AIClient interface (kind, extractOffer, explainStub, optional AbortSignal) and AIError.
+- `MockAIClient.ts` and `HttpAIClient.ts` (HttpAIConfig {supabaseUrl, publishableKey}) are placeholders whose methods reject with a directive AIError until their own BACKLOG tasks fill them in. They never fake success.
+- `index.ts`: aiConfigFromEnv(env) and getAIClient(env = import.meta.env). It uses VITE_SUPABASE_URL plus VITE_SUPABASE_PUBLISHABLE_KEY, or VITE_SUPABASE_ANON_KEY as a fallback. Values are trimmed and the trailing slash is dropped. The HTTP client is used only when both a URL and a key are present; otherwise the mock is used. 9 tests are in `index.test.ts`.
+- Decisions: the factory takes env as a parameter so tests don't depend on stubbing import.meta.env. The missing-field note lives on the field so the UI can show "No salary in this letter. Type it here." verbatim. ExplainRequest carries only engine numbers (CalcResult fields, the plan name, the match cap, and the checklist ids), so the explainer has nothing to compute. The request builder is left to the explainStub task.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 28 files/313 tests, build).
+Screens checked: no (no UI change).
+Next: MockAIClient.extractOffer, with deterministic parsing of the 3 sample letters.
