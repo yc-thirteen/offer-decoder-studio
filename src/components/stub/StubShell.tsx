@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 export function StubShell({ className, children, ...props }: ComponentProps<"section">) {
   return (
     <section
+      data-stub=""
       className={cn("relative min-w-0 flex-1 border border-ink bg-stub p-4 md:p-6", className)}
       {...props}
     >

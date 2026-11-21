@@ -55,6 +55,16 @@ export function tickMoney(v: number): string {
   return n < 0 ? `−${text}` : text;
 }
 
+/**
+ * The plot's left edge for a y axis whose tick labels end 8px left of it: wide enough for the
+ * widest label (13px tabular figures run about 8.4px a character in Public Sans), never less
+ * than `min`. Without it, "$10,000" and "−$2,000" hang past the chart's left edge.
+ */
+export function yAxisLeft(labels: readonly string[], min = 62): number {
+  const widest = Math.max(0, ...labels.map((l) => l.length));
+  return Math.max(min, Math.ceil(widest * 8.5 + 10));
+}
+
 /** [left, top, right, bottom] in px. */
 export type Box = [number, number, number, number];
 

@@ -473,3 +473,23 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 40 files/451 tests, build). a11y: serious 0, critical 0, keyboard problems 0.
 Screens checked: yes. I took one-off close-ups of focus on the recommended switch, the Annual segment, the selected checklist tab, a checklist box, and the sample select at 375. The carbon ring is visible and offset outside the carbon-filled controls. A full `npm run shots` run had 0 failures and no overflow warnings, and home-recommended-1280 looks the same as before. No issues found.
 Next: responsive pass at 375 and 768.
+
+## 2026-11-21T10:30:56Z | iteration 39
+Task: Responsive pass at 375 and 768: no horizontal scroll, and nothing overlapping the notches or the perforation.
+Result: done
+What changed: New `scripts/responsive.mjs` (`npm run responsive`) checks 18 views at 375, 768, and 1024 px. The views are defaults, recommended, per paycheck, About you open (375 only), the editor with errors, the letter reader and its review, the empty page, every other sample with recommended on, /method, the 404 page, and /dev/components. For each view it checks:
+- the page and every inner box: no sideways scroll
+- every visible text line and control: not off-screen, not cut off by a clipping ancestor, not on the perforation strip or its notches, and inside its stub's border
+- chart labels: inside their figure
+It starts with a self-test that plants one of each fault and fails the run if any goes unnoticed (5 of 5 caught).
+- `StubShell` and `Perforation` now carry the `data-stub` and `data-perforation` hooks the checker uses.
+- The one real problem it found: the health-cost and match charts started their plot at a fixed 62px. "$10,000", "$15,000", "$20,000", and "−$2,000" y labels hung 3–5px past the chart's left edge, at all three widths and on all 6 samples. New `yAxisLeft()` in `chartKit.ts` sizes the margin to the widest label. HealthCostChart settles it in two passes, because a narrower plot can wrap the line labels and so change the ticks.
+- MatchChart's marker titles keep 4px of slack at the right edge. "Recommended 5%" was 1px past the figure at 1024.
+- New tests cover yAxisLeft, and a chart test checks that Northfield's "−$2,000" y label clears the left edge.
+Decisions:
+- Added 1024 to the widths, because that is where the stubs first sit side by side with the least room.
+- Labels on an overflow-visible SVG are checked against their figure rather than the SVG box. Spilling past the SVG is fine as long as they stay in the figure.
+- I didn't add the responsive check to `verify`, because it needs a production build and a browser. It sits alongside `shots` and `a11y`.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 40 files/452 tests, build). responsive: 0 problems in all 52 view/width runs. a11y: serious 0, critical 0, keyboard problems 0.
+Screens checked: yes. shots had 0 failures and no overflow warnings. Close-ups: the health chart at 375 (y labels now inside), the match chart at 768, the Harbor Capital stub at 375 with recommended on (struck and new amounts fit, right edge clean), and the stacked perforation at 375 (notches clear, no text touching). No other issues found.
+Next: deflake the LetterReader "reads a pasted sample letter" focus test.

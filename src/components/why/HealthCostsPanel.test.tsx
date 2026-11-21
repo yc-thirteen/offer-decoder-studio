@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { breakpoints, planCost, worstCaseCost } from "@/lib/engine";
 import { SAMPLE_CASES, deriveView, initialDecoderState } from "@/state/decoderState";
 import { DecoderProvider } from "@/state/DecoderContext";
-import { niceTicks, spreadLabels, tickMoney } from "./chartKit";
+import { niceTicks, spreadLabels, tickMoney, yAxisLeft } from "./chartKit";
 import { healthChartData, lineLabel, spendWindow } from "./healthChart";
 import { HealthCostsPanel } from "./HealthCostsPanel";
 
@@ -29,6 +29,14 @@ describe("chartKit", () => {
   it("formats axis money with a true minus", () => {
     expect(tickMoney(-1000)).toBe("−$1,000");
     expect(tickMoney(15000)).toBe("$15,000");
+  });
+
+  it("starts the plot far enough right for the widest y label", () => {
+    // 6 characters fit the 62px default; "$10,000" and "−$2,000" (59px at 13px) need more.
+    expect(yAxisLeft(["$0", "$2,000", "$6,000"])).toBe(62);
+    const wide = yAxisLeft(["−$2,000", "$0", "$10,000"]);
+    expect(wide).toBeGreaterThanOrEqual(59 + 8 + 1);
+    expect(yAxisLeft(["$100,000"])).toBeGreaterThan(wide);
   });
 });
 
@@ -121,6 +129,12 @@ describe("HealthCostsPanel", () => {
     );
     expect(screen.getByRole("heading", { name: "Health plan costs" })).toBeInTheDocument();
     const chart = screen.getByRole("img", { name: /^Northfield Health: yearly cost/ });
+    // The HSA deposit takes the HDHP below $0, so "−$2,000" is a y label; the axis must clear it.
+    const yLabels = [...chart.querySelectorAll('text[text-anchor="end"]')].filter((t) =>
+      /^−?\$[\d,]+$/.test(t.textContent ?? ""),
+    );
+    expect(yLabels.map((t) => t.textContent)).toContain("−$2,000");
+    for (const t of yLabels) expect(Number(t.getAttribute("x"))).toBeGreaterThanOrEqual(59);
     const ppo = chart.querySelector('[data-plan-id="ppo"]')!;
     const hdhp = chart.querySelector('[data-plan-id="hdhp"]')!;
     expect(ppo.getAttribute("stroke")).toBe("var(--correction)");

@@ -7,7 +7,7 @@
  */
 import { formatMoney } from "@/components/stub";
 import { planCost } from "@/lib/engine";
-import { niceTicks, scale, spreadLabels, tickMoney } from "./chartKit";
+import { niceTicks, scale, spreadLabels, tickMoney, yAxisLeft } from "./chartKit";
 import { lineLabel, type HealthChartData, type PlanLineKind } from "./healthChart";
 import { useElementWidth } from "./useElementWidth";
 
@@ -34,8 +34,7 @@ export function HealthCostChart({ data, title }: { data: HealthChartData; title:
   const [ref, width] = useElementWidth<HTMLDivElement>(560);
   const W = Math.max(280, width);
   const H = W < 480 ? 260 : 300;
-  const m = { left: 62, right: 12, top: 30, bottom: 44 };
-  const x0 = m.left;
+  const m = { right: 12, top: 30, bottom: 44 };
   const x1 = W - m.right;
   const y0 = H - m.bottom;
   const y1 = m.top;
@@ -47,19 +46,32 @@ export function HealthCostChart({ data, title }: { data: HealthChartData; title:
     most: `at most ${formatMoney(l.worstCase)}`,
   }));
   const longest = Math.max(...labels.map((t) => t.name.length + t.most.length + 2));
-  const twoLine = longest * CHAR_PX > x1 - x0 - 8;
-  const labelGap = twoLine ? 32 : 16;
+  const twoLineAt = (left: number) => longest * CHAR_PX > x1 - left - 8;
   // Leave room above the highest line end for every line label, stacked labelGap apart.
   const topEnd = Math.max(...data.lines.map((l) => l.points[l.points.length - 1]![1]));
-  const room = n * labelGap + 8;
-  let yTicks = niceTicks(data.yMin, data.yMax, W < 480 ? 4 : 5);
-  for (let top = data.yMax, k = 0; k < 8; k++) {
-    const lo = yTicks[0]!;
-    const hi = yTicks[yTicks.length - 1]!;
-    if (((hi - topEnd) / (hi - lo || 1)) * (y0 - y1) >= room) break;
-    top *= 1.15;
-    yTicks = niceTicks(data.yMin, top, W < 480 ? 4 : 5);
+  const ticksFor = (gap: number) => {
+    const room = n * gap + 8;
+    let ticks = niceTicks(data.yMin, data.yMax, W < 480 ? 4 : 5);
+    for (let top = data.yMax, k = 0; k < 8; k++) {
+      const lo = ticks[0]!;
+      const hi = ticks[ticks.length - 1]!;
+      if (((hi - topEnd) / (hi - lo || 1)) * (y0 - y1) >= room) break;
+      top *= 1.15;
+      ticks = niceTicks(data.yMin, top, W < 480 ? 4 : 5);
+    }
+    return ticks;
+  };
+  // The plot starts where the widest y label fits. A narrower plot can push the line labels
+  // onto two lines, which can change the ticks, so settle it in a second pass.
+  let twoLine = twoLineAt(62);
+  let yTicks = ticksFor(twoLine ? 32 : 16);
+  let x0 = yAxisLeft(yTicks.map(tickMoney));
+  if (twoLineAt(x0) !== twoLine) {
+    twoLine = true;
+    yTicks = ticksFor(32);
+    x0 = Math.max(x0, yAxisLeft(yTicks.map(tickMoney)));
   }
+  const labelGap = twoLine ? 32 : 16;
   const yLo = yTicks[0] ?? data.yMin;
   const yHi = yTicks[yTicks.length - 1] ?? data.yMax;
   const x = scale(0, data.xMax, x0, x1);

@@ -55,6 +55,7 @@ export function Perforation({
   return (
     <div
       aria-hidden="true"
+      data-perforation=""
       data-orientation={orientation}
       className={cn(
         "flex shrink-0",

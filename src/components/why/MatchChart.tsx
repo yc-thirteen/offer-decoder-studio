@@ -6,7 +6,7 @@
  * pixel width so the 13px labels stay 13px on a phone.
  */
 import { formatMoney } from "@/components/stub";
-import { niceTicks, scale, tickMoney } from "./chartKit";
+import { niceTicks, scale, tickMoney, yAxisLeft } from "./chartKit";
 import type { MarkerKind, MatchChartData } from "./matchData";
 import { useElementWidth } from "./useElementWidth";
 
@@ -52,14 +52,16 @@ function place(text: string, x: number, y: number, anchor: "start" | "end", colo
 export function MatchChart({ data, title }: { data: MatchChartData; title: string }) {
   const [ref, width] = useElementWidth<HTMLDivElement>(560);
   const W = Math.max(280, width);
-  const x0 = 62;
+  const yTicks = niceTicks(0, data.yMax, W < 480 ? 4 : 5);
+  const x0 = yAxisLeft(yTicks.map(tickMoney));
   const x1 = W - 12;
   const x = scale(0, data.xMax, x0, x1);
 
   // Marker titles sit above the plot, beside their marker; two rows when they would collide.
   const titleAt = (pct: number, label: string, rowY: number): Placed => {
     const xm = x(pct);
-    const fitsRight = xm + 4 + label.length * CHAR_PX <= W;
+    // Titles are 600 weight, a little wider than CHAR_PX, so keep 4px of slack at the edge.
+    const fitsRight = xm + 4 + label.length * CHAR_PX <= W - 4;
     return place(label, fitsRight ? xm + 4 : xm - 4, rowY, fitsRight ? "start" : "end", "");
   };
   const oneRow = data.markers.map((mk) => titleAt(mk.pct, mk.label, 0));
@@ -69,7 +71,6 @@ export function MatchChart({ data, title }: { data: MatchChartData; title: strin
   const y0 = H - 44;
   const y1 = top;
 
-  const yTicks = niceTicks(0, data.yMax, W < 480 ? 4 : 5);
   const yHi = yTicks[yTicks.length - 1] ?? data.yMax;
   const y = scale(0, yHi, y0, y1);
   const xTicks: number[] = [];
