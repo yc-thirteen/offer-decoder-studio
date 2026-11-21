@@ -1,10 +1,11 @@
 /**
  * "Why these elections" (harness/DESIGN.md): panels on --stub that each open with the
- * conclusion, then the chart that shows it. Panels are added here as they are built.
+ * conclusion, then the chart that shows it.
  */
 import { HealthCostsPanel } from "./HealthCostsPanel";
 import { LifeInsurancePanel } from "./LifeInsurancePanel";
 import { MatchVestingPanel } from "./MatchVestingPanel";
+import { TaxPanel } from "./TaxPanel";
 
 export function WhyElections() {
   return (
@@ -16,6 +17,7 @@ export function WhyElections() {
         <HealthCostsPanel />
         <MatchVestingPanel />
         <LifeInsurancePanel />
+        <TaxPanel />
       </div>
     </section>
   );

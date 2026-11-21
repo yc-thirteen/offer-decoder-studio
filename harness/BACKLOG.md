@@ -36,7 +36,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [x] Health plan costs chart (SVG, from the engine's breakpoints, dominated plans dashed red, recommended in carbon, an expected-spending marker, direct labels).
 - [x] Match and vesting chart, plus the vesting timeline for years 0–6.
 - [x] Life insurance panel, shown only with dependents (risk aversion and markup sliders that recompute live).
-- [ ] Marginal vs average tax panel.
+- [x] Marginal vs average tax panel.
 
 ## Phase 5: AI features (mock first)
 - [ ] `src/lib/ai/`: `types.ts` (ExtractRequest, ExtractResult with per-field `source: "letter" | "missing"`, and ExplainRequest/ExplainResult), an `AIClient` interface, and a `getAIClient()` factory. The factory returns the HTTP client when the env vars for the Lovable Cloud (Supabase) URL and publishable key are present (check `VITE_SUPABASE_URL`, plus `VITE_SUPABASE_PUBLISHABLE_KEY` or `VITE_SUPABASE_ANON_KEY`), and the mock otherwise.

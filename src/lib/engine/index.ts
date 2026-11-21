@@ -33,6 +33,7 @@ export {
   type LifeParams,
 } from "./life";
 export { isReady, recommend } from "./recommend";
+export { federalTaxOnJob, incomeTax, marginalRate, taxableIncome } from "./tax";
 export {
   employee401kDollars,
   employerMatch,
