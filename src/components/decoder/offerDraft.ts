@@ -42,15 +42,18 @@ export interface OfferDraft {
   id: string;
   employer: string;
   city: string;
-  state: StateCode;
+  /** "" until chosen (a letter that doesn't name the state). */
+  state: StateCode | "";
   customStatePct: string;
   customStateExact?: number | undefined;
   salary: string;
   payPeriods: string;
   defaultEmployeePct: string;
-  rothAvailable: boolean;
+  /** null until chosen (a letter that doesn't say). */
+  rothAvailable: boolean | null;
   tiers: TierDraft[];
-  vestingType: VestingType;
+  /** "" until chosen (a letter that doesn't say). */
+  vestingType: VestingType | "";
   cliffYears: string;
   steps: StepDraft[];
   plans: PlanDraft[];
@@ -82,12 +85,46 @@ function pctToRate(text: string, exact: number | undefined, typed: number): numb
   return exact !== undefined && text.trim() === rateToPct(exact) ? exact : typed / 100;
 }
 
-function num(n: number): string {
+/** 6 → "6", 0.33333 → "0.3333": a plain number as typed text. */
+export function num(n: number): string {
   return String(Number(n.toFixed(4)));
 }
 
+export function tierDrafts(match: readonly MatchTier[]): TierDraft[] {
+  return match.map((t) => ({
+    key: newKey("tier"),
+    ratePct: rateToPct(t.rate),
+    rateExact: t.rate,
+    upToPct: num(t.upToPct),
+  }));
+}
+
+export function vestingDraft(v: Vesting): Pick<OfferDraft, "vestingType" | "cliffYears" | "steps"> {
+  return {
+    vestingType: v.type,
+    cliffYears: v.type === "cliff" ? String(v.years) : "3",
+    steps:
+      v.type === "graded"
+        ? v.schedule.map((s) => ({ key: newKey("step"), year: String(s.year), pct: num(s.pct) }))
+        : [],
+  };
+}
+
+export function planDrafts(plans: readonly HealthPlan[]): PlanDraft[] {
+  return plans.map((p) => ({
+    id: p.id,
+    name: p.name,
+    hsaEligible: p.hsaEligible,
+    premium: groupDigits(p.premium),
+    deductible: groupDigits(p.deductible),
+    coinsurancePct: rateToPct(p.coinsurance),
+    coinsuranceExact: p.coinsurance,
+    oopMax: groupDigits(p.oopMax),
+    employerHsa: groupDigits(p.employerHsa),
+  }));
+}
+
 export function draftFromOffer(offer: Offer): OfferDraft {
-  const v = offer.retirement.vesting;
   return {
     id: offer.id,
     employer: offer.employer,
@@ -99,29 +136,9 @@ export function draftFromOffer(offer: Offer): OfferDraft {
     payPeriods: String(offer.payPeriods),
     defaultEmployeePct: num(offer.retirement.defaultEmployeePct),
     rothAvailable: offer.retirement.rothAvailable,
-    tiers: offer.retirement.match.map((t) => ({
-      key: newKey("tier"),
-      ratePct: rateToPct(t.rate),
-      rateExact: t.rate,
-      upToPct: num(t.upToPct),
-    })),
-    vestingType: v.type,
-    cliffYears: v.type === "cliff" ? String(v.years) : "3",
-    steps:
-      v.type === "graded"
-        ? v.schedule.map((s) => ({ key: newKey("step"), year: String(s.year), pct: num(s.pct) }))
-        : [],
-    plans: offer.healthPlans.map((p) => ({
-      id: p.id,
-      name: p.name,
-      hsaEligible: p.hsaEligible,
-      premium: groupDigits(p.premium),
-      deductible: groupDigits(p.deductible),
-      coinsurancePct: rateToPct(p.coinsurance),
-      coinsuranceExact: p.coinsurance,
-      oopMax: groupDigits(p.oopMax),
-      employerHsa: groupDigits(p.employerHsa),
-    })),
+    tiers: tierDrafts(offer.retirement.match),
+    ...vestingDraft(offer.retirement.vesting),
+    plans: planDrafts(offer.healthPlans),
     defaultPlanId: offer.defaultPlanId,
     basicMultiple: num(offer.life.basicMultiple),
     supplementalMaxMultiple: num(offer.life.supplementalMaxMultiple),
@@ -206,6 +223,10 @@ export function validateDraft(d: OfferDraft): { offer: Offer | null; errors: Dra
   if (!employer) errors["employer"] = "Type the employer's name.";
   const city = d.city.trim();
   if (!city) errors["city"] = "Type the city, or Remote.";
+  if (d.state === "") errors["state"] = "Choose the state the job is taxed in.";
+  if (d.rothAvailable === null)
+    errors["rothAvailable"] = "Choose whether the plan offers a Roth 401(k).";
+  if (d.vestingType === "") errors["vestingType"] = "Choose when the match vests.";
 
   const salary = check(
     "salary",
@@ -381,7 +402,9 @@ export function validateDraft(d: OfferDraft): { offer: Offer | null; errors: Dra
     "Type the most extra coverage you can buy as a multiple of salary, 0 to 10.",
   );
 
-  if (Object.keys(errors).length > 0) return { offer: null, errors };
+  if (Object.keys(errors).length > 0 || d.state === "" || d.rothAvailable === null) {
+    return { offer: null, errors };
+  }
 
   const offer: Offer = {
     id: d.id,

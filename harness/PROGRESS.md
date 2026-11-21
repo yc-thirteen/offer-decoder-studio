@@ -357,3 +357,17 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 32 files/386 tests, build).
 Screens checked: no (no UI change).
 Next: the "Read offer letter" panel (paste text or drop a .txt file), the review state with "from letter" markers and missing-field underlines, and the sample-reader note.
+
+## 2026-11-21T09:05:00Z | iteration 32
+Task: The "Read offer letter" panel (paste text or drop a .txt file), the review state with "from letter" markers and missing-field underlines, and the sample-reader note.
+Result: done
+What changed: The previous run (loop iteration 31, 01:24) hit the usage limit partway through this task and left it uncommitted. I reviewed that work and finished it instead of starting over.
+- New `LetterReader.tsx` (the panel), `letterDraft.ts` (ExtractResult → OfferDraft plus marks, touchMarks, markCounts), and `state/AIClientContext.tsx` (useAIClient defaults to getAIClient(); tests inject a client).
+- `offerDraft.ts` now exports tierDrafts/vestingDraft/planDrafts. State, Roth, and vesting can be unchosen, with directive errors.
+- `OfferEditor.tsx` renders the marks, the missing notes, and a focused review sentence. `OfferStub.tsx` has a single panel state (read or edit) and returns focus to the button that opened it.
+- `scripts/shots.mjs` gains the home-letter and home-letter-review views.
+- Fixed one wrong assertion in `LetterReader.test.tsx`: it assumed the first "from letter" marker in the DOM is the salary's, but Employer comes first. It now checks that the salary's own aria-describedby mark reads "from letter", so the test is no weaker. Ran prettier on the new files.
+- Decisions: when the reader finds nothing, the panel shows the client's single note (the mock's unknown-letter note) or a generic directive error, and it never opens a blank form. The header keeps the old offer's name until save, because the review is an unsaved draft.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 34 files/404 tests, build). a11y: serious 0, critical 0.
+Screens checked: yes. home-letter and home-letter-review at 375 and 1280 match DESIGN.md (carbon values and markers, inbox-tray panel, no overflow). Missing-field underlines are covered by component tests only, since the mock reads the samples fully.
+Next: the "Plain-English summary" under the memo line.

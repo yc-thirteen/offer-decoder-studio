@@ -123,6 +123,38 @@ const VIEWS = [
         .click();
     },
   },
+  // Not in HARNESS.md's list: the "Read offer letter" panel open on the first stub.
+  {
+    name: "home-letter",
+    path: "/",
+    run: (page) =>
+      clickIfPresent(
+        page,
+        page.getByRole("button", { name: /^read offer letter$/i }),
+        "Read offer letter button",
+      ),
+  },
+  // Not in HARNESS.md's list: the review state after the reader reads a sample letter.
+  {
+    name: "home-letter-review",
+    path: "/",
+    run: async (page) => {
+      if (
+        !(await clickIfPresent(
+          page,
+          page.getByRole("button", { name: /^read offer letter$/i }),
+          "Read offer letter button",
+        ))
+      )
+        return;
+      await page.getByRole("button", { name: "Lakeshore Systems" }).first().click();
+      await page
+        .getByRole("button", { name: /^read offer letter$/i })
+        .first()
+        .click();
+      await page.getByLabel("Yearly salary").first().waitFor();
+    },
+  },
   // Not in HARNESS.md's list: a sample where someone depends on your income, so the life
   // insurance panel shows (it is hidden for the first sample).
   { name: "home-life", path: "/", run: (page) => loadSample(page, "one-income-family") },

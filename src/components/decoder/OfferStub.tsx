@@ -18,8 +18,20 @@ import {
   stateTaxRowLabel,
   vestingNote,
 } from "./stubFormat";
+import { LetterReader } from "./LetterReader";
+import type { LetterReview } from "./letterDraft";
 import { OfferEditor } from "./OfferEditor";
 import { blankDraft, draftFromOffer } from "./offerDraft";
+
+interface Panel {
+  /** The offer on the stub when the panel opened. */
+  for: Offer | null;
+  kind: "read" | "edit";
+  /** Which header button opened the flow; focus returns to it. */
+  origin: "read" | "edit";
+  /** The reader's draft and marks, when the editor opened from a letter. */
+  review?: LetterReview;
+}
 
 type NumericKey = {
   [K in keyof CalcResult]: CalcResult[K] extends number ? K : never;
@@ -37,7 +49,7 @@ function StubHeader({
 }: {
   view: StubView;
   headingId: string;
-  /** "Edit offer" (or "Fill in offer"), with "Offer saved" beside it after a save. */
+  /** "Read offer letter" and "Edit offer" (or "Fill in offer"), with "Offer saved" after a save. */
   action?: ReactNode;
 }) {
   const position = `Offer ${view.slot + 1} of 2`;
@@ -47,8 +59,10 @@ function StubHeader({
         {view.offer ? view.offer.employer : position}
       </h2>
       {view.offer ? <span className="text-sm text-ink-soft">{position}</span> : <span />}
-      <span className="text-sm text-ink-soft">{view.offer ? placeText(view.offer) : null}</span>
-      <span className="justify-self-end">{action}</span>
+      {view.offer ? (
+        <span className="col-span-2 text-sm text-ink-soft">{placeText(view.offer)}</span>
+      ) : null}
+      <span className="col-span-2 mt-1">{action}</span>
     </div>
   );
 }
@@ -220,52 +234,71 @@ export function OfferStub({
 }) {
   const headingId = `offer-stub-${view.slot + 1}`;
   const { offer, result, error } = view;
-  // The editor belongs to the offer it opened on: loading a sample or clearing closes it.
-  const [editingFor, setEditingFor] = useState<{ offer: Offer | null } | null>(null);
-  const editing = editingFor !== null && editingFor.offer === offer;
+  // A panel belongs to the offer it opened on: loading a sample or clearing closes it.
+  // "read" is the letter panel; "edit" is the editor, in its review state after a letter.
+  const [panel, setPanel] = useState<Panel | null>(null);
+  const open = panel !== null && panel.for === offer ? panel : null;
   const [savedOffer, setSavedOffer] = useState<Offer | null>(null);
   const justSaved = savedOffer !== null && savedOffer === offer;
-  const editButton = useRef<HTMLButtonElement>(null);
-  const returnFocus = useRef(false);
+  const buttons = { read: useRef<HTMLButtonElement>(null), edit: useRef<HTMLButtonElement>(null) };
+  const returnFocus = useRef<"read" | "edit" | null>(null);
 
   useEffect(() => {
-    // Back from the editor: focus the button that opened it.
-    if (!editing && returnFocus.current) {
-      returnFocus.current = false;
-      editButton.current?.focus();
+    // Back from a panel: focus the button that opened it.
+    if (!open && returnFocus.current) {
+      buttons[returnFocus.current].current?.focus();
+      returnFocus.current = null;
     }
-  }, [editing]);
+  });
 
   const leave = () => {
-    returnFocus.current = true;
-    setEditingFor(null);
+    returnFocus.current = open?.origin ?? "edit";
+    setPanel(null);
   };
 
+  const button = "h-10 border border-ink bg-stub px-3 font-semibold";
   const action = (
-    <span className="flex flex-wrap items-baseline justify-end gap-x-3">
+    <span className="flex flex-wrap items-center gap-x-3 gap-y-2">
+      {open ? null : (
+        <>
+          <button
+            ref={buttons.read}
+            type="button"
+            onClick={() => setPanel({ for: offer, kind: "read", origin: "read" })}
+            className={button}
+          >
+            Read offer letter
+          </button>
+          <button
+            ref={buttons.edit}
+            type="button"
+            onClick={() => setPanel({ for: offer, kind: "edit", origin: "edit" })}
+            className={button}
+          >
+            {offer ? "Edit offer" : "Fill in offer"}
+          </button>
+        </>
+      )}
       {/* Always mounted, so the change to "Offer saved" is announced. */}
       <span role="status" className="text-sm font-semibold text-carbon">
-        {justSaved && !editing ? "Offer saved" : ""}
+        {justSaved && !open ? "Offer saved" : ""}
       </span>
-      {editing ? null : (
-        <button
-          ref={editButton}
-          type="button"
-          onClick={() => setEditingFor({ offer })}
-          className="h-10 border border-ink bg-stub px-3 font-semibold"
-        >
-          {offer ? "Edit offer" : "Fill in offer"}
-        </button>
-      )}
     </span>
   );
 
   return (
     <StubShell aria-labelledby={headingId} data-slot={view.slot}>
       <StubHeader view={view} headingId={headingId} action={action} />
-      {editing ? (
+      {open?.kind === "read" ? (
+        <LetterReader
+          slot={view.slot}
+          onRead={(review) => setPanel({ for: offer, kind: "edit", origin: "read", review })}
+          onCancel={leave}
+        />
+      ) : open ? (
         <OfferEditor
-          initial={offer ? draftFromOffer(offer) : blankDraft(view.slot)}
+          initial={open.review?.draft ?? (offer ? draftFromOffer(offer) : blankDraft(view.slot))}
+          marks={open.review?.marks}
           onSave={(next) => {
             onSave(next);
             setSavedOffer(next);
