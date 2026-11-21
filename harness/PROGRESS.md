@@ -676,3 +676,15 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/479 tests, build).
 Screens checked: yes. Looked at home recommended at 1280 (4 slices) and 375, home defaults at 768, empty at 375, plus contact sheets of every chart crop at 375. Issues: the tax chart collisions above.
 Next: the TaxChart label collision task from critique round 3.
+
+## 2026-11-21T15:55:00Z | iteration 52
+Task: Rubric 6. In `TaxChart.tsx`, keep the rate and average labels off the average line, the marker, and the staircase at 375, and add a rendered sweep in `TaxPanel.test.tsx`.
+Result: done
+What changed: `TaxChart` now keeps a list of obstacles: every staircase step and riser (±1.5px), the marker (±4px) and its title, and the average line (±1.5px). Each rate label tries its whole step, then the part left of the marker, then the part right of it. On each part it tries its usual spot, then just above the average line. A non-yours label with no clear spot is left off. The average label tries one line right of the marker (level with the line's end, or just under your step when that's close), then the short text, then two lines ("Average" / "21.3%") right of the marker, then the long and short text above or below the line's left end. Every spot must clear all the obstacles. The two-line spot renders as two `<text>` elements. The new sweep in `TaxPanel.test.tsx` covers every sample, both election modes, and 300/420/560/700px. It checks that no rate or average label box touches a step, a riser, the marker, or the average line, and that your own rate label is always drawn. On the old chart it failed in 90+ places (the marker through your own rate in most samples, at every width, plus the ones round 3 found). It passes now.
+Decisions:
+- The task asked for the left part only when the marker splits your step. I also allow the right (dashed) part, because at 375 "24%" doesn't fit left of the marker in chicago-vs-austin, and your own rate must always be written. It stays carbon on your own step.
+- Low-bracket labels that the average line crossed (for example "10%" in university-staff and plan-crossover offer 2 at 768) now sit just above the average line, centered on their step, up to ~17px higher than usual. The dashed line passes between the label and its step, but the line has its own label, so I kept them rather than dropping them.
+- I moved the marker title calculation above label placement so the title counts as an obstacle. Its output is unchanged.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/483 tests, build). a11y: serious 0, critical 0, keyboard problems 0.
+Screens checked: yes. `npm run shots` (0 failed), plus 2x crops of every tax chart for all 6 samples at 375, 768, and 1280, using the ignored scratch `harness/shots/crops/croptax.mjs` and contact sheets. Every chart at every width is clear. High-earner-family offer 2 now reads "Average 21.3%" right of the marker, under the 24% step. Issues: none new.
+Next: the backlog is empty, so next comes critique round 4.

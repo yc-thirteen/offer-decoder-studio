@@ -86,54 +86,89 @@ export function TaxChart({
     return pts.join(" ");
   })();
 
-  // Rate labels sit above each step, where the step is wide enough to hold them.
+  const markerText = `${household ? "Household taxable income" : "Your taxable income"}, ${formatMoney(data.taxable)}`;
+  const markerW = markerText.length * CHAR_PX;
+  const markerAnchor: "start" | "end" = xt + 4 + markerW <= W ? "start" : "end";
+  const markerX = markerAnchor === "start" ? xt + 4 : Math.max(xt - 4, markerW);
+
+  // Everything a label must not touch: the staircase (steps and risers), the marker and its
+  // title, and the average line. Lines are padded 1.5px each side (they draw 1.5–2px wide);
+  // the marker 4px, so a label never hugs it.
+  const ya = y(data.averagePct);
+  const hasAverage = data.taxable > 0 && data.averagePct > 0;
+  const obstacles: Box[] = [
+    [xt - 4, y1 - 8, xt + 4, y0],
+    textBox(markerText, markerX, y1 - 12, markerAnchor),
+  ];
+  segs.forEach(({ a, b, yy }, i) => {
+    obstacles.push([a, yy - 1.5, b, yy + 1.5]);
+    const prev = segs[i - 1];
+    if (prev) obstacles.push([a - 1.5, Math.min(prev.yy, yy), a + 1.5, Math.max(prev.yy, yy)]);
+  });
+  if (hasAverage) obstacles.push([x0, ya - 1.5, xt, ya + 1.5]);
+  const blocked = (box: Box) => box[1] < 0 || obstacles.some((o) => overlaps(o, box));
+
+  // Rate labels sit above each step, centered on it, or on the part left or right of your
+  // income when the marker splits it. When the average line runs through that spot, the label
+  // lifts just above the line. A label with no clear spot is left off (the y axis has the rate).
   const rateLabels: Label[] = [];
   for (const { s, a, b, yy } of segs) {
     const r = pct(s.rate * 100);
     const color = s.yours ? "var(--carbon)" : "var(--ink)";
     const tries = s.yours ? [`${r} marginal`, r] : [r];
+    const spans: [number, number][] = [[a, b]];
+    if (a < xt && xt < b) spans.push([a, xt], [xt, b]);
+    const ys = [yy - 8, ya - 5].filter((v) => v <= yy - 8);
+    let placed: Label | undefined;
     for (const text of tries) {
-      const l = centered(text, (a + b) / 2, yy - 8, color, s.yours);
-      if (l.box[2] - l.box[0] + 6 <= b - a && l.box[1] >= 0) {
-        rateLabels.push(l);
-        break;
+      for (const [l, rr] of spans) {
+        for (const yb of ys) {
+          const lab = centered(text, (l + rr) / 2, yb, color, s.yours);
+          if (lab.box[0] >= l + 3 && lab.box[2] <= rr - 3 && !blocked(lab.box)) {
+            placed = lab;
+            break;
+          }
+        }
+        if (placed) break;
       }
+      if (placed) break;
     }
+    if (placed) rateLabels.push(placed);
   }
 
   // The average line runs from the axis to your income. Its label sits just past the marker,
-  // in the empty space under the dashed steps (the average is below the marginal rate).
-  // Where it doesn't fit there, it goes above or below the line's left end, and any
-  // lower-bracket label it would collide with is dropped.
-  let average: Label | null = null;
+  // in the empty space under the dashed steps (the average is below the marginal rate), on two
+  // lines when one is too wide. Where it doesn't fit there, it goes above or below the line's
+  // left end. Every spot must clear the lines; one that only covers a lower-bracket rate label
+  // drops that label.
+  let average: Label[] = [];
   let shown = rateLabels;
-  if (data.taxable > 0 && data.averagePct > 0) {
-    const ya = y(data.averagePct);
-    const text = `Average ${pct(data.averagePct)} of your pay`;
-    const at = (xx: number, yy: number, t = text): Label => {
+  if (hasAverage) {
+    const long = `Average ${pct(data.averagePct)} of your pay`;
+    const short = `Average ${pct(data.averagePct)}`;
+    const at = (t: string, xx: number, yy: number): Label => {
       const b = textBox(t, xx, yy, "start");
       return { text: t, x: xx, y: yy, anchor: "start", color: "var(--ink)", box: b, yours: false };
     };
-    const clear = (l: Label) => !rateLabels.some((r) => overlaps(r.box, l.box));
     const ownY = segs.find((sg) => sg.s.yours)?.yy ?? y1;
-    const fitsRight = (l: Label) =>
-      l.box[2] <= x1 && l.box[1] > ownY + 2 && l.box[3] < y0 - 2 && clear(l);
-    const right = [at(xt + 6, ya + 4), at(xt + 6, ya + 4, `Average ${pct(data.averagePct)}`)].find(
-      fitsRight,
-    );
-    const above = at(x0 + 6, ya - 7);
-    const below = at(x0 + 6, ya + 17);
-    if (right) average = right;
-    else if (clear(above)) average = above;
-    else if (below.y < y0 - 2 && clear(below)) average = below;
-    else average = above;
-    shown = rateLabels.filter((r) => r.yours || !overlaps(r.box, average!.box));
+    // Right of the marker: level with the line's end, or just under your step when it's close.
+    const ry = Math.max(ya + 4, ownY + 16.5);
+    const candidates: Label[][] = [
+      [at(long, xt + 6, ry)],
+      [at(short, xt + 6, ry)],
+      [at("Average", xt + 6, ry), at(pct(data.averagePct), xt + 6, ry + 16)],
+      ...[long, short].flatMap((t) => [[at(t, x0 + 6, ya - 7)], [at(t, x0 + 6, ya + 17)]]),
+    ];
+    const fits = (ls: Label[]) =>
+      ls.every((l) => l.box[2] <= x1 && l.box[3] < y0 - 2 && !blocked(l.box));
+    const covers = (ls: Label[], r: Label) => ls.some((l) => overlaps(l.box, r.box));
+    const pick =
+      candidates.find((ls) => fits(ls) && !rateLabels.some((r) => covers(ls, r))) ??
+      candidates.find((ls) => fits(ls) && !rateLabels.some((r) => r.yours && covers(ls, r))) ??
+      candidates[0]!;
+    average = pick;
+    shown = rateLabels.filter((r) => r.yours || !covers(pick, r));
   }
-
-  const markerText = `${household ? "Household taxable income" : "Your taxable income"}, ${formatMoney(data.taxable)}`;
-  const markerW = markerText.length * CHAR_PX;
-  const markerAnchor: "start" | "end" = xt + 4 + markerW <= W ? "start" : "end";
-  const markerX = markerAnchor === "start" ? xt + 4 : Math.max(xt - 4, markerW);
 
   return (
     <div ref={ref} className="w-full">
@@ -231,7 +266,7 @@ export function TaxChart({
         />
 
         {/* Average rate on your pay */}
-        {average && (
+        {average.length > 0 && (
           <g data-average={data.averagePct}>
             <line
               x1={x0}
@@ -242,9 +277,11 @@ export function TaxChart({
               strokeWidth={1.5}
               strokeDasharray="6 4"
             />
-            <text x={average.x} y={average.y} fill={average.color} fontWeight={600} {...HALO}>
-              {average.text}
-            </text>
+            {average.map((l) => (
+              <text key={l.text} x={l.x} y={l.y} fill={l.color} fontWeight={600} {...HALO}>
+                {l.text}
+              </text>
+            ))}
           </g>
         )}
 

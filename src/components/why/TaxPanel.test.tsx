@@ -1,9 +1,10 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { ClearOffersButton, RecommendedSwitch } from "@/components/decoder/DecoderHeader";
 import { BRACKETS, federalTaxOnJob, marginalRate, type CalcResult } from "@/lib/engine";
 import { SAMPLE_CASES, deriveView, initialDecoderState } from "@/state/decoderState";
 import { DecoderProvider } from "@/state/DecoderContext";
+import { CHAR_PX, type Box } from "./chartKit";
 import { taxChartData } from "./taxData";
 import { TaxPanel } from "./TaxPanel";
 
@@ -220,4 +221,108 @@ describe("TaxPanel", () => {
     expect(within(figure).getByRole("img")).toHaveTextContent("Household taxable income, $326,200");
     expect(within(figure).getByText("Tax on your spouse's wages alone")).toBeInTheDocument();
   });
+});
+
+describe("the labels on the tax chart", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  /** Make every chart measure `width` px, as a ResizeObserver would in a browser. */
+  function stubWidth(width: number) {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(private cb: (e: { contentRect: { width: number } }[]) => void) {}
+        observe() {
+          this.cb([{ contentRect: { width } }]);
+        }
+        disconnect() {}
+      },
+    );
+  }
+
+  /** The estimated box of a 13px label, as the chart lays it out. */
+  function boxOf(t: Element): Box {
+    const w = t.textContent!.length * CHAR_PX;
+    const x = Number(t.getAttribute("x"));
+    const y = Number(t.getAttribute("y"));
+    const anchor = t.getAttribute("text-anchor") ?? "start";
+    const l = anchor === "middle" ? x - w / 2 : anchor === "end" ? x - w : x;
+    return [l, y - 13, l + w, y + 3];
+  }
+
+  type Seg = [number, number, number, number];
+
+  /** The straight runs of an "M x y L x y …" path, risers included. */
+  function segments(d: string): Seg[] {
+    const pts = [...d.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)].map((m) => [
+      Number(m[1]),
+      Number(m[2]),
+    ]);
+    const out: Seg[] = [];
+    for (let k = 1; k < pts.length; k++) out.push([...pts[k - 1]!, ...pts[k]!] as Seg);
+    return out;
+  }
+
+  /** Whether an axis-aligned line, drawn ~2px wide, touches the box. */
+  function touches([ax, ay, bx, by]: Seg, [l, t, r, b]: Box): boolean {
+    const [lx, hx] = [Math.min(ax, bx), Math.max(ax, bx)];
+    const [ly, hy] = [Math.min(ay, by), Math.max(ay, by)];
+    return lx < r + 1 && hx > l - 1 && ly < b + 1 && hy > t - 1;
+  }
+
+  for (const width of [300, 420, 560, 700]) {
+    it(`keeps every rate and the average off the lines at ${width}px`, () => {
+      stubWidth(width);
+      for (const sample of SAMPLE_CASES) {
+        for (const mode of ["default", "recommended"] as const) {
+          const { unmount, container } = render(
+            <DecoderProvider initialSampleId={sample.id}>
+              {mode === "recommended" && <RecommendedSwitch />}
+              <TaxPanel />
+            </DecoderProvider>,
+          );
+          if (mode === "recommended") {
+            fireEvent.click(screen.getByRole("switch", { name: "Use recommended elections" }));
+          }
+          const charts = [...container.querySelectorAll("svg[role=img]")];
+          expect(charts.length).toBeGreaterThan(0);
+          charts.forEach((svg, n) => {
+            const where = `${sample.id} ${mode} offer ${n + 1} at ${width}px`;
+            const lines: [string, Seg][] = [];
+            svg.querySelectorAll("[data-stairs]").forEach((p) => {
+              for (const sg of segments(p.getAttribute("d")!)) lines.push(["a step", sg]);
+            });
+            const marker = svg.querySelector("[data-marker]")!;
+            const mx = Number(marker.getAttribute("x1"));
+            lines.push([
+              "the marker",
+              [mx, Number(marker.getAttribute("y1")), mx, Number(marker.getAttribute("y2"))],
+            ]);
+            const avgLine = svg.querySelector("[data-average] line");
+            if (avgLine) {
+              const ay = Number(avgLine.getAttribute("y1"));
+              lines.push([
+                "the average line",
+                [Number(avgLine.getAttribute("x1")), ay, Number(avgLine.getAttribute("x2")), ay],
+              ]);
+            }
+            const labels = [
+              ...svg.querySelectorAll("[data-rate-label]"),
+              ...svg.querySelectorAll("[data-average] text"),
+            ];
+            expect(labels.length, where).toBeGreaterThan(0);
+            // Your own rate is always written.
+            expect(svg.querySelector("[data-rate-label='yours']"), where).not.toBeNull();
+            for (const t of labels) {
+              const box = boxOf(t);
+              for (const [what, sg] of lines) {
+                expect(touches(sg, box), `${where}: "${t.textContent}" on ${what}`).toBe(false);
+              }
+            }
+          });
+          unmount();
+        }
+      }
+    });
+  }
 });
