@@ -63,3 +63,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 
 ## Critique rounds
 (The harness adds tasks here; see Self-improvement in HARNESS.md.)
+
+### Critique round 1 (2026-11-21)
+- [ ] Rubric 6: in `src/components/why/MatchChart.tsx` (line ~95) the "Employer match per year" label at the top left is crossed by the default-% marker line whenever the default sits under the label (both chicago-vs-austin charts at 1280: "Employer match p|er year"). Place the label so its box clears every marker's x (e.g. start it past the rightmost marker it would hit, or drop it below the marker titles in the free band left of the first marker), and add a test in `MatchVestingPanel.test.tsx` that the label's estimated box doesn't contain any marker x.
+- [ ] Rubric 6: in `src/components/why/HealthCostChart.tsx` the cost label beside the expected-spending dot ("$3,200" on Northfield's dashed PPO 500 line, "$3,000" on Lakeshore's PPO 1000 line, chicago-vs-austin at 1280) is drawn across its own plan line. Offset each dot label away from the line using its slope at the dot (above-left when the line rises to the right, below-right as the fallback), keep it clear of the other plan's label, and add a test in `HealthCostsPanel.test.tsx` that no dot label's box intersects its own line segment.

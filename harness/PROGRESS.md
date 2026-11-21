@@ -547,3 +547,26 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/459 tests, build). Stress: 3 full suites run at once all passed, 459/459 each.
 Screens checked: no. This is a test-only change.
 Next: the backlog is empty, so next comes critique round 1 (fresh shots, a11y, and rubric scores).
+
+## 2026-11-21T11:40:00Z | iteration 44
+Task: Critique round 1. Every backlog task was checked off and none were blocked.
+Result: done
+What changed: Took fresh shots (0 failed) and ran a11y and responsive. Scored the rubric and added two chart tasks to BACKLOG under "Critique round 1". No product code changed.
+Scores (0–2):
+1. Reads as a pay stub at 1280 and 375: 2. Header rule, square bordered stubs, notched perforation, boxed net pay and bottom line. Stubs stack at 375 with a horizontal perforation.
+2. Banned items absent: 2. No shadows, gradients, rounding, all-caps, arrows, emoji, monospace, or decorative icons in any shot.
+3. Right edge and tabular figures: 2. Struck and new amounts share one right edge, and at 375 the new amount wraps under the struck one, still right-aligned.
+4. Memo most prominent after the stubs: 2. It's 28/800 with room around it on the check-style underline.
+5. Correction legible with recommended on: 2. Red strike plus carbon new amount on every changed line and on both totals.
+6. Charts follow the rules: 1. Labels are direct and there are no legends, but two labels collide with lines (chicago-vs-austin at 1280): MatchChart's "Employer match per year" is crossed by the default-% marker, and HealthCostChart's spending-dot labels ("$3,200", "$3,000") sit on their own plan line.
+7. AA, focus, axe: 2. a11y: serious 0, critical 0, keyboard problems 0 across 4 walks.
+8. No sideways scroll, nothing on notches or perforation: 2. responsive: 0 problems in every view at 375/768/1024.
+9. Copy rules: 2. Sentence case, buttons say what they do, no filler. The checklist and summary read naturally.
+10. Empty and error states: 2. Empty stubs keep their labels with the direction sentence, the memo gives direction, the editor and reader errors are directive, and there's a 404 page.
+Decisions:
+- At 375 the controls wrap into four rows, not the two DESIGN.md mentions. Sample select + Load sample + Clear offers + the toggle + the switch can't fit in two rows at 375 without shrinking text below the scale. Each row is clean, so I left it and didn't add a task.
+- The 16rem sample select cuts off the selected title at 1280 ("Same job, two cities: the def"). Iteration 22 narrowed it to keep the controls on one row, and the titles are fixture text the README test checks, so I didn't add a task. The open list shows full titles.
+- No blocked tasks to retry.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/459 tests, build).
+Screens checked: yes. Looked at home defaults/recommended/life at 1280, recommended and empty at 375, letter review at 768, method at 375, plus full-resolution crops of the health and match charts. Issues: the two chart label collisions above.
+Next: the MatchChart label task from critique round 1.
