@@ -109,3 +109,12 @@ What changed: New `src/lib/engine/life.ts`: humanCapital (growing annuity; r = g
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 12 files/178 tests, build)
 Screens checked: no (no UI change)
 Next: `runCase()` in `index.ts` plus `fixtures.test.ts` against expected.json.
+
+## 2026-11-21T04:59:08Z | iteration 12
+Task: `runCase()` in `index.ts`, plus `fixtures.test.ts` comparing every field of every case to `harness/fixtures/expected.json` (within $1, ids exact, booleans exact).
+Result: done
+What changed: New `src/lib/engine/index.ts`: runOffer() and runCase() mirroring engine.py run_case (cost curves and max match % rounded with r2; checklist reuses the precomputed elections/default calc; winner = highest bottom line, first offer wins a tie like Python's max). It also re-exports the engine's public API so the UI imports only from `@/lib/engine`.
+- `fixtures.test.ts`: a recursive diff over all 6 cases and 12 offers. The key sets must match exactly (no missing or extra fields) and array lengths are exact. Strings and booleans are exact. Dollars use the fixture's toleranceDollars ($1). Decision: ratios get scale-appropriate tolerances (fractions 1e-4, percents 0.01), because a $1 tolerance would accept any rate. Includes a self-test showing the comparer catches each kind of mismatch.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 13 files/186 tests, build)
+Screens checked: no (no UI change)
+Next: Phase 2 — design tokens in `src/index.css` and `tailwind.config.ts`, Public Sans, tabular numbers, neutralized shadcn.

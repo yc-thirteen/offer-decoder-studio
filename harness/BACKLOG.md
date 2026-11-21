@@ -16,7 +16,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [x] `retirement.ts` (match tiers, match cap, max match %, vesting) with unit tests, including the 7B example where 6% in gets 9% total.
 - [x] `calculate.ts` (the full pay calculation and bottom line) and `recommend.ts` (recommended elections).
 - [x] `life.ts` (human capital and coverage) and `checklist.ts` (ordered ids), and replace the two `it.todo` entries in `src/lib/engine/lecture-checks.test.ts` with real checks (human capital ≈ $1.6M ± 5,000; life fractions 0.90 / 0.48 ± 0.01).
-- [ ] `runCase()` in `index.ts`, plus `fixtures.test.ts` comparing every field of every case to `harness/fixtures/expected.json` (within $1, ids exact, booleans exact). This must pass before any UI task.
+- [x] `runCase()` in `index.ts`, plus `fixtures.test.ts` comparing every field of every case to `harness/fixtures/expected.json` (within $1, ids exact, booleans exact). This must pass before any UI task.
 
 ## Phase 2: design system
 - [ ] Tokens in `src/index.css` and `tailwind.config.ts`, Public Sans loading, tabular numbers, and base element styles. Neutralize the default shadcn look for anything used (no shadows, no rounding, token colors only).
