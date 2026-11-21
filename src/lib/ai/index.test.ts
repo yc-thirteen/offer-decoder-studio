@@ -76,12 +76,12 @@ describe("AI types", () => {
   });
 
   it("unbuilt client methods reject with a directive AIError instead of faking success", async () => {
-    for (const c of [
-      new MockAIClient(),
-      new HttpAIClient({ supabaseUrl: URL, publishableKey: "pk" }),
-    ]) {
-      await expect(c.extractOffer()).rejects.toBeInstanceOf(AIError);
-      await expect(c.explainStub()).rejects.toThrow(/by hand|Read the stubs/);
+    const http = new HttpAIClient({ supabaseUrl: URL, publishableKey: "pk" });
+    await expect(http.extractOffer()).rejects.toBeInstanceOf(AIError);
+    await expect(http.extractOffer()).rejects.toThrow(/by hand/);
+    for (const c of [new MockAIClient(), http]) {
+      await expect(c.explainStub()).rejects.toBeInstanceOf(AIError);
+      await expect(c.explainStub()).rejects.toThrow(/Read the stubs/);
     }
   });
 });

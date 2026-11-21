@@ -10,6 +10,13 @@ import type { AIClient } from "./types";
 export * from "./types";
 export { HttpAIClient, type HttpAIConfig } from "./HttpAIClient";
 export { MockAIClient } from "./MockAIClient";
+export {
+  MISSING_NOTES,
+  SAMPLE_EMPLOYERS,
+  UNKNOWN_LETTER_NOTE,
+  fieldsToOffer,
+  parseLetter,
+} from "./letterParser";
 
 export type AIEnv = Partial<Record<string, string | boolean | undefined>>;
 

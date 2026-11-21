@@ -1,17 +1,31 @@
 /**
  * Mock AI client, used whenever no Lovable Cloud env vars are present.
- * extractOffer and explainStub are filled in by the next two BACKLOG tasks; until
- * then they fail loudly rather than fake success (DESIGN.md "AI elements").
+ * extractOffer reads the three sample letters with a deterministic parser and returns
+ * every field as missing for any other text, so it never fakes success (DESIGN.md
+ * "AI elements"). explainStub is filled in by the next BACKLOG task; until then it
+ * fails loudly.
  */
-import { AIError, type AIClient, type ExplainResult, type ExtractResult } from "./types";
+import { allMissing, parseLetter, sampleEmployer } from "./letterParser";
+import {
+  AIError,
+  type AIClient,
+  type ExplainResult,
+  type ExtractRequest,
+  type ExtractResult,
+} from "./types";
+
+function checkAborted(signal?: AbortSignal) {
+  if (signal?.aborted) throw new AIError("Reading the letter was cancelled. Read it again.");
+}
 
 export class MockAIClient implements AIClient {
   readonly kind = "mock" as const;
 
-  extractOffer(): Promise<ExtractResult> {
-    return Promise.reject(
-      new AIError("The sample reader isn't built yet. Type the offer in by hand."),
-    );
+  async extractOffer(req: ExtractRequest, signal?: AbortSignal): Promise<ExtractResult> {
+    checkAborted(signal);
+    const text = typeof req?.text === "string" ? req.text : "";
+    if (!text.trim()) throw new AIError("The letter is empty. Paste its text or drop a .txt file.");
+    return { fields: sampleEmployer(text) ? parseLetter(text) : allMissing() };
   }
 
   explainStub(): Promise<ExplainResult> {
