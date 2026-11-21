@@ -95,6 +95,27 @@ const VIEWS = [
         "Change your details button",
       ),
   },
+  // Not in HARNESS.md's list: the first stub in Edit offer mode, after a failed save so the
+  // directive errors show (the salary is cleared first).
+  {
+    name: "home-edit",
+    path: "/",
+    run: async (page) => {
+      if (
+        !(await clickIfPresent(
+          page,
+          page.getByRole("button", { name: /^edit offer$/i }),
+          "Edit offer button",
+        ))
+      )
+        return;
+      await page.getByLabel("Yearly salary").first().fill("");
+      await page
+        .getByRole("button", { name: /^save offer$/i })
+        .first()
+        .click();
+    },
+  },
   { name: "method", path: "/method" },
   // Not in HARNESS.md's list: the component sheet, so stub parts can be checked visually.
   { name: "dev-components", path: "/dev/components" },

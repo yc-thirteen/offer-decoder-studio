@@ -4,9 +4,9 @@
  * per paycheck); nothing here does finance. With "Use recommended elections" on, each
  * amount that changes is struck and the recommended amount written beside it in carbon.
  */
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Amount, LineItem, Perforation, Stamp, StubShell } from "@/components/stub";
-import type { CalcResult, OfferResult } from "@/lib/engine";
+import type { CalcResult, Offer, OfferResult } from "@/lib/engine";
 import type { StubView } from "@/state/decoderState";
 import { useDecoder } from "@/state/DecoderContext";
 import {
@@ -18,6 +18,8 @@ import {
   stateTaxRowLabel,
   vestingNote,
 } from "./stubFormat";
+import { OfferEditor } from "./OfferEditor";
+import { blankDraft, draftFromOffer } from "./offerDraft";
 
 type NumericKey = {
   [K in keyof CalcResult]: CalcResult[K] extends number ? K : never;
@@ -28,15 +30,25 @@ function Elected({ children, changed }: { children: ReactNode; changed: boolean 
   return changed ? <span className="text-carbon">{children}</span> : <>{children}</>;
 }
 
-function StubHeader({ view, headingId }: { view: StubView; headingId: string }) {
+function StubHeader({
+  view,
+  headingId,
+  action,
+}: {
+  view: StubView;
+  headingId: string;
+  /** "Edit offer" (or "Fill in offer"), with "Offer saved" beside it after a save. */
+  action?: ReactNode;
+}) {
   const position = `Offer ${view.slot + 1} of 2`;
   return (
-    <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4">
+    <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-1">
       <h2 id={headingId} className="m-0">
         {view.offer ? view.offer.employer : position}
       </h2>
       {view.offer ? <span className="text-sm text-ink-soft">{position}</span> : <span />}
-      {view.offer && <span className="text-sm text-ink-soft">{placeText(view.offer)}</span>}
+      <span className="text-sm text-ink-soft">{view.offer ? placeText(view.offer) : null}</span>
+      <span className="justify-self-end">{action}</span>
     </div>
   );
 }
@@ -148,14 +160,76 @@ function FilledStub({
   );
 }
 
-/** One stub: filled from the engine, the engine's error, or empty. */
-export function OfferStub({ view, corrected }: { view: StubView; corrected: boolean }) {
+/**
+ * One stub: filled from the engine, the engine's error, empty, or in edit mode. "Save
+ * offer" writes the offer to the store and the header then reads "Offer saved" until the
+ * offer changes again (another save, a sample, or Clear offers).
+ */
+export function OfferStub({
+  view,
+  corrected,
+  onSave,
+}: {
+  view: StubView;
+  corrected: boolean;
+  onSave: (offer: Offer) => void;
+}) {
   const headingId = `offer-stub-${view.slot + 1}`;
   const { offer, result, error } = view;
+  // The editor belongs to the offer it opened on: loading a sample or clearing closes it.
+  const [editingFor, setEditingFor] = useState<{ offer: Offer | null } | null>(null);
+  const editing = editingFor !== null && editingFor.offer === offer;
+  const [savedOffer, setSavedOffer] = useState<Offer | null>(null);
+  const justSaved = savedOffer !== null && savedOffer === offer;
+  const editButton = useRef<HTMLButtonElement>(null);
+  const returnFocus = useRef(false);
+
+  useEffect(() => {
+    // Back from the editor: focus the button that opened it.
+    if (!editing && returnFocus.current) {
+      returnFocus.current = false;
+      editButton.current?.focus();
+    }
+  }, [editing]);
+
+  const leave = () => {
+    returnFocus.current = true;
+    setEditingFor(null);
+  };
+
+  const action = (
+    <span className="flex flex-wrap items-baseline justify-end gap-x-3">
+      {/* Always mounted, so the change to "Offer saved" is announced. */}
+      <span role="status" className="text-sm font-semibold text-carbon">
+        {justSaved && !editing ? "Offer saved" : ""}
+      </span>
+      {editing ? null : (
+        <button
+          ref={editButton}
+          type="button"
+          onClick={() => setEditingFor({ offer })}
+          className="h-10 border border-ink bg-stub px-3 font-semibold"
+        >
+          {offer ? "Edit offer" : "Fill in offer"}
+        </button>
+      )}
+    </span>
+  );
+
   return (
     <StubShell aria-labelledby={headingId} data-slot={view.slot}>
-      <StubHeader view={view} headingId={headingId} />
-      {offer && result ? (
+      <StubHeader view={view} headingId={headingId} action={action} />
+      {editing ? (
+        <OfferEditor
+          initial={offer ? draftFromOffer(offer) : blankDraft(view.slot)}
+          onSave={(next) => {
+            onSave(next);
+            setSavedOffer(next);
+            leave();
+          }}
+          onCancel={leave}
+        />
+      ) : offer && result ? (
         <FilledStub view={{ ...view, offer }} result={result} corrected={corrected} />
       ) : error ? (
         <p className="m-0 text-correction">{error}</p>
@@ -173,14 +247,15 @@ export function OfferStub({ view, corrected }: { view: StubView; corrected: bool
  * (side by side at 768 leaves ~345px stubs where most labels wrap).
  */
 export function OfferStubs() {
-  const { state, view } = useDecoder();
+  const { state, view, dispatch } = useDecoder();
   const corrected = state.electionsMode === "recommended";
+  const save = (slot: 0 | 1) => (offer: Offer) => dispatch({ type: "setOffer", slot, offer });
   return (
     <div className="mt-8 flex flex-col items-stretch lg:flex-row" data-testid="offer-stubs">
-      <OfferStub view={view.stubs[0]} corrected={corrected} />
+      <OfferStub view={view.stubs[0]} corrected={corrected} onSave={save(0)} />
       <Perforation orientation="horizontal" className="lg:hidden" />
       <Perforation orientation="vertical" className="hidden lg:flex" />
-      <OfferStub view={view.stubs[1]} corrected={corrected} />
+      <OfferStub view={view.stubs[1]} corrected={corrected} onSave={save(1)} />
     </div>
   );
 }
