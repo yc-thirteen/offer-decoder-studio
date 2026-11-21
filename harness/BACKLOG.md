@@ -34,7 +34,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 
 ## Phase 4: why these elections
 - [x] Health plan costs chart (SVG, from the engine's breakpoints, dominated plans dashed red, recommended in carbon, an expected-spending marker, direct labels).
-- [ ] Match and vesting chart, plus the vesting timeline for years 0–6.
+- [x] Match and vesting chart, plus the vesting timeline for years 0–6.
 - [ ] Life insurance panel, shown only with dependents (risk aversion and markup sliders that recompute live).
 - [ ] Marginal vs average tax panel.
 

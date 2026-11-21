@@ -233,3 +233,18 @@ The engine index also re-exports `planCost` and `worstCaseCost`; the engine logi
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 24 files/281 tests, build). a11y: 0 serious, 0 critical.
 Screens checked: yes, home at 375, 768, and 1280, plus one-off panel shots of all 6 samples at 375 and 1280 (not committed). On the first pass, long labels at 375 spilled over the y axis and the right edge, the plan-crossover labels collided with the values and lines, and "Your spending, $12,000" was clipped. All of that is fixed above. Two things are left as is: the panel h3 and the employer h4 are both 17/600, so the hierarchy is soft (I'll look at it in the critique round), and the stacked labels can cross the marker line, but the knockout outline keeps them legible.
 Next: Match and vesting chart, plus the vesting timeline for years 0–6.
+
+## 2026-11-21T06:37:13Z | iteration 24
+Task: Match and vesting chart, plus the vesting timeline for years 0–6.
+Result: done
+What changed: New files in `src/components/why/`:
+- `matchData.ts` (pure): the match line from the engine's employerMatch on dollars capped by employee401kDollars, with points at 0%, every tier edge, the 401(k) limit %, and the window edge. It also holds the bends, the default/recommended markers taken from the engine's calcs, the money left on the table, the % window, the match sentence, and the vesting sentence read off vestedPctByYear.
+- `MatchChart.tsx` (hand-built SVG).
+- `VestingTimeline.tsx` (SVG, years 0–6).
+- `MatchVestingPanel.tsx`, mounted in WhyElections under Health plan costs.
+
+The engine index also re-exports `employerMatch` and `employee401kDollars`; the engine logic is unchanged. 7 tests in `MatchVestingPanel.test.tsx`: the chicago-vs-austin sentences and markers, the bends of the Midway 4/3 then 2x match and of Cascade's 0% default, graded/cliff/none vesting sentences, every point of all 12 offers on the engine's curve with markers equal to the engine's default/recommended match, the % window, the rendered colors/labels/gap/timeline values, the sr-only lists, and the empty direction.
+- Decisions: the data module is `matchData.ts` and not `matchChart.ts`, because macOS is case-insensitive and that name collided with `MatchChart.tsx` (TS1149). A $0 dot on the axis gets no value label (the $0 tick says it). Equal values that would touch are written once, by the recommended dot. The vesting sentence names the yearly match at stake, using the recommended elections. The vesting columns use framed rects (the "no rects" check applies only to the match chart, since there is no legend in either).
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 25 files/288 tests, build). a11y: 0 serious, 0 critical.
+Screens checked: yes, the full page at 375, 768, and 1280, plus one-off panel shots of all 6 samples at 375 and 1280 (script deleted, not committed). The first pass had crowded x ticks at 375 ("12%14%") and at 1280 ("9% 10%"), a "Recommended" title crossed by the default marker line, and the gap label colliding with the line label at 375. All fixed: ticks are now at least 48px apart, the width estimate went from 7.4 to 8px a character with an 8px collision margin, and the gap label is placed first, avoiding the line label, with values moving below the flat line when their spot is taken. Left as is: marker lines pass behind "Employer match per year" (the knockout outline keeps it legible), and the vesting columns are heavy solid ink. I'll revisit the latter in the critique round.
+Next: Life insurance panel, shown only with dependents (risk aversion and markup sliders that recompute live).

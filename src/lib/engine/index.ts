@@ -27,7 +27,14 @@ export {
 } from "./health";
 export { DEFAULT_LIFE_PARAMS, humanCapital, lifeInsurance, type LifeParams } from "./life";
 export { isReady, recommend } from "./recommend";
-export { fullMatchDollars, matchCapPct, maxMatchPct, vestedPctByYear } from "./retirement";
+export {
+  employee401kDollars,
+  employerMatch,
+  fullMatchDollars,
+  matchCapPct,
+  maxMatchPct,
+  vestedPctByYear,
+} from "./retirement";
 
 /** Everything the decoder shows for one offer. */
 export function runOffer(offer: Offer, profile: Profile): OfferResult {
