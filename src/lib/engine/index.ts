@@ -33,7 +33,23 @@ export {
   type LifeParams,
 } from "./life";
 export { isReady, recommend } from "./recommend";
-export { federalTaxOnJob, incomeTax, marginalRate, taxableIncome } from "./tax";
+export {
+  federalTaxOnJob,
+  incomeTax,
+  marginalRate,
+  stateIncomeTax,
+  stateWages,
+  taxableIncome,
+} from "./tax";
+export {
+  STATE_CODES,
+  STATE_TAX,
+  STATE_TAX_LEFT_OUT,
+  hasWageIncomeTax,
+  stateTaxOnIncome,
+  type StateTaxRule,
+  type TaxedState,
+} from "./stateTax";
 export {
   employee401kDollars,
   employerMatch,

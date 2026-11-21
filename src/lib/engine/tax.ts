@@ -10,9 +10,9 @@ import {
   MEDICARE_RATE,
   SS_RATE,
   SS_WAGE_CAP,
-  STATE_RATES,
   STD_DEDUCTION,
 } from "./constants";
+import { STATE_TAX, stateTaxOnIncome } from "./stateTax";
 import type { FilingStatus, StateCode } from "./types";
 
 /** Federal income tax on taxable income, walking the brackets (4B slides 7–11). */
@@ -82,16 +82,31 @@ export function medicareTax(
   return MEDICARE_RATE * payrollWages + ADDL_MEDICARE_RATE * addl;
 }
 
-/** Flat state rate for an offer. OTHER uses the user's rate (0 if not entered yet). */
-export function stateRate(state: StateCode, customStateRate?: number): number {
-  return state === "OTHER" ? (customStateRate ?? 0) : STATE_RATES[state];
+/** What the state counts as wages: federal wages, plus any pre-tax dollars it doesn't exclude. */
+export function stateWages(
+  state: StateCode,
+  federalWages: number,
+  traditional401k: number,
+  employeeHsa: number,
+): number {
+  if (state === "OTHER") return federalWages;
+  const rule = STATE_TAX[state];
+  return federalWages + (rule.taxes401k ? traditional401k : 0) + (rule.taxesHsa ? employeeHsa : 0);
 }
 
-/** State tax = flat rate × federal wages (ignores state exemptions and credits). */
+/**
+ * State income tax attributed to this job, by the same marginal method as federal tax:
+ * tax(this job's state wages + spouse wages) − tax(spouse wages), with 2026 brackets,
+ * deductions, and exemptions (stateTax.ts). OTHER is the entered flat rate × wages.
+ */
 export function stateIncomeTax(
-  federalWages: number,
+  wages: number,
+  otherWages: number,
+  status: FilingStatus,
   state: StateCode,
   customStateRate?: number,
 ): number {
-  return stateRate(state, customStateRate) * federalWages;
+  if (state === "OTHER") return (customStateRate ?? 0) * wages;
+  const other = Math.max(0, otherWages);
+  return stateTaxOnIncome(state, status, wages + other) - stateTaxOnIncome(state, status, other);
 }

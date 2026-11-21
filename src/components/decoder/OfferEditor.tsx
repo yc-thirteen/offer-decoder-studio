@@ -41,7 +41,7 @@ const STATES: { value: StateCode; label: string }[] = [
     value,
     label,
   })),
-  { value: "OTHER", label: "Another state (flat rate)" },
+  { value: "OTHER", label: "Somewhere else (flat rate)" },
 ];
 const YES_NO = [
   { value: "yes", label: "Yes" },

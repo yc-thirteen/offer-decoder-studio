@@ -201,7 +201,7 @@ describe("validateExtractResult", () => {
   it("downgrades a mistyped letter value to missing with the directive note", () => {
     const fields = letterFields();
     fields.salary = { source: "letter", value: "lots" };
-    fields.state = { source: "letter", value: "CA" };
+    fields.state = { source: "letter", value: "Ontario" };
     fields.healthPlans = { source: "letter", value: [{ id: "ppo", name: "PPO" }] };
     const out = validateExtractResult({ fields })!;
     expect(out.fields.salary).toEqual({

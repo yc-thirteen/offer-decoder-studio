@@ -5,7 +5,7 @@
  * "missing" with the usual directive note, so a malformed value is never shown as
  * if the letter stated it, and the rest of the letter is still usable.
  */
-import { STATE_RATES, type HealthPlan, type MatchTier, type Vesting } from "@/lib/engine";
+import { STATE_CODES, type HealthPlan, type MatchTier, type Vesting } from "@/lib/engine";
 import { MISSING_NOTES } from "./letterParser";
 import {
   EXTRACT_FIELD_KEYS,
@@ -48,7 +48,7 @@ const nonNeg = (v: unknown): v is number => isNum(v) && v >= 0;
 const isText = (v: unknown): v is string => typeof v === "string" && v.trim().length > 0;
 const isRate = (v: unknown): v is number => isNum(v) && v >= 0 && v <= 1;
 
-const STATES = new Set<string>([...Object.keys(STATE_RATES), "OTHER"]);
+const STATES = new Set<string>([...STATE_CODES, "OTHER"]);
 
 function isMatchTier(v: unknown): v is MatchTier {
   return isRec(v) && nonNeg(v.rate) && isNum(v.upToPct) && v.upToPct > 0 && v.upToPct <= 100;

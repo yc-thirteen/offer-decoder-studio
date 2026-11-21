@@ -5,7 +5,14 @@
  * (a tier written as "the next 2%" becomes an edge 2 points above the last one,
  * "biweekly" becomes 26 pay periods).
  */
-import type { HealthPlan, MatchTier, Offer, StateCode, Vesting } from "@/lib/engine";
+import {
+  STATE_CODES,
+  type HealthPlan,
+  type MatchTier,
+  type Offer,
+  type StateCode,
+  type Vesting,
+} from "@/lib/engine";
 import {
   EXTRACT_FIELD_KEYS,
   type ExtractFieldKey,
@@ -117,18 +124,7 @@ const STATE_NAMES: Record<string, string> = {
   WI: "Wisconsin",
   WY: "Wyoming",
 };
-const ENGINE_STATES = new Set<StateCode>([
-  "IL",
-  "TX",
-  "FL",
-  "WA",
-  "NV",
-  "TN",
-  "SD",
-  "WY",
-  "AK",
-  "NH",
-]);
+const ENGINE_STATES = new Set<StateCode>(STATE_CODES);
 
 function toStateCode(token: string | undefined): StateCode | null {
   if (!token) return null;

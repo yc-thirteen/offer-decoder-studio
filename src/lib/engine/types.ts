@@ -13,9 +13,63 @@ export type CoverageTier = "self" | "family";
 
 export type AccountType = "traditional" | "roth";
 
-/** Two-letter state code from STATE_RATES, or OTHER with Offer.customStateRate. */
+/**
+ * Two-letter code for one of the 50 states or DC (each has 2026 rules in stateTax.ts), or
+ * OTHER, which uses Offer.customStateRate as a flat rate on wages.
+ */
 export type StateCode =
-  "IL" | "TX" | "FL" | "WA" | "NV" | "TN" | "SD" | "WY" | "AK" | "NH" | "OTHER";
+  | "AK"
+  | "AL"
+  | "AR"
+  | "AZ"
+  | "CA"
+  | "CO"
+  | "CT"
+  | "DC"
+  | "DE"
+  | "FL"
+  | "GA"
+  | "HI"
+  | "IA"
+  | "ID"
+  | "IL"
+  | "IN"
+  | "KS"
+  | "KY"
+  | "LA"
+  | "MA"
+  | "MD"
+  | "ME"
+  | "MI"
+  | "MN"
+  | "MO"
+  | "MS"
+  | "MT"
+  | "NC"
+  | "ND"
+  | "NE"
+  | "NH"
+  | "NJ"
+  | "NM"
+  | "NV"
+  | "NY"
+  | "OH"
+  | "OK"
+  | "OR"
+  | "PA"
+  | "RI"
+  | "SC"
+  | "SD"
+  | "TN"
+  | "TX"
+  | "UT"
+  | "VA"
+  | "VT"
+  | "WA"
+  | "WI"
+  | "WV"
+  | "WY"
+  | "OTHER";
 
 export interface Profile {
   filingStatus: FilingStatus;

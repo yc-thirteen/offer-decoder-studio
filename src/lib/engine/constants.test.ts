@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import expectedJson from "../../../harness/fixtures/expected.json";
 import sampleCasesJson from "../../data/sampleCases.json";
-import { BRACKETS, HSA_LIMIT, LIMIT_401K, STATE_RATES, STD_DEDUCTION } from "./constants";
+import { BRACKETS, HSA_LIMIT, LIMIT_401K, STD_DEDUCTION } from "./constants";
+import { STATE_TAX } from "./stateTax";
 import type { CalcResult, LifeResult, OfferResult, Profile } from "./types";
 
 // Compile-time exhaustive key lists: adding or removing a field in types.ts without
@@ -103,7 +104,7 @@ describe("engine types match the fixtures", () => {
   it("every fixture state has a rate (or OTHER with a custom rate)", () => {
     for (const o of sampleCases.cases.flatMap((c) => c.offers)) {
       if (o.state === "OTHER") expect(typeof o.customStateRate).toBe("number");
-      else expect(STATE_RATES).toHaveProperty(o.state);
+      else expect(STATE_TAX).toHaveProperty(o.state);
     }
   });
 });
@@ -123,6 +124,11 @@ describe("constants (FINANCE_SPEC.md)", () => {
     expect(STD_DEDUCTION).toEqual({ single: 16_100, mfj: 32_200 });
     expect(HSA_LIMIT).toEqual({ self: 4_400, family: 8_750 });
     expect(LIMIT_401K).toBe(24_500);
-    expect(STATE_RATES.IL).toBe(0.0495);
+    expect(STATE_TAX.IL.single).toEqual({
+      brackets: [[0, 0.0495]],
+      standardDeduction: 0,
+      personalExemption: 0,
+      exemptionCredit: 0,
+    });
   });
 });

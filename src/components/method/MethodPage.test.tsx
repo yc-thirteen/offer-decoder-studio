@@ -84,8 +84,8 @@ describe("Method page", () => {
       ],
       [
         "State income tax on wages",
-        /Illinois 4\.95%; 0% in Texas, .*New Hampshire/,
-        "Not from the lectures",
+        /Illinois 4\.95% flat; 0% in Alaska, .*Wyoming; every other state and DC uses its 2026 brackets/,
+        "Illinois: Taxes 4B. Other states: Tax Foundation, 2026 State Income Tax Rates and Brackets (February 2026)",
       ],
     ];
     expect(within(table).getAllByRole("row")).toHaveLength(expected.length + 1);
@@ -105,7 +105,9 @@ describe("Method page", () => {
     ).getByRole("list");
     const text = list.textContent ?? "";
     expect(text).toMatch(/No head of household/);
-    expect(text).toMatch(/flat rate on your wages.*no state exemptions, deductions, or credits/);
+    expect(text).toMatch(
+      /2026 brackets, standard deduction, and exemptions, but leaves out dependents/,
+    );
     expect(text).toMatch(/No local or city income tax/);
     expect(text).toMatch(/No HSA catch-up/);
     expect(text).toMatch(/imputed income on group life/);

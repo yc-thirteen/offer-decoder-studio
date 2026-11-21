@@ -59,6 +59,7 @@ Tips:
 | 4B Taxes, slide 7          | 2026 federal brackets, single and joint                                                                                 | Federal income tax on each stub; the marginal vs average tax panel                                         |
 | 4B, slide 17               | Standard deduction                                                                                                      | Taxable income rows in the tax panel                                                                       |
 | 4B, slide 6                | Social Security 6.2% to the wage base; Medicare 1.45% plus 0.9% above the threshold                                     | Social Security and Medicare lines                                                                         |
+| Not from the lectures      | 2026 state income tax for all 50 states and DC (Tax Foundation); Illinois keeps the lecture's flat 4.95%                | The state income tax line on each stub (`src/lib/engine/stateTax.ts`)                                      |
 | 4B                         | Section 125: premiums and HSA payroll dollars avoid income and payroll tax; a traditional 401(k) avoids income tax only | Every tax line; the gap between the default and recommended stubs                                          |
 | 4B                         | Marginal method: a job's tax is what it adds to the household's bill                                                    | Federal tax on a joint return with spouse's wages; the tax panel's last row                                |
 | 4B, slide 20               | Over-withholding is an interest-free loan to the government                                                             | The `check-w4` checklist item                                                                              |
@@ -136,7 +137,7 @@ The key is read only inside the edge functions and never reaches the browser. Do
 These are also listed on `/method`:
 
 - Head of household isn't supported. The lectures don't give its standard deduction.
-- State tax is a flat rate on wages, without exemptions or credits. There's no local tax. Illinois and the nine states without a wage income tax (TX, FL, WA, NV, TN, SD, WY, AK, NH) are built in. For any other state, choose "Another state (flat rate)" and type its rate.
+- State tax uses each state's 2026 brackets, standard deduction, exemptions, and exemption credits for all 50 states and DC, from the Tax Foundation's [2026 table](https://taxfoundation.org/data/all/state/state-income-tax-rates-2026/), including the phase-outs its footnotes spell out. Like federal tax, a joint return counts what the job adds to the household's state bill. It leaves out local and city taxes (NYC, Maryland counties), dependents and other state credits, New York and Connecticut recapture at high incomes, and state payroll taxes such as California's 1.3% SDI. Illinois keeps the lecture's flat 4.95% of wages. For a job outside the 50 states and DC, choose "Somewhere else (flat rate)" and type a rate.
 - The HSA catch-up and the imputed income on group life coverage are ignored.
 - Retirement savings are taxed at an assumed 15% rate later.
 

@@ -14,8 +14,11 @@ import {
   ROTH_MAX_MARGINAL,
   SS_RATE,
   SS_WAGE_CAP,
-  STATE_RATES,
+  STATE_CODES,
+  STATE_TAX,
+  STATE_TAX_LEFT_OUT,
   STD_DEDUCTION,
+  hasWageIncomeTax,
   TARGET_SAVINGS_RATE,
 } from "@/lib/engine";
 import { formatMoney } from "@/components/stub/format";
@@ -56,11 +59,14 @@ export function bracketRows(): BracketRow[] {
 
 export type ConstantRow = { name: string; value: string; source: string };
 
-const zeroTaxStates = (Object.keys(STATE_RATES) as (keyof typeof STATE_RATES)[])
-  .filter((code) => STATE_RATES[code] === 0)
-  .map((code) => STATE_NAMES[code]);
+const zeroTaxStates = STATE_CODES.filter((code) => !hasWageIncomeTax(code)).map(
+  (code) => STATE_NAMES[code],
+);
 
 export const ZERO_TAX_STATES = zeroTaxStates;
+
+/** Illinois's flat rate, which the lecture gives (4B). */
+export const ILLINOIS_RATE = STATE_TAX.IL.single.brackets[0]![1];
 
 export const CONSTANT_ROWS: ConstantRow[] = [
   {
@@ -120,16 +126,17 @@ export const CONSTANT_ROWS: ConstantRow[] = [
   },
   {
     name: "State income tax on wages",
-    value: `Illinois ${formatRate(STATE_RATES.IL)}; 0% in ${listJoin(zeroTaxStates)}; any other state uses the flat rate you type`,
-    source: "Not from the lectures",
+    value: `Illinois ${formatRate(ILLINOIS_RATE)} flat; 0% in ${listJoin(zeroTaxStates)}; every other state and DC uses its 2026 brackets, standard deduction, and exemptions`,
+    source:
+      "Illinois: Taxes 4B. Other states: Tax Foundation, 2026 State Income Tax Rates and Brackets (February 2026)",
   },
 ];
 
 /** DESIGN.md's honest list of what the site simplifies or leaves out. */
 export const SIMPLIFICATIONS: string[] = [
   "No head of household filing status. The lectures don't give its standard deduction, so the site offers only single and married filing jointly.",
-  "State income tax is a flat rate on your wages after pre-tax deductions, with no state exemptions, deductions, or credits.",
-  "No local or city income tax.",
+  STATE_TAX_LEFT_OUT,
+  "No local or city income tax, such as New York City's or Maryland's county taxes.",
   "No HSA catch-up contribution for people 55 and older.",
   "No imputed income on group life coverage above $50,000, which shows up as a small taxable amount on real stubs.",
   `Every traditional 401(k) and match dollar is taxed at ${formatRate(RETIREMENT_TAX_RATE)} when you take it out in retirement, whatever your real future rate turns out to be.`,

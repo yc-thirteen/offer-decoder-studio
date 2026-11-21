@@ -9,7 +9,6 @@ import {
   medicareTax,
   socialSecurityTax,
   stateIncomeTax,
-  stateRate,
 } from "./tax";
 import type { CalcResult, SampleCase } from "./types";
 
@@ -83,16 +82,6 @@ describe("payroll taxes", () => {
   });
 });
 
-describe("state tax", () => {
-  it("uses the flat table rate, or the custom rate for OTHER", () => {
-    expect(stateRate("IL")).toBe(0.0495);
-    expect(stateRate("TX")).toBe(0);
-    expect(stateRate("OTHER", 0.05)).toBe(0.05);
-    expect(stateRate("OTHER")).toBe(0);
-    expect(stateIncomeTax(100_000, "IL")).toBeCloseTo(4_950, 6);
-  });
-});
-
 describe("tax lines match expected.json for every fixture offer", () => {
   for (const c of cases) {
     const exp = expected.find((e) => e.id === c.id)!;
@@ -110,10 +99,9 @@ describe("tax lines match expected.json for every fixture offer", () => {
           expect(federalMarginalRate(federalWages, other, status)).toBe(r.federalMarginalRate);
           expect(socialSecurityTax(payrollWages)).toBeCloseTo(r.socialSecurity, 0);
           expect(medicareTax(payrollWages, other, status)).toBeCloseTo(r.medicare, 0);
-          expect(stateIncomeTax(federalWages, offer.state, offer.customStateRate)).toBeCloseTo(
-            r.stateIncomeTax,
-            0,
-          );
+          expect(
+            stateIncomeTax(federalWages, other, status, offer.state, offer.customStateRate),
+          ).toBeCloseTo(r.stateIncomeTax, 0);
         });
       }
     }

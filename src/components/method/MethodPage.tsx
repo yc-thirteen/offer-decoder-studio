@@ -12,7 +12,6 @@ import {
   RETIREMENT_TAX_RATE,
   ROTH_MAX_MARGINAL,
   SS_WAGE_CAP,
-  STATE_RATES,
   TARGET_SAVINGS_RATE,
 } from "@/lib/engine";
 import { formatMoney } from "@/components/stub/format";
@@ -20,6 +19,7 @@ import {
   CONSTANT_ROWS,
   LECTURES,
   SIMPLIFICATIONS,
+  ILLINOIS_RATE,
   ZERO_TAX_STATES,
   bracketRows,
   formatRate,
@@ -153,9 +153,17 @@ export function MethodPage() {
           </p>
           <h3>State income tax</h3>
           <p>
-            State tax is the state&apos;s rate times your federal wages. Illinois charges{" "}
-            {formatRate(STATE_RATES.IL)}. {listJoin(ZERO_TAX_STATES)} have no state income tax. For
-            any other state, type its flat rate when you edit the offer.
+            State tax uses each state&apos;s 2026 brackets for your filing status. From your federal
+            wages it takes the state&apos;s standard deduction and personal exemption, walks the
+            brackets, then subtracts any exemption credit. Where a state shrinks those amounts as
+            income rises, the site does too. Pennsylvania also taxes your 401(k) contributions, and
+            California and New Jersey tax your HSA contributions. Like federal tax, a joint return
+            counts what this job adds to the household&apos;s state tax.
+          </p>
+          <p>
+            Illinois follows the lecture: a flat {formatRate(ILLINOIS_RATE)} of your federal wages.{" "}
+            {listJoin(ZERO_TAX_STATES)} have no state income tax on wages. For a job outside the 50
+            states and DC, choose &ldquo;Somewhere else&rdquo; and type a flat rate.
           </p>
           <h3>Net pay</h3>
           <Formula>

@@ -4,25 +4,21 @@
  */
 import {
   LIMIT_401K,
+  STATE_CODES,
+  STATE_TAX,
+  hasWageIncomeTax,
   type AccountType,
+  type TaxedState,
   type Offer,
   type StateCode,
   type Vesting,
 } from "@/lib/engine";
 import { formatMoney } from "@/components/stub";
 
-export const STATE_NAMES: Readonly<Record<Exclude<StateCode, "OTHER">, string>> = {
-  IL: "Illinois",
-  TX: "Texas",
-  FL: "Florida",
-  WA: "Washington",
-  NV: "Nevada",
-  TN: "Tennessee",
-  SD: "South Dakota",
-  WY: "Wyoming",
-  AK: "Alaska",
-  NH: "New Hampshire",
-};
+/** "California" for CA, for every built-in state (stateTax.ts holds the names). */
+export const STATE_NAMES: Readonly<Record<TaxedState, string>> = Object.fromEntries(
+  STATE_CODES.map((code) => [code, STATE_TAX[code].name]),
+) as Record<TaxedState, string>;
 
 /** "Chicago, IL"; an OTHER-state offer shows just its city ("Remote"). */
 export function placeText(offer: Pick<Offer, "city" | "state">): string {
@@ -30,8 +26,9 @@ export function placeText(offer: Pick<Offer, "city" | "state">): string {
 }
 
 /**
- * The state tax row label. A zero-tax state reads "Texas has no state income tax"; a taxed
- * state reads "Illinois income tax"; a custom-rate state reads "State income tax".
+ * The state tax row label. A state with no wage income tax reads "Texas has no state income
+ * tax"; any other state reads "Illinois income tax", even when its deductions bring this
+ * offer's tax to $0; a custom-rate state reads "State income tax".
  */
 export function stateTaxRowLabel(
   offer: Pick<Offer, "state" | "customStateRate">,
@@ -39,7 +36,7 @@ export function stateTaxRowLabel(
 ): string {
   if (offer.state === "OTHER") return stateTax > 0 ? "State income tax" : "No state income tax";
   const name = STATE_NAMES[offer.state];
-  return stateTax > 0 ? `${name} income tax` : `${name} has no state income tax`;
+  return hasWageIncomeTax(offer.state) ? `${name} income tax` : `${name} has no state income tax`;
 }
 
 /** "Flat 5% on wages" note for a custom-rate state, else null. */

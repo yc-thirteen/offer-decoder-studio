@@ -13,6 +13,7 @@ import {
   medicareTax,
   socialSecurityTax,
   stateIncomeTax,
+  stateWages,
 } from "./tax";
 import type { CalcResult, Elections, HealthPlan, Offer, Profile } from "./types";
 
@@ -60,7 +61,8 @@ export function calculate(offer: Offer, profile: Profile, elections: Elections):
   const payrollWages = sal - sec125;
   const ss = socialSecurityTax(payrollWages);
   const medicare = medicareTax(payrollWages, other, status);
-  const state = stateIncomeTax(fedWages, offer.state, offer.customStateRate);
+  const stWages = stateWages(offer.state, fedWages, trad, hsaEmp);
+  const state = stateIncomeTax(stWages, other, status, offer.state, offer.customStateRate);
 
   const net = sal - k - plan.premium - hsaEmp - fed - ss - medicare - state;
   const match = employerMatch(offer, k);

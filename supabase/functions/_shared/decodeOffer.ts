@@ -26,8 +26,61 @@ export const FIELD_KEYS = [
 ] as const;
 type FieldKey = (typeof FIELD_KEYS)[number];
 
-/** The engine's STATE_RATES codes plus OTHER (a test keeps them equal). */
-export const STATE_CODES = ["IL", "TX", "FL", "WA", "NV", "TN", "SD", "WY", "AK", "NH", "OTHER"];
+/** The engine's STATE_CODES (all 50 states and DC) plus OTHER (a test keeps them equal). */
+export const STATE_CODES = [
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "DC",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+  "OTHER",
+];
 
 /** Longest letter accepted. Real letters run a few thousand characters. */
 export const MAX_LETTER_CHARS = 40_000;
@@ -129,7 +182,7 @@ For every field, answer {"source":"letter","value":...} only when the letter sta
 Fields and units:
 - employer: the company's name as the letter writes it, without legal suffixes such as "Inc." or "LLC".
 - city: the job's city, without the state.
-- state: the job's state as a two-letter code from ${STATE_CODES.slice(0, -1).join(", ")}. A state not on that list is "OTHER".
+- state: the job's US state (or DC) as a two-letter code. A job outside the 50 states and DC is "OTHER".
 - customStateRate: only when state is OTHER and the letter states that state's flat income tax rate, as a fraction (4.95% is 0.0495). Otherwise missing.
 - salary: annual base salary in dollars.
 - payPeriods: paychecks per year (weekly 52, biweekly or "every two weeks" 26, semimonthly 24, monthly 12, or the count the letter gives).

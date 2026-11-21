@@ -12,7 +12,7 @@ vi.mock("@lovable.dev/ai-gateway", async (importOriginal) => {
 });
 import sampleCases from "@/data/sampleCases.json";
 import extractions from "@/data/letters/expected-extractions.json";
-import { STATE_RATES, runCase, type Offer, type Profile } from "@/lib/engine";
+import { STATE_CODES as ENGINE_STATE_CODES, runCase, type Offer, type Profile } from "@/lib/engine";
 import { MODEL, UPSTREAM_TIMEOUT_MS } from "../../../supabase/functions/_shared/anthropic.ts";
 import {
   DECODE_COPY,
@@ -101,7 +101,7 @@ afterEach(() => vi.restoreAllMocks());
 describe("edge function contracts match the app", () => {
   it("uses the app's field keys and state codes", () => {
     expect([...FIELD_KEYS]).toEqual([...EXTRACT_FIELD_KEYS]);
-    expect(STATE_CODES).toEqual([...Object.keys(STATE_RATES), "OTHER"]);
+    expect(STATE_CODES).toEqual([...ENGINE_STATE_CODES, "OTHER"]);
     const props = (EXTRACT_SCHEMA.properties as { fields: { properties: object } }).fields
       .properties;
     expect(Object.keys(props)).toEqual([...EXTRACT_FIELD_KEYS]);

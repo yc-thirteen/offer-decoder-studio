@@ -2,7 +2,7 @@
  * 2026 constants, taken exactly from harness/FINANCE_SPEC.md (and engine.py).
  * Lecture refs: 4B = Taxes, 7A = Insurance, 7B = Retirement.
  */
-import type { CoverageTier, FilingStatus, StateCode } from "./types";
+import type { CoverageTier, FilingStatus } from "./types";
 
 /** [upper edge of bracket, rate]. The last edge is Infinity. */
 export type Bracket = readonly [upTo: number, rate: number];
@@ -61,20 +61,6 @@ export const ROTH_MAX_MARGINAL = 0.12;
 
 /** Tax rate in retirement, applied to traditional 401(k) and match dollars (7B slide 7). */
 export const RETIREMENT_TAX_RATE = 0.15;
-
-/** State income tax on wages. OTHER uses the offer's customStateRate. */
-export const STATE_RATES: Readonly<Record<Exclude<StateCode, "OTHER">, number>> = {
-  IL: 0.0495,
-  TX: 0,
-  FL: 0,
-  WA: 0,
-  NV: 0,
-  TN: 0,
-  SD: 0,
-  WY: 0,
-  AK: 0,
-  NH: 0,
-};
 
 /** Life insurance and human capital (7A slides 27–28; reproduces the slide's $1.6M). */
 export const LIFE = {
