@@ -19,7 +19,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [x] `runCase()` in `index.ts`, plus `fixtures.test.ts` comparing every field of every case to `harness/fixtures/expected.json` (within $1, ids exact, booleans exact). This must pass before any UI task.
 
 ## Phase 2: design system
-- [ ] Tokens in `src/index.css` and `tailwind.config.ts`, Public Sans loading, tabular numbers, and base element styles. Neutralize the default shadcn look for anything used (no shadows, no rounding, token colors only).
+- [x] Tokens in `src/index.css` and `tailwind.config.ts`, Public Sans loading, tabular numbers, and base element styles. Neutralize the default shadcn look for anything used (no shadows, no rounding, token colors only).
 - [ ] Components in `src/components/stub/`: `GuillocheBackground`, `Perforation` (vertical and horizontal), `StubShell` (with notches), `LineItem`, `Amount` (static, struck, and new states with the 180ms correction and reduced-motion support, plus an accessible label like "was $4,500, now $9,000"), and `Stamp`. Add a `/dev/components` route showing every state. Check it with screenshots.
 
 ## Phase 3: decoder page

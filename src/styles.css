@@ -4,39 +4,100 @@
  *   npm package before @importing its CSS. Never @import a remote URL (web fonts, CDN CSS): the
  *   build resolves @import from the filesystem. Load those with a <link> in the head() of
  *   src/routes/__root.tsx and name the family in a --font-* token in @theme inline below.
+ * - tw-animate-css is deliberately NOT imported: harness/DESIGN.md allows exactly one motion
+ *   (the 180ms correction strike), so shadcn's enter/exit animations must stay inert.
  */
 @import "tailwindcss" source(none);
 @source "../src";
-@import "tw-animate-css";
 
+/*
+ * Light-only paper document (harness/DESIGN.md). There is no dark theme and nothing ever adds
+ * a .dark class. The variant is kept pointing at .dark so shadcn's `dark:` classes never fall
+ * back to Tailwind's default prefers-color-scheme behaviour.
+ */
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
+ * Design system: "a pay stub printed on security paper" (harness/DESIGN.md, locked).
  *
- * The design lives in this file: oklch color tokens on the shadcn variables
- * (--background, --foreground, --primary, --secondary, --muted, --accent, ...) plus
- * new tokens as needed, font tokens, and custom styles and animations.
+ * The six tokens below are the only colors on the site. They are hex because DESIGN.md
+ * specifies them in hex; keep them exactly as written there. The shadcn variables
+ * (--background, --primary, ...) are aliases of these tokens so any shadcn component that
+ * gets used renders in the stub palette.
  *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * The plain @theme block strips Tailwind's defaults that the banned list rules out:
+ * the whole default color palette (slate greys, purples, black/white), shadows, letter
+ * spacing, monospace, and the default type scale. Utilities like `shadow-md`,
+ * `tracking-wide`, `font-mono` or `bg-slate-100` therefore emit nothing.
  */
+@theme {
+  --color-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --blur-*: initial;
+  --tracking-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --animate-*: initial;
+
+  /* Type scale (px): 13, 15, 17, 21, 28, 40. The shadcn size names map onto it. */
+  --text-xs: 13px;
+  --text-xs--line-height: 1.4;
+  --text-sm: 15px;
+  --text-sm--line-height: 1.45;
+  --text-base: 17px;
+  --text-base--line-height: 1.5;
+  --text-lg: 21px;
+  --text-lg--line-height: 1.3;
+  --text-xl: 21px;
+  --text-xl--line-height: 1.3;
+  --text-2xl: 28px;
+  --text-2xl--line-height: 1.2;
+  --text-3xl: 28px;
+  --text-3xl--line-height: 1.2;
+  --text-4xl: 40px;
+  --text-4xl--line-height: 1.15;
+
+  /* Public Sans ships 400, 600, 800 only; every weight utility lands on one of them. */
+  --font-weight-thin: 400;
+  --font-weight-extralight: 400;
+  --font-weight-light: 400;
+  --font-weight-normal: 400;
+  --font-weight-medium: 600;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 800;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 800;
+
+  /* Square corners everywhere (rounded-full stays for round things like perforation holes). */
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+
+  /* Content column (DESIGN.md: max 1120px, centered) and prose measure (< 75 characters). */
+  --container-page: 1120px;
+  --container-prose: 68ch;
+}
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-paper: var(--paper);
+  --color-stub: var(--stub);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-carbon: var(--carbon);
+  --color-correction: var(--correction);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -73,74 +134,50 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
-}
+  color-scheme: light;
 
-.dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  /* The six tokens (DESIGN.md "Tokens"). */
+  --paper: #e4ece1; /* page background, pale check-paper green */
+  --stub: #f6f8f4; /* stub and panel surfaces */
+  --ink: #1e3a2b; /* all text, rules, borders, chart lines */
+  --ink-soft: #4f6b5b; /* secondary text, axis labels (AA on stub and paper) */
+  --carbon: #2b4c9b; /* the user's elections and typed input; focus ring */
+  --correction: #b3261e; /* strike-throughs, dominated plans, money left on the table */
+
+  /* shadcn aliases, all pointing at the tokens above. */
+  --radius: 0px;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--stub);
+  --card-foreground: var(--ink);
+  --popover: var(--stub);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--stub);
+  --secondary: var(--stub);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper);
+  --muted-foreground: var(--ink-soft);
+  --accent: var(--paper);
+  --accent-foreground: var(--ink);
+  --destructive: var(--correction);
+  --destructive-foreground: var(--stub);
+  --border: var(--ink);
+  --input: var(--ink);
+  --ring: var(--carbon);
+  --chart-1: var(--ink);
+  --chart-2: var(--carbon);
+  --chart-3: var(--correction);
+  --chart-4: var(--ink-soft);
+  --chart-5: var(--ink);
+  --sidebar: var(--stub);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--stub);
+  --sidebar-accent: var(--paper);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--ink);
+  --sidebar-ring: var(--carbon);
 }
 
 @layer base {
@@ -148,8 +185,131 @@
     border-color: var(--color-border);
   }
 
-  body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+  html {
+    background-color: var(--paper);
+    -webkit-text-size-adjust: 100%;
   }
+
+  body {
+    margin: 0;
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.5;
+    font-weight: 400;
+    /* Every number on the site uses tabular figures. */
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Headings: sentence case, ink, the locked scale. Only the Method page uses h1 (40/800). */
+  h1 {
+    font-size: 40px;
+    line-height: 1.15;
+    font-weight: 800;
+  }
+  h2 {
+    font-size: 21px;
+    line-height: 1.3;
+    font-weight: 800;
+  }
+  h3 {
+    font-size: 17px;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  p,
+  li {
+    max-width: var(--container-prose);
+  }
+
+  strong,
+  b {
+    font-weight: 600;
+  }
+
+  /* Plain prose links are underlined ink; links styled as buttons (with classes) opt out. */
+  a:not([class]) {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+  a:not([class]):hover {
+    text-decoration-thickness: 2px;
+  }
+
+  /* Banned: monospace anywhere. */
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: inherit;
+  }
+
+  /* Typed input is carbon, like a carbon copy filled in by hand. */
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: var(--carbon);
+    background-color: var(--stub);
+  }
+  ::placeholder {
+    color: var(--ink-soft);
+    opacity: 1;
+  }
+
+  button {
+    font: inherit;
+    cursor: pointer;
+  }
+
+  /* Visible carbon focus ring, drawn as an outline (not a box shadow). */
+  :focus-visible {
+    outline: 2px solid var(--carbon);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--carbon);
+    color: var(--stub);
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--ink);
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    font-variant-numeric: tabular-nums;
+  }
+
+  svg text {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The correction strike is the only motion; components honor this themselves too. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Right-aligned tabular amount, the building block of every stub line. */
+@utility amount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }

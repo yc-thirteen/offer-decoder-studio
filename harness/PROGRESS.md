@@ -118,3 +118,14 @@ What changed: New `src/lib/engine/index.ts`: runOffer() and runCase() mirroring 
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 13 files/186 tests, build)
 Screens checked: no (no UI change)
 Next: Phase 2 — design tokens in `src/index.css` and `tailwind.config.ts`, Public Sans, tabular numbers, neutralized shadcn.
+
+## 2026-11-21T05:03:30Z | iteration 13
+Task: Tokens in `src/index.css` and `tailwind.config.ts`, Public Sans loading, tabular numbers, and base element styles. Neutralize the default shadcn look (no shadows, no rounding, token colors only).
+Result: done
+What changed: The repo is Tailwind v4 CSS-first, with no tailwind.config.ts or index.css (see iteration 1), so everything lives in `src/styles.css`. The six DESIGN.md tokens are hex CSS vars mapped to `bg-paper`/`text-ink`/`text-carbon`/etc. Every shadcn var (--background, --primary, --border, --ring, chart-*, sidebar-*) aliases a token. The .dark block is removed (light-only); the dark variant still points at `.dark`, so shadcn `dark:` classes never fire.
+- A plain `@theme` resets the default color palette, shadows, blur, tracking, fonts, animations and type scale. `bg-slate-*`, `shadow-*`, `tracking-*` and `font-mono` now emit nothing. Type scale: xs 13 / sm 15 / base 17 / lg,xl 21 / 2xl,3xl 28 / 4xl 40. Weights map onto 400/600/800. All radii are 0 (rounded-full kept for the round perforation holes). Added `--container-page` 1120px, `--container-prose` 68ch, and an `amount` utility (right-aligned, tabular, nowrap).
+- Base: body 17/1.5 Public Sans, ink on paper, tabular-nums globally. h1 40/800, h2 21/800, h3 17/600. Inputs are carbon; focus ring is a 2px carbon outline (not a box shadow); monospace is forced back to the sans. Underlines apply only to plain `a:not([class])` links, so button-styled links aren't underlined. Reduced-motion guard.
+- Decision: tw-animate-css @import removed (the package stays in deps) because DESIGN.md allows only the correction motion. Public Sans is loaded through a Google Fonts <link> (400;600;800) in `__root.tsx` head, per the styles.css rule against remote @import. Contrast checked: ink-soft 4.85 on paper and 5.48 on stub; carbon 6.66/7.53; correction 5.41/6.12.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 13 files/186 tests, build). The built CSS contains only the six token hexes plus Tailwind internals and recharts attribute selectors.
+Screens checked: yes. `/` is blank paper (no UI yet). The 404 view shows Public Sans, ink, a square button with no shadow, and no underline on the button link after the fix. The centered 404 copy is left for the Phase 6 404 task.
+Next: Components in `src/components/stub/` (GuillocheBackground, Perforation, StubShell, LineItem, Amount, Stamp) plus the `/dev/components` route.
