@@ -82,7 +82,7 @@ describe("MockAIClient.explainStub", () => {
     );
     expect(s[0]).toContain("$1,894 more than Lakeshore Systems");
     expect(s[3]).toBe(
-      "With the defaults Lakeshore Systems looked better, so your elections, not the salaries, decide this choice.",
+      "With the defaults, Lakeshore Systems looked better, so your elections, not the salaries, decide this choice.",
     );
   });
 

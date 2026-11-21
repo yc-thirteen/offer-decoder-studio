@@ -371,3 +371,16 @@ What changed: The previous run (loop iteration 31, 01:24) hit the usage limit pa
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 34 files/404 tests, build). a11y: serious 0, critical 0.
 Screens checked: yes. home-letter and home-letter-review at 375 and 1280 match DESIGN.md (carbon values and markers, inbox-tray panel, no overflow). Missing-field underlines are covered by component tests only, since the mock reads the samples fully.
 Next: the "Plain-English summary" under the memo line.
+
+## 2026-11-21T11:15:00Z | iteration 33
+Task: The "Plain-English summary" under the memo line.
+Result: done
+What changed: New `PlainSummary.tsx` renders inside MemoLine's section. New `summaryText.ts` holds SUMMARY_COPY and summaryRequest (view + mode → buildExplainRequest, or null unless both offers have results); it is its own file to keep the fast-refresh lint warnings at 6. The request is keyed by its JSON, so only a real change to the numbers makes a summary stale. 10 tests in `PlainSummary.test.tsx` cover: the request equals the engine output for all 6 samples × 2 modes; the mock auto-writes the template text, rewrites it on the elections switch, and shows the sample-writer note; nothing renders without two offers; the error alert; and on an HTTP-like client, the button, progress, abort and clear on an elections change, no abort on the per-paycheck toggle, and retry after an error.
+Also added the missing comma in explainTemplate's flip sentence ("With the defaults, Lakeshore Systems looked better"), and updated its test string to match.
+Decisions:
+- The mock writes automatically because it is free and instant. The HTTP client waits for a button because each summary is a paid model call, and an auto-call on every About-you keystroke would burn the key.
+- The auto summary has no aria-live, so screen readers aren't re-read four sentences per keystroke (the memo line is already live). The HTTP result is polite-live.
+- The summary stays on the paper under the memo rather than in a panel, because DESIGN.md puts it "under the memo line".
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 35 files/414 tests, build). One full run failed LetterReader's focus assertion, a test that doesn't render MemoLine. It passed in 3 isolated runs and 4 more full runs, so it is flaky under load; I added a deflake task to BACKLOG. a11y: serious 0, critical 0.
+Screens checked: yes. home-defaults at 1280 and home-recommended at 375: the heading, summary, and note sit under the memo at prose width, with no overflow. The comma nit was found and fixed.
+Next: `docs/AI_SETUP_LOVABLE.md`.

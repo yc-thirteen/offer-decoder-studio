@@ -1,9 +1,11 @@
 /**
  * The memo line under the stubs, set like the memo line of a check: "Memo:" and the
  * sentence sitting on a 1px ink underline. It is the page's punchline, so it gets room.
+ * The plain-English summary sits under it.
  */
 import { useDecoder } from "@/state/DecoderContext";
 import { memoText } from "./memoText";
+import { PlainSummary } from "./PlainSummary";
 
 export function MemoLine() {
   const { state, view } = useDecoder();
@@ -18,6 +20,7 @@ export function MemoLine() {
         <span className="shrink-0 font-semibold">Memo:</span>
         <span className="min-w-0 flex-1 border-b border-ink pb-1 font-semibold">{text}</span>
       </p>
+      <PlainSummary />
     </section>
   );
 }

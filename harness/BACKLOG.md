@@ -45,7 +45,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [x] `HttpAIClient`, which POSTs to `<supabaseUrl>/functions/v1/decode-offer` and `/functions/v1/explain-stub` with the publishable key header, and has a 20s timeout and a directive error message.
 - [x] `supabase/functions/decode-offer/index.ts` and `supabase/functions/explain-stub/index.ts` (Deno). They read `Deno.env.get("ANTHROPIC_API_KEY")`, call `https://api.anthropic.com/v1/messages` (model `claude-sonnet-5-5`, `anthropic-version: 2023-06-01`), and ask for JSON only that matches the types. Validate the output, return 400 on invalid input, and handle CORS. Never log the letter text. The explain function must instruct the model to use only the numbers provided.
 - [x] The "Read offer letter" panel (paste text or drop a .txt file), the review state with "from letter" markers and missing-field underlines, and the sample-reader note.
-- [ ] The "Plain-English summary" under the memo line.
+- [x] The "Plain-English summary" under the memo line.
 - [ ] `docs/AI_SETUP_LOVABLE.md`: the exact steps and a copy-paste prompt for Lovable to enable Cloud, deploy the two existing functions unchanged, and add the `ANTHROPIC_API_KEY` secret, plus how to confirm it's working.
 
 ## Phase 6: content and finish
@@ -54,6 +54,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [ ] `IMAGE_PROMPTS.md` at the repo root, with one prompt per slot in DESIGN.md (exact sizes, exact hex colors, the pay-stub/security-paper style, and no text in images except the share card's title). Wire each slot with a fallback.
 - [ ] Accessibility pass: zero serious axe violations, keyboard order, a visible focus ring, and labels on every input.
 - [ ] Responsive pass at 375 and 768: no horizontal scroll, and nothing overlapping the notches or the perforation.
+- [ ] Deflake `src/components/decoder/LetterReader.test.tsx` "reads a pasted sample letter into the review state": under full-suite load the review sentence sometimes lacks focus at the sync `toHaveFocus` check (seen once in 5 runs). Wait for focus with `waitFor`/`findBy`, or move focus synchronously in `OfferEditor`.
 - [ ] `README.md`: what it is, the lecture-to-feature mapping, how to run and test it, what is mocked, and how to connect AI.
 
 ## Critique rounds

@@ -153,7 +153,7 @@ export function explainTemplate(req: ExplainRequest): string {
   } else {
     sentences.push(
       flips
-        ? `With the defaults ${nameOf(req.winnerByDefault)} looked better, so your elections, not the salaries, decide this choice.`
+        ? `With the defaults, ${nameOf(req.winnerByDefault)} looked better, so your elections, not the salaries, decide this choice.`
         : `That assumes ${retirementText(w)} and the ${w.planName} at ${W}, as the checklist lists.`,
     );
   }
