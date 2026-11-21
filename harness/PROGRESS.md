@@ -80,3 +80,12 @@ What changed: New `src/lib/engine/health.ts`: outOfPocket, employerHsaDeposit, p
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 7 files/80 tests + 2 todo, build)
 Screens checked: no (no UI change)
 Next: `retirement.ts` (match tiers, match cap, max match %, vesting) with unit tests, including the 7B 6%→9% example.
+
+## 2026-11-21T04:50:31Z | iteration 9
+Task: `retirement.ts` (match tiers, match cap, max match %, vesting) with unit tests, including the 7B example where 6% in gets 9% total.
+Result: done
+What changed: New `src/lib/engine/retirement.ts`: matchCapPct, employee401kDollars (capped at 24,500), hitsLimit401k (strict `>` like engine.py, so exactly 24,500 is not "hits limit"), employerMatch (cumulative bands sorted by upToPct, on actual capped dollars), fullMatchDollars, maxMatchPct, vestedPct/vestedPctByYear (years 0–6; graded walks the schedule in order like engine.py). All unrounded. Decisions: no tiers → cap 0 and match 0; salary ≤ 0 → match 0 instead of dividing by zero. The 401(k) dollar/limit helpers live here so calculate.ts and recommend.ts share them.
+- `retirement.test.ts`: 7B 50%-to-6% example (6% in → 9% total), unsorted cumulative tiers, no-match, 401(k)-cap interaction, limit edge, immediate/cliff/graded vesting, plus matchCapPct, maxMatchPctOfSalary, vestedPctByYear, employee401k, hitsLimit401k and employerMatch (default + recommended) for all 12 offers vs expected.json.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 8 files/100 tests + 2 todo, build)
+Screens checked: no (no UI change)
+Next: `calculate.ts` (full pay calculation and bottom line) and `recommend.ts` (recommended elections).
