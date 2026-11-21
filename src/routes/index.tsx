@@ -1,5 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AboutYou, DecoderControls, DecoderHeader, OfferStubs } from "@/components/decoder";
+import {
+  AboutYou,
+  DecoderControls,
+  DecoderHeader,
+  MemoLine,
+  OfferStubs,
+} from "@/components/decoder";
 import { GuillocheBackground } from "@/components/stub";
 import { DecoderProvider } from "@/state/DecoderContext";
 
@@ -28,6 +34,7 @@ function Index() {
           <DecoderControls />
           <AboutYou />
           <OfferStubs />
+          <MemoLine />
         </main>
       </div>
     </DecoderProvider>

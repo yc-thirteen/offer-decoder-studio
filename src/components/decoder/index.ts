@@ -16,3 +16,5 @@ export {
   stateTaxRowLabel,
   vestingNote,
 } from "./stubFormat";
+export { MemoLine } from "./MemoLine";
+export { memoName, memoText } from "./memoText";
