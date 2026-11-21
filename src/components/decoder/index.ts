@@ -18,3 +18,5 @@ export {
 } from "./stubFormat";
 export { MemoLine } from "./MemoLine";
 export { memoName, memoText } from "./memoText";
+export { Checklist } from "./Checklist";
+export { checklistItems, checklistSentence, vestingDateText } from "./checklistText";

@@ -64,10 +64,13 @@ async function loadFirstSample(page) {
 }
 
 async function openChecklist(page) {
-  const tab = page
-    .getByRole("tab", { name: /checklist/i })
-    .or(page.getByRole("button", { name: /checklist/i }));
-  if (await clickIfPresent(page, tab, "checklist tab")) await page.waitForTimeout(300);
+  // The checklist sits on the page under the memo; its tabs pick the offer (the first is selected).
+  const heading = page.getByRole("heading", { name: /back of the stub/i }).first();
+  if ((await heading.count()) === 0) return console.log("  skipped: checklist not found");
+  await heading.scrollIntoViewIfNeeded();
+  const tick = page.locator("[data-checklist-id] input[type=checkbox]").first();
+  if ((await tick.count()) > 0) await tick.check(); // show one ticked item in carbon
+  await page.waitForTimeout(300);
 }
 
 const VIEWS = [

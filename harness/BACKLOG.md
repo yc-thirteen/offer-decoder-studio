@@ -28,7 +28,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [x] About you block (all profile fields; spouse's wages only when filing jointly; a disclosure on mobile).
 - [x] The two stubs bound to engine output, with every line item, note, stamp, and both modes. Check them against the fixture numbers for chicago-vs-austin in a component test.
 - [x] Memo line (the winner sentence, plus the flip sentence when the default and recommended winners differ).
-- [ ] Back-of-stub checklist with the offer tabs and all copy from DESIGN.md, with dynamic values and zero amounts omitted.
+- [x] Back-of-stub checklist with the offer tabs and all copy from DESIGN.md, with dynamic values and zero amounts omitted.
 - [ ] Edit offer mode: inline fields in `--carbon`, add and remove health plans and match tiers, choose the vesting type, and validation with directive error messages. "Save offer" leads to "Offer saved".
 - [ ] Empty state (blank stubs with direction) and a "Clear offers" control.
 

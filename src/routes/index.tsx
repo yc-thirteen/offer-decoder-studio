@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   AboutYou,
+  Checklist,
   DecoderControls,
   DecoderHeader,
   MemoLine,
@@ -35,6 +36,7 @@ function Index() {
           <AboutYou />
           <OfferStubs />
           <MemoLine />
+          <Checklist />
         </main>
       </div>
     </DecoderProvider>
