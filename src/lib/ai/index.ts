@@ -8,7 +8,15 @@ import { MockAIClient } from "./MockAIClient";
 import type { AIClient } from "./types";
 
 export * from "./types";
-export { HttpAIClient, type HttpAIConfig } from "./HttpAIClient";
+export {
+  AI_TIMEOUT_MS,
+  HttpAIClient,
+  READER_ERRORS,
+  SUMMARY_ERRORS,
+  type HttpAIConfig,
+  type HttpAIOptions,
+} from "./HttpAIClient";
+export { serverErrorMessage, validateExplainResult, validateExtractResult } from "./validate";
 export { MockAIClient } from "./MockAIClient";
 export {
   INVALID_EXPLAIN_REQUEST,

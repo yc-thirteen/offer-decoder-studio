@@ -311,3 +311,13 @@ MockAIClient.explainStub uses it and rejects an aborted signal. The AI index re-
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 30 files/344 tests, build).
 Screens checked: no (no UI change). I read all 12 sample summaries in a throwaway test (deleted, not committed).
 Next: `HttpAIClient`, which POSTs to the two edge functions with the publishable key header, a 20s timeout, and a directive error.
+
+## 2026-11-21T10:20:00Z | iteration 30
+Task: `HttpAIClient`, which POSTs to `<supabaseUrl>/functions/v1/decode-offer` and `/functions/v1/explain-stub` with the publishable key header, and has a 20s timeout and a directive error message.
+Result: done
+What changed: `src/lib/ai/HttpAIClient.ts` now POSTs JSON to both edge functions with `apikey` and `Authorization: Bearer <publishable key>` headers (Supabase's gateway wants both). It has a 20s timeout (AI_TIMEOUT_MS) through an AbortController that also follows the caller's signal. Every failure is a directive AIError from READER_ERRORS/SUMMARY_ERRORS: timeout, cancelled, network, a failing status, and an unreadable body. On a failing status it shows the function's own `{error}` string when one is present and short (≤240 chars), otherwise the fallback. Bad input (an empty letter, an invalid ExplainRequest via assertExplainRequest) is rejected before any request. fetch and timeoutMs can be injected for tests.
+New `src/lib/ai/validate.ts`: validateExtractResult, validateExplainResult, serverErrorMessage. 12 tests are in `HttpAIClient.test.ts`. index.test.ts drops the placeholder test, since no unbuilt methods remain.
+- Decisions: a response missing the `fields` object or any field key is rejected whole. A single "letter" field with a mistyped value (wrong type, unknown state, an incomplete plan, a default plan that isn't one of the letter's plans) is downgraded to missing with its MISSING_NOTES text, so a model's malformed value never shows as "from letter" and the rest of the letter stays usable. A "missing" field's value is always forced to null.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 31 files/356 tests, build).
+Screens checked: no (no UI change).
+Next: the decode-offer and explain-stub Supabase edge functions (Deno).

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  AIError,
   EXTRACT_FIELD_KEYS,
   HttpAIClient,
   MockAIClient,
@@ -73,13 +72,5 @@ describe("AI types", () => {
     expect(Object.keys(all).sort()).toEqual([...EXTRACT_FIELD_KEYS].sort());
     expect(all.salary.source).toBe("missing");
     expect(all.salary.value).toBeNull();
-  });
-
-  it("unbuilt client methods reject with a directive AIError instead of faking success", async () => {
-    const http = new HttpAIClient({ supabaseUrl: URL, publishableKey: "pk" });
-    await expect(http.extractOffer()).rejects.toBeInstanceOf(AIError);
-    await expect(http.extractOffer()).rejects.toThrow(/by hand/);
-    await expect(http.explainStub()).rejects.toBeInstanceOf(AIError);
-    await expect(http.explainStub()).rejects.toThrow(/Read the stubs/);
   });
 });
