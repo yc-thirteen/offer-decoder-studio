@@ -4,7 +4,13 @@ import { employee401kDollars, employerMatch } from "@/lib/engine";
 import { SAMPLE_CASES, deriveView, initialDecoderState } from "@/state/decoderState";
 import { DecoderProvider } from "@/state/DecoderContext";
 import { matchChartData, pctWindow, vestingSentence } from "./matchData";
-import { MARKER_CLEARANCE, placeLineLabel } from "./matchLabel";
+import {
+  MARKER_CLEARANCE,
+  placeGapLabel,
+  placeLineLabel,
+  segmentHitsBox,
+  type Box,
+} from "./matchLabel";
 import { MatchVestingPanel } from "./MatchVestingPanel";
 
 function dataFor(sampleId: string, slot: 0 | 1) {
@@ -233,6 +239,143 @@ describe("the match line's label", () => {
         }
         unmount();
       }
+    });
+  }
+});
+
+describe("the left-on-the-table label", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  function stubWidth(width: number) {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(private cb: (e: { contentRect: { width: number } }[]) => void) {}
+        observe() {
+          this.cb([{ contentRect: { width } }]);
+        }
+        disconnect() {}
+      },
+    );
+  }
+
+  // A line rising from (60, 200) to the whole match at (200, 100), flat after.
+  const line = [
+    [60, 200],
+    [200, 100],
+    [400, 100],
+  ] as const;
+  const plot = { x0: 60, x1: 400, top: 30, bottom: 200 };
+
+  it("goes left of the default dot when there is room, else past a marker, else in two or three lines", () => {
+    // Room left of the default: end-anchored 8px left of it, halfway up the bracket.
+    const left = placeGapLabel({
+      amount: "$2,250",
+      dot: [316, 120],
+      yFull: 100,
+      markerXs: [316, 380],
+      line: [
+        [60, 200],
+        [380, 100],
+        [400, 100],
+      ],
+      plot,
+      avoid: [],
+    });
+    expect(left).toMatchObject({
+      x: 308,
+      y: 114,
+      anchor: "end",
+      rows: ["$2,250 left on the table"],
+    });
+    // No room left of the default; one line past it or at the right edge would cross the
+    // recommended marker at 230, so two lines fit between them, above the flat line.
+    const two = placeGapLabel({
+      amount: "$2,250",
+      dot: [90, 180],
+      yFull: 100,
+      markerXs: [90, 230],
+      line,
+      plot,
+      avoid: [],
+    });
+    expect(two).toMatchObject({ x: 96, anchor: "start", rows: ["$2,250 left", "on the table"] });
+    expect(two!.box[3]).toBeLessThan(100);
+    // Markers closer still: three lines.
+    expect(
+      placeGapLabel({
+        amount: "$2,250",
+        dot: [90, 180],
+        yFull: 100,
+        markerXs: [90, 180, 260, 330],
+        line,
+        plot,
+        avoid: [],
+      }),
+    ).toMatchObject({ x: 96, anchor: "start", rows: ["$2,250", "left on", "the table"] });
+    // Nothing fits: null, never a label across a line.
+    expect(
+      placeGapLabel({
+        amount: "$2,250",
+        dot: [90, 180],
+        yFull: 100,
+        markerXs: [90, 130, 170, 230, 290, 350],
+        line,
+        plot,
+        avoid: [],
+      }),
+    ).toBeNull();
+  });
+
+  it("clips segments against boxes", () => {
+    const box: Box = [10, 10, 20, 20];
+    expect(segmentHitsBox([0, 15], [30, 15], box)).toBe(true);
+    expect(segmentHitsBox([0, 0], [30, 5], box)).toBe(false);
+    expect(segmentHitsBox([12, 12], [14, 14], box)).toBe(true);
+    expect(segmentHitsBox([0, 30], [30, 0], box)).toBe(true);
+    expect(segmentHitsBox([0, 25], [25, 50], box)).toBe(false);
+  });
+
+  for (const width of [300, 420, 560, 700]) {
+    it(`keeps every marker line and the match line out of it for every sample at ${width}px`, () => {
+      stubWidth(width);
+      let seen = 0;
+      for (const sample of SAMPLE_CASES) {
+        const { unmount, container } = render(
+          <DecoderProvider initialSampleId={sample.id}>
+            <MatchVestingPanel />
+          </DecoderProvider>,
+        );
+        for (const svg of container.querySelectorAll("svg")) {
+          const group = svg.querySelector("[data-left-on-table]");
+          if (!group) continue;
+          const label = group.querySelector("[data-gap-label]");
+          const where = `${sample.id} at ${width}px`;
+          expect(label, `${where}: no label`).not.toBeNull();
+          seen++;
+          const rows = [...label!.querySelectorAll("tspan")].map((t) => t.textContent!.trim());
+          expect(rows.join(" "), where).toMatch(/^\$[\d,]+ left on the table$/);
+          const ax = Number(label!.getAttribute("x"));
+          const ay = Number(label!.getAttribute("y"));
+          const w = Math.max(...rows.map((r) => r.length)) * 8;
+          const left = label!.getAttribute("text-anchor") === "end" ? ax - w : ax;
+          const box: Box = [left, ay - 13, left + w, ay + 3 + 16 * (rows.length - 1)];
+          for (const l of svg.querySelectorAll("[data-marker] line")) {
+            const xm = Number(l.getAttribute("x1"));
+            const inside = xm >= box[0] - MARKER_CLEARANCE && xm <= box[2] + MARKER_CLEARANCE;
+            expect(inside, `${where}: marker at ${xm} in [${box[0]}, ${box[2]}]`).toBe(false);
+          }
+          const pts = svg
+            .querySelector("[data-match-line]")!
+            .getAttribute("points")!
+            .split(" ")
+            .map((pt) => pt.split(",").map(Number) as [number, number]);
+          const hit = pts.some((p, i) => i > 0 && segmentHitsBox(pts[i - 1]!, p, box));
+          expect(hit, `${where}: the match line crosses it`).toBe(false);
+        }
+        unmount();
+      }
+      expect(seen).toBeGreaterThan(0);
     });
   }
 });

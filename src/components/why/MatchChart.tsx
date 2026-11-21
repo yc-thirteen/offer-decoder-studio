@@ -12,6 +12,7 @@ import {
   CHAR_PX,
   LINE_LABEL,
   labelBox,
+  placeGapLabel,
   placeLineLabel,
   type Box,
   type LineLabel,
@@ -68,66 +69,74 @@ export function MatchChart({ data, title }: { data: MatchChartData; title: strin
   };
   const oneRow = data.markers.map((mk) => titleAt(mk.pct, mk.label, 0));
   const twoRows = oneRow.length === 2 && overlaps(pad(oneRow[0]!.box, 8), oneRow[1]!.box);
-  const inPlotLabel = placeLineLabel(
-    data.markers.map((mk) => x(mk.pct)),
-    x0,
-    x1,
-  );
-  const headRow = inPlotLabel ? 0 : 16;
-  const top = (twoRows ? 46 : 30) + headRow;
-  const H = (W < 480 ? 230 : 260) + (twoRows ? 16 : 0) + headRow;
-  const y0 = H - 44;
-  const y1 = top;
+  // The line label goes in the plot's top band when a gap between markers holds it, else in
+  // its own row above the marker titles. When the top band leaves the red gap label no room,
+  // the line label takes its own row so the gap label can sit by its bracket.
+  const layout = (ownRow: boolean) => {
+    const inPlotLabel = ownRow
+      ? null
+      : placeLineLabel(
+          data.markers.map((mk) => x(mk.pct)),
+          x0,
+          x1,
+        );
+    const headRow = inPlotLabel ? 0 : 16;
+    const top = (twoRows ? 46 : 30) + headRow;
+    const H = (W < 480 ? 230 : 260) + (twoRows ? 16 : 0) + headRow;
+    const y0 = H - 44;
+    const y1 = top;
 
-  const yHi = yTicks[yTicks.length - 1] ?? data.yMax;
-  const y = scale(0, yHi, y0, y1);
+    const yHi = yTicks[yTicks.length - 1] ?? data.yMax;
+    const y = scale(0, yHi, y0, y1);
+    // In two rows, the upper title belongs to the marker whose line won't cross the lower title.
+    const crossesLowerTitle = (i: number) => {
+      const other = data.markers[1 - i]!;
+      const lower = titleAt(other.pct, other.label, y1 - 12);
+      const xm = x(data.markers[i]!.pct);
+      return xm > lower.box[0] - 8 && xm < lower.box[2] + 8;
+    };
+    const upper = twoRows ? (crossesLowerTitle(0) ? 1 : 0) : -1;
+    const titles = data.markers.map((mk, i) =>
+      titleAt(mk.pct, mk.label, i === upper ? y1 - 28 : y1 - 12),
+    );
+
+    const dots = data.markers.map((mk) => ({ mk, cx: x(mk.pct), cy: y(mk.match) }));
+    // In the plot's top band, or else in its own row above the highest marker title.
+    const lineLabelAt = (lx: number, ly: number, rows: string[]): LineLabel => ({
+      x: lx,
+      y: ly,
+      rows,
+      box: labelBox(lx, ly, rows),
+    });
+    const lineLabel = inPlotLabel
+      ? lineLabelAt(inPlotLabel.x, y1 + 14, inPlotLabel.rows)
+      : lineLabelAt(x0, Math.min(...titles.map((t) => t.y)) - 16, [LINE_LABEL]);
+    const yFull = y(data.fullMatch);
+
+    // The bracket from the default dot up to the whole match, in correction red. Its label
+    // stays clear of every marker line and of the match line (see placeGapLabel).
+    const def = dots.find((dt) => dt.mk.kind === "default");
+    const gap =
+      def && data.leftOnTable > 0
+        ? placeGapLabel({
+            amount: formatMoney(data.leftOnTable),
+            dot: [def.cx, def.cy],
+            yFull,
+            markerXs: dots.map((dt) => dt.cx),
+            line: data.points.map(([p, m]) => [x(p), y(m)] as const),
+            plot: { x0, x1, top: y1, bottom: y0 },
+            avoid: [lineLabel.box],
+          })
+        : null;
+    return { inPlotLabel, H, y0, y1, y, titles, dots, lineLabel, def, gap };
+  };
+  let L = layout(false);
+  if (L.def && data.leftOnTable > 0 && !L.gap && L.inPlotLabel) L = layout(true);
+  const { H, y0, y1, y, titles, dots, lineLabel, def, gap } = L;
   const xTicks: number[] = [];
   const every = Math.max(1, Math.ceil(48 / ((x1 - x0) / (data.xMax / data.xStep))));
   for (let t = 0, k = 0; t <= data.xMax + 1e-9; t += data.xStep, k++) {
     if (k % every === 0) xTicks.push(Math.round(t * 100) / 100);
-  }
-
-  // In two rows, the upper title belongs to the marker whose line won't cross the lower title.
-  const crossesLowerTitle = (i: number) => {
-    const other = data.markers[1 - i]!;
-    const lower = titleAt(other.pct, other.label, y1 - 12);
-    const xm = x(data.markers[i]!.pct);
-    return xm > lower.box[0] - 8 && xm < lower.box[2] + 8;
-  };
-  const upper = twoRows ? (crossesLowerTitle(0) ? 1 : 0) : -1;
-  const titles = data.markers.map((mk, i) =>
-    titleAt(mk.pct, mk.label, i === upper ? y1 - 28 : y1 - 12),
-  );
-
-  const dots = data.markers.map((mk) => ({ mk, cx: x(mk.pct), cy: y(mk.match) }));
-  // In the plot's top band, or else in its own row above the highest marker title.
-  const lineLabelAt = (lx: number, ly: number, rows: string[]): LineLabel => ({
-    x: lx,
-    y: ly,
-    rows,
-    box: labelBox(lx, ly, rows),
-  });
-  const lineLabel = inPlotLabel
-    ? lineLabelAt(inPlotLabel.x, y1 + 14, inPlotLabel.rows)
-    : lineLabelAt(x0, Math.min(...titles.map((t) => t.y)) - 16, [LINE_LABEL]);
-  const inPlot = (b: Box) => b[0] >= x0 + 2 && b[2] <= x1;
-  const yFull = y(data.fullMatch);
-
-  // The bracket from the default dot up to the whole match, in correction red. Its label goes
-  // above-left of the default dot (empty: the line rises to the right), else above the flat.
-  const def = dots.find((dt) => dt.mk.kind === "default");
-  let gap: Placed | null = null;
-  if (def && data.leftOnTable > 0) {
-    const text = `${formatMoney(data.leftOnTable)} left on the table`;
-    const red = "var(--correction)";
-    const tries = [
-      place(text, def.cx - 8, (def.cy + yFull) / 2 + 4, "end", red),
-      place(text, def.cx + 6, yFull - 8, "start", red),
-      place(text, x1 - 2, yFull - 8, "end", red),
-    ];
-    gap =
-      tries.find((t) => inPlot(t.box) && !overlaps(t.box, lineLabel.box)) ??
-      tries[tries.length - 1]!;
   }
 
   // Values by each dot: below-right on the rising part of the line (empty space); above-right
@@ -267,7 +276,7 @@ export function MatchChart({ data, title }: { data: MatchChartData; title: strin
         </text>
 
         {/* Money left on the table */}
-        {def && gap && (
+        {def && data.leftOnTable > 0 && (
           <g data-left-on-table="">
             <line
               x1={def.cx}
@@ -287,16 +296,23 @@ export function MatchChart({ data, title }: { data: MatchChartData; title: strin
               strokeWidth={1}
               strokeDasharray="4 3"
             />
-            <text
-              x={gap.x}
-              y={gap.y}
-              textAnchor={gap.anchor}
-              fill="var(--correction)"
-              fontWeight={600}
-              {...HALO}
-            >
-              {gap.text}
-            </text>
+            {gap && (
+              <text
+                data-gap-label=""
+                x={gap.x}
+                y={gap.y}
+                textAnchor={gap.anchor}
+                fill="var(--correction)"
+                fontWeight={600}
+                {...HALO}
+              >
+                {gap.rows.map((row, i) => (
+                  <tspan key={row} x={gap.x} dy={i === 0 ? 0 : 16}>
+                    {i < gap.rows.length - 1 ? `${row} ` : row}
+                  </tspan>
+                ))}
+              </text>
+            )}
           </g>
         )}
 
