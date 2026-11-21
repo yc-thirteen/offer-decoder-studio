@@ -4,7 +4,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 
 ## Phase 0: foundations
 - [x] Inspect the repo and record in PROGRESS.md: framework, router, styling, UI kit, package manager, and existing scripts. Run `npm install` and `npm run build` and record the results. Don't change anything else.
-- [ ] Add `harness/logs/`, `harness/shots/`, `.env`, and `.env.local` to `.gitignore`. Add `.env.example` with placeholder names only.
+- [x] Add `harness/logs/`, `harness/shots/`, `.env`, and `.env.local` to `.gitignore`. Add `.env.example` with placeholder names only.
 - [ ] Add Vitest with jsdom and Testing Library. Add scripts: `test` (vitest run), `typecheck` (tsc --noEmit for the app tsconfig), and `verify` (typecheck, lint if a lint script exists, test, build). Add one trivial passing test.
 - [ ] Add Playwright (chromium only) and `scripts/shots.mjs`, which builds, starts `vite preview`, and captures the screenshots listed in HARNESS.md into `harness/shots/latest/`, overwriting each run. Add the `shots` npm script. Add `scripts/a11y.mjs` with @axe-core/playwright, which prints the serious and critical violation counts, and the `a11y` script.
 - [ ] Copy `harness/fixtures/cases.json` to `src/data/sampleCases.json`, the letters to `src/data/letters/`, and add a test asserting the copies are byte-identical to the originals.

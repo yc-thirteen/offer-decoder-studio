@@ -30,3 +30,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Harness output (screenshots and loop logs stay local)
+harness/logs/
+harness/shots/
+
+# Environment files (never commit real values; see .env.example)
+.env
+.env.local

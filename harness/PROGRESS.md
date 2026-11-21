@@ -16,3 +16,11 @@ What changed: Only BACKLOG/PROGRESS. Findings:
 Verify: pass (npm run build; verify script not yet created)
 Screens checked: no (no UI change)
 Next: Add harness/logs, harness/shots, .env, .env.local to .gitignore and .env.example.
+
+## 2026-11-21T04:32:07Z | iteration 2
+Task: Add harness/logs/, harness/shots/, .env, and .env.local to .gitignore. Add .env.example with placeholder names only.
+Result: done
+What changed: Appended harness/logs/, harness/shots/, .env, .env.local to `.gitignore` (confirmed with `git check-ignore`; .env.example stays tracked). New `.env.example` lists VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, commented VITE_SUPABASE_ANON_KEY (the names the Phase 5 AI factory will check), and a commented ANTHROPIC_API_KEY noted as a server-only Lovable Cloud secret. All values are placeholders. Decision: did not ignore `.env.*` broadly, so .env.example cannot be accidentally excluded.
+Verify: pass (npm run build; verify script not yet created)
+Screens checked: no (no UI change)
+Next: Add Vitest/jsdom/Testing Library scripts: test, typecheck, verify, plus a trivial passing test (Vitest is already installed; mostly adding typecheck + verify).
