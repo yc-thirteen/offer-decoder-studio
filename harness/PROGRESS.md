@@ -148,3 +148,16 @@ What changed: New `src/state/decoderState.ts` (pure, no React): SAMPLE_CASES, De
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 16 files/213 tests, build)
 Screens checked: no (no visible UI change; `/` still renders an empty main)
 Next: Header and controls row (sample picker with all 6 cases, Annual/Per paycheck toggle, recommended switch).
+
+## 2026-11-21T05:25:32Z | iteration 16
+Task: Header and controls row (sample picker with all 6 cases, the Annual/Per paycheck toggle, and the recommended switch).
+Result: done
+What changed: New `src/components/decoder/DecoderHeader.tsx` (exported from `@/components/decoder`). DecoderHeader is the brand at 21/800 on the left and "Pay period: your first year" in 13px ink-soft on the right, with a 2px ink rule beneath. DecoderControls holds three controls:
+- SamplePicker: a native select labeled "Load a sample" listing all 6 SAMPLE_CASES by title, plus a "Load sample" submit button that dispatches loadSample.
+- PeriodToggle: a fieldset "Show amounts" with two sr-only radios styled as square segments. The selected one is carbon, and the focus ring sits on the segment via :has(:focus-visible).
+- RecommendedSwitch: a native checkbox with role="switch", "Use recommended elections", that turns carbon/600 when on.
+`/` now renders GuillocheBackground, the header, an sr-only h1, and the controls inside the 1120px column. 5 new tests in DecoderHeader.test.tsx.
+- Decisions: the select doesn't load on change. Changing context on select is a WCAG 3.2.2 problem, and DESIGN.md names the button "Load sample". The picker keeps its own choice: it follows state.sampleId when a sample loads and keeps the last choice after Clear offers, so Load sample always works from empty. The select is capped at 24rem (sm and up) so the row fits on one line at 1280. Longer titles are clipped in the closed select, but the open list shows them in full.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 17 files/218 tests, build). a11y: 0 serious, 0 critical.
+Screens checked: yes, at 375, 768, and 1280, with no overflow. Controls take one row at 1280 and two at 768. At 375 they take three rows (picker+button, toggle, switch), because the toggle and the switch label together are wider than 343px. DESIGN.md says two rows; that's left for the Phase 6 responsive pass.
+Next: About you block (all profile fields; spouse's wages only when filing jointly; a disclosure on mobile).

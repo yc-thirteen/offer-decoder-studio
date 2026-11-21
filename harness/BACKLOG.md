@@ -24,7 +24,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 
 ## Phase 3: decoder page
 - [x] App state (profile, two offers, elections mode, annual or per-paycheck, chosen sample) in one store, using React context or useReducer. The engine runs from state, and components only format.
-- [ ] Header and controls row (sample picker with all 6 cases, the Annual/Per paycheck toggle, and the recommended switch).
+- [x] Header and controls row (sample picker with all 6 cases, the Annual/Per paycheck toggle, and the recommended switch).
 - [ ] About you block (all profile fields; spouse's wages only when filing jointly; a disclosure on mobile).
 - [ ] The two stubs bound to engine output, with every line item, note, stamp, and both modes. Check them against the fixture numbers for chicago-vs-austin in a component test.
 - [ ] Memo line (the winner sentence, plus the flip sentence when the default and recommended winners differ).

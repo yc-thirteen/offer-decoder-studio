@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { DecoderControls, DecoderHeader } from "@/components/decoder";
+import { GuillocheBackground } from "@/components/stub";
 import { DecoderProvider } from "@/state/DecoderContext";
 
 export const Route = createFileRoute("/")({
@@ -18,7 +20,14 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <DecoderProvider>
-      <main className="min-h-screen" />
+      <GuillocheBackground />
+      <div className="mx-auto min-h-screen max-w-page px-4 py-6 md:px-6">
+        <DecoderHeader />
+        <main>
+          <h1 className="sr-only">Compare two job offers after taxes and benefits</h1>
+          <DecoderControls />
+        </main>
+      </div>
     </DecoderProvider>
   );
 }
