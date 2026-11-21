@@ -746,3 +746,15 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/483 tests, build). ESLint lints the ignored scratch scripts, so I ran `eslint --fix` on the two new ones.
 Screens checked: yes. Looked at contact sheets of every chart crop at 375 for all 5 chart samples, the 768 health and match sheets, the 1280 tax sheet, 4x zooms of the "12%" labels, and the top of home recommended at 1280. Issues: the tax label width above.
 Next: the TaxChart rate-label width task from critique round 5.
+
+## 2026-11-21T17:45:00Z | iteration 56
+Task: Rubric 6. Size TaxChart rate labels by their real 600-weight width plus halo (helper in `chartKit.ts`, TaxChart only), use it in the `TaxPanel.test.tsx` sweep, and unit-check that "12%" is at least 30px.
+Result: done
+What changed: `chartKit.ts` gets `haloTextWidth` and `haloTextBox`. The per-glyph widths come from browser measurements: tabular digits 9.1px, "%" 12, space 3.1, letters about 7 ("12%" = 30.2px), plus the 2px `HALO_PAD` on each side. TaxChart's `centered` uses them. With honest widths, own-rate labels lost their spot in 3 tight cases at 300px (high-earner-family rec offer 1, university-staff offer 1, plan-crossover rec offer 2). So each span now gets a free window: 2px pad at the marker (the box already holds the halo), 1.5px before the riser up to the next step, 1.5px at the y axis, and none at the step's left end (that riser runs down, under the label). The label is centered in the window, then pushed to either end of it. The sweep sizes rate labels with `haloTextBox`, and a new unit test checks widths for every rate (≥ 30px) and "22% marginal" (≥ 87.6px).
+Decisions:
+- The helper's suggested 8.5px digits were too small: tabular digits measured 9.1px, so I used 9.2. Measured with the ignored scratch `harness/shots/crops/measure2.mjs`.
+- The average label and the marker title still use `CHAR_PX`. For those mixed-letter strings it overestimates ("Average 21.3% of your pay" is 200 estimated, 167 real), so they are safe. Switching them would move layouts with no visible gain.
+- At 375, the narrow lower "12%" step in chicago-vs-austin and high-earner-family no longer fits, so that label is left off, per the chart's existing rule (the y axis gives the rate). That is better than the halo notching the riser.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/484 tests, build). a11y: serious 0, critical 0, keyboard problems 0.
+Screens checked: yes. `npm run shots` (0 failed), plus fresh 2x crops of every tax chart (`croptax.mjs`), contact sheets at 375 and 1280, and a zoom of the plan-crossover and university-staff charts at 375. In university-staff, "22%" sits between the marker and the 24% riser, touching neither. No label touches a line. Issues: none new.
+Next: the backlog is empty, so next comes critique round 6 (the last allowed).

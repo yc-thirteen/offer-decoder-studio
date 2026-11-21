@@ -4,7 +4,7 @@ import { ClearOffersButton, RecommendedSwitch } from "@/components/decoder/Decod
 import { BRACKETS, federalTaxOnJob, marginalRate, type CalcResult } from "@/lib/engine";
 import { SAMPLE_CASES, deriveView, initialDecoderState } from "@/state/decoderState";
 import { DecoderProvider } from "@/state/DecoderContext";
-import { CHAR_PX, type Box } from "./chartKit";
+import { CHAR_PX, haloTextBox, haloTextWidth, type Box } from "./chartKit";
 import { taxChartData } from "./taxData";
 import { TaxPanel } from "./TaxPanel";
 
@@ -240,15 +240,31 @@ describe("the labels on the tax chart", () => {
     );
   }
 
-  /** The estimated box of a 13px label, as the chart lays it out. */
+  /**
+   * The estimated box of a 13px label, as the chart lays it out: rate labels by their drawn
+   * width with the halo (haloTextBox), the average label by CHAR_PX.
+   */
   function boxOf(t: Element): Box {
-    const w = t.textContent!.length * CHAR_PX;
+    const text = t.textContent!;
     const x = Number(t.getAttribute("x"));
     const y = Number(t.getAttribute("y"));
-    const anchor = t.getAttribute("text-anchor") ?? "start";
+    const anchor = (t.getAttribute("text-anchor") ?? "start") as "start" | "middle" | "end";
+    if (t.hasAttribute("data-rate-label")) return haloTextBox(text, x, y, anchor);
+    const w = text.length * CHAR_PX;
     const l = anchor === "middle" ? x - w / 2 : anchor === "end" ? x - w : x;
     return [l, y - 13, l + w, y + 3];
   }
+
+  it("sizes rate labels at least as wide as they render, halo included", () => {
+    // "12%" measures 30.2px at 13px/600 in the browser, before its 4px halo stroke.
+    for (const r of ["10%", "12%", "22%", "24%", "32%", "35%", "37%"]) {
+      expect(haloTextWidth(r)).toBeGreaterThanOrEqual(30);
+    }
+    expect(haloTextWidth("22% marginal")).toBeGreaterThanOrEqual(87.6);
+    const [l, , rr] = haloTextBox("12%", 100, 50, "middle");
+    expect(rr - l).toBeCloseTo(haloTextWidth("12%"));
+    expect((l + rr) / 2).toBeCloseTo(100);
+  });
 
   type Seg = [number, number, number, number];
 

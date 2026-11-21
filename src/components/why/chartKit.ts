@@ -80,3 +80,41 @@ export function textBox(text: string, x: number, y: number, anchor: "start" | "e
   const w = text.length * CHAR_PX;
   return anchor === "start" ? [x, y - 13, x + w, y + 3] : [x - w, y - 13, x, y + 3];
 }
+
+/** Width of one 13px, 600-weight Public Sans glyph (measured with getComputedTextLength). */
+function boldGlyphPx(ch: string): number {
+  if (/[0-9]/.test(ch)) return 9.2; // tabular figures, 9.1px
+  if (ch === "%") return 12;
+  if (ch === "." || ch === ",") return 4;
+  if (ch === " ") return 3.5;
+  if (/[mwMW]/.test(ch)) return 11.5;
+  if (/[fijlrt]/.test(ch)) return 4.5;
+  if (/[A-Z$]/.test(ch)) return 9.5;
+  return 7.5;
+}
+
+/** The halo stroke (4px wide, so 2px past each side of the glyphs) a label is knocked out with. */
+export const HALO_PAD = 2;
+
+/**
+ * The drawn width of a 13px, 600-weight label with a halo: the glyphs plus the halo on both
+ * ends. "12%" measures 30.2px in the browser, more than `text.length * CHAR_PX` (24px), so a
+ * label sized by CHAR_PX can run into a line its box was meant to clear.
+ */
+export function haloTextWidth(text: string): number {
+  let w = 0;
+  for (const ch of text) w += boldGlyphPx(ch);
+  return w + 2 * HALO_PAD;
+}
+
+/** The box of a one-line 13px, 600-weight haloed label whose baseline is at y. */
+export function haloTextBox(
+  text: string,
+  x: number,
+  y: number,
+  anchor: "start" | "middle" | "end",
+): Box {
+  const w = haloTextWidth(text);
+  const l = anchor === "middle" ? x - w / 2 : anchor === "end" ? x - w : x;
+  return [l, y - 13, l + w, y + 3];
+}

@@ -8,7 +8,17 @@
 import { useId } from "react";
 import { formatMoney } from "@/components/stub";
 import { pct } from "@/components/decoder/stubFormat";
-import { CHAR_PX, niceTicks, overlaps, scale, textBox, tickMoney, type Box } from "./chartKit";
+import {
+  CHAR_PX,
+  haloTextBox,
+  haloTextWidth,
+  niceTicks,
+  overlaps,
+  scale,
+  textBox,
+  tickMoney,
+  type Box,
+} from "./chartKit";
 import type { TaxChartData } from "./taxData";
 import { useElementWidth } from "./useElementWidth";
 
@@ -25,9 +35,9 @@ interface Label {
   yours: boolean;
 }
 
+/** A rate label centered at x, boxed by its real drawn width (glyphs plus halo). */
 function centered(text: string, x: number, y: number, color: string, yours: boolean): Label {
-  const w = text.length * CHAR_PX;
-  return { text, x, y, anchor: "middle", color, box: [x - w / 2, y - 13, x + w / 2, y + 3], yours };
+  return { text, x, y, anchor: "middle", color, box: haloTextBox(text, x, y, "middle"), yours };
 }
 
 export function TaxChart({
@@ -107,9 +117,13 @@ export function TaxChart({
   });
   if (hasAverage) obstacles.push([x0, ya - 1.5, xt, ya + 1.5]);
   const blocked = (box: Box) => box[1] < 0 || obstacles.some((o) => overlaps(o, box));
+  // Rate label boxes already hold their 2px halo, so the marker needs only 2px of padding
+  // for them: the glyphs still keep ~3px clear of its stroke.
+  const rateObstacles: Box[] = [[xt - 2, y1 - 8, xt + 2, y0], ...obstacles.slice(1)];
+  const rateBlocked = (box: Box) => box[1] < 0 || rateObstacles.some((o) => overlaps(o, box));
 
-  // Rate labels sit above each step, centered on it, or on the part left or right of your
-  // income when the marker splits it. When the average line runs through that spot, the label
+  // Rate labels sit above each step, centered on it (or slid to one end of it when the center
+  // is blocked), or on the part left or right of your income when the marker splits it. When the average line runs through that spot, the label
   // lifts just above the line. A label with no clear spot is left off (the y axis has the rate).
   const rateLabels: Label[] = [];
   for (const { s, a, b, yy } of segs) {
@@ -122,12 +136,23 @@ export function TaxChart({
     let placed: Label | undefined;
     for (const text of tries) {
       for (const [l, rr] of spans) {
+        // The free window over the span stops short of the marker (2px pad), the y axis, and
+        // the riser up to the next step (1.5px pad). The riser at a step's left end runs down,
+        // under the label, so the window starts right at it. The box already holds the halo.
+        // Centered in the window first, then pushed to either end.
+        const lo = (l === xt ? l + 2 : l === x0 ? l + 1.5 : l) + 0.01;
+        const hi = rr - (rr === xt ? 2 : 1.5) - 0.01;
+        const half = haloTextWidth(text) / 2;
+        const xs = [(lo + hi) / 2, lo + half, hi - half];
         for (const yb of ys) {
-          const lab = centered(text, (l + rr) / 2, yb, color, s.yours);
-          if (lab.box[0] >= l + 3 && lab.box[2] <= rr - 3 && !blocked(lab.box)) {
-            placed = lab;
-            break;
+          for (const cx of xs) {
+            const lab = centered(text, cx, yb, color, s.yours);
+            if (lab.box[0] >= lo - 0.005 && lab.box[2] <= hi + 0.005 && !rateBlocked(lab.box)) {
+              placed = lab;
+              break;
+            }
           }
+          if (placed) break;
         }
         if (placed) break;
       }
