@@ -758,3 +758,26 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/484 tests, build). a11y: serious 0, critical 0, keyboard problems 0.
 Screens checked: yes. `npm run shots` (0 failed), plus fresh 2x crops of every tax chart (`croptax.mjs`), contact sheets at 375 and 1280, and a zoom of the plan-crossover and university-staff charts at 375. In university-staff, "22%" sits between the marker and the 24% riser, touching neither. No label touches a line. Issues: none new.
 Next: the backlog is empty, so next comes critique round 6 (the last allowed).
+
+## 2026-11-21T18:15:00Z | iteration 57
+Task: Critique round 6 (the last allowed). Every backlog task was checked off and none were blocked.
+Result: done
+What changed: Took fresh shots (0 failed) and ran a11y and responsive. Took fresh 2x crops of every chart in all 5 chart samples at 375, 768, and 1280 (`cropall.mjs`), then built contact sheets at 375 for each sample plus one 1280 sheet. Zoomed with a new ignored scratch script, `harness/shots/crops/zoom6.mjs`. Every item scores 2, so I wrote `harness/DONE.md`. No product code changed.
+Scores (0–2):
+1. Reads as a pay stub at 1280 and 375: 2.
+2. Banned items absent: 2.
+3. Right edge and tabular figures: 2.
+4. Memo most prominent after the stubs: 2.
+5. Correction legible with recommended on: 2. At 375 the struck default and the blue new amount sit on one right edge, and net pay wraps to two lines without clipping.
+6. Charts follow the rules: 2. Round 5's fix holds. In a 4x zoom, plan-crossover offer 2's "12%" sits clear above the average line and the 22% riser. In a 5x zoom, university-staff's "22%" clears both the marker and the 24% riser. At 375, every health, match, life, and tax chart in the 5 samples has direct labels and no legend boxes. No label touches a line.
+7. AA, focus, axe: 2. a11y: serious 0, critical 0, keyboard problems 0.
+8. No sideways scroll, nothing on notches or perforation: 2. responsive: 0 problems, 0 views failed.
+9. Copy rules: 2.
+10. Empty and error states: 2. The empty state at 375 gives direction in every section.
+Decisions:
+- With every item at 2, all of HARNESS.md's done conditions are met, so I wrote DONE.md this iteration instead of adding tasks. Round 6 is the last allowed anyway.
+- In university-staff and high-earner-family offer 2, the average line still runs just under a step. That comes from the data, as noted in round 4.
+- No blocked tasks to retry.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/484 tests, build).
+Screens checked: yes. Contact sheets at 375 for all 5 chart samples, 4–5x zooms of the two tightest tax labels, home recommended at 1280 (full) and at 375 (top), and empty at 375. Issues: none.
+Next: none. DONE.md is written and the loop stops.

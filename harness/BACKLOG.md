@@ -81,3 +81,6 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 
 ### Critique round 5 (2026-11-21)
 - [x] Rubric 6: in `src/components/why/TaxChart.tsx` (`centered`, ~line 28), rate labels are sized as `text.length * CHAR_PX` (24px for "12%"), but they render 30.2px wide at 13px/600 (measured with `getComputedTextLength`), plus the 4px `HALO` stroke. So at 375 the "%" of a lower-step "12%" touches the next step's riser, and its halo cuts a notch in it (chicago-vs-austin both offers, high-earner-family both offers). Fix: size rate labels from a 600-weight estimate (e.g. digits 8.5px, "%" 13px, space 4px, letters 8px) plus 2px halo each side, in a helper in `chartKit.ts` that only TaxChart uses for now. In `TaxPanel.test.tsx`, make the rendered sweep's label boxes use the same helper, and add a unit check that the helper's width for "12%" is at least 30px.
+
+### Critique round 6 (2026-11-21)
+Every rubric item scored 2, so there are no tasks. See `harness/DONE.md`.
