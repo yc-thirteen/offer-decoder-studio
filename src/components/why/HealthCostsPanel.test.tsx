@@ -1,10 +1,11 @@
 import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { breakpoints, planCost, worstCaseCost } from "@/lib/engine";
 import { SAMPLE_CASES, deriveView, initialDecoderState } from "@/state/decoderState";
 import { DecoderProvider } from "@/state/DecoderContext";
 import { niceTicks, spreadLabels, tickMoney, yAxisLeft } from "./chartKit";
 import { healthChartData, lineLabel, spendWindow } from "./healthChart";
+import { placeValueLabels, valueBox } from "./healthValueLabels";
 import { HealthCostsPanel } from "./HealthCostsPanel";
 
 function dataFor(sampleId: string, slot: 0 | 1) {
@@ -171,4 +172,130 @@ describe("HealthCostsPanel", () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole("img")).toBeNull();
   });
+});
+
+describe("the cost beside each dot", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  /** Make every chart measure `width` px, as a ResizeObserver would in a browser. */
+  function stubWidth(width: number) {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(private cb: (e: { contentRect: { width: number } }[]) => void) {}
+        observe() {
+          this.cb([{ contentRect: { width } }]);
+        }
+        disconnect() {}
+      },
+    );
+  }
+
+  const bounds = {
+    xs: 200,
+    plot: [62, 30, 548, 256] as [number, number, number, number],
+    avoid: [],
+  };
+
+  // A line rising 1px for every px to the right through the dot.
+  const rising = (dotY: number) => ({ y: dotY, lineY: (x: number) => dotY - (x - 200) });
+
+  it("sits above-left of its dot, and below-right when that spot is taken", () => {
+    const [one] = placeValueLabels([{ ...rising(150), text: "$3,200" }], bounds);
+    expect(one).toMatchObject({ anchor: "end", x: 194 });
+    expect(one!.box[3]).toBeLessThan(150);
+    // Two dots close together (chicago-vs-austin Northfield): the higher one keeps
+    // above-left, the lower one goes below-right.
+    const [hi, lo] = placeValueLabels(
+      [
+        { ...rising(140), text: "$3,200" },
+        { ...rising(146), text: "$1,600" },
+      ],
+      bounds,
+    );
+    expect(hi!.anchor).toBe("end");
+    expect(lo!.anchor).toBe("start");
+    expect(lo!.box[1]).toBeGreaterThan(146);
+    // No room above the dot inside the plot: below-right.
+    const [top] = placeValueLabels([{ ...rising(36), text: "$5,800" }], bounds);
+    expect(top!.anchor).toBe("start");
+    expect(top!.box[1]).toBeGreaterThan(36);
+    // Dots at the plot's left edge (low spending) have no room left of the marker. Below-right
+    // of the higher dot, the lower plan's line runs through the label, so it goes above-right,
+    // clear of its own steep line at the label's far corner; the lower dot takes below-right.
+    const edge = { ...bounds, xs: 66 };
+    const steep = (x: number) => 200 - (x - 66);
+    const [a, b] = placeValueLabels(
+      [
+        { y: 200, text: "$2,000", lineY: steep },
+        { y: 206, text: "$800", lineY: (x: number) => 206 - 0.2 * (x - 66) },
+      ],
+      edge,
+    );
+    expect(a).toMatchObject({ anchor: "start", x: 72 });
+    expect(a!.box[3]).toBeLessThanOrEqual(steep(a!.box[2]) - 3);
+    expect(b).toMatchObject({ anchor: "start", x: 72 });
+    expect(b!.box[1]).toBeGreaterThan(206);
+  });
+
+  /** Whether the polyline, drawn ~2.5px wide, touches the box. */
+  function lineTouches(points: [number, number][], box: number[]): boolean {
+    const [l, t, r, b] = box as [number, number, number, number];
+    for (let k = 1; k < points.length; k++) {
+      const [ax, ay] = points[k - 1]!;
+      const [bx, by] = points[k]!;
+      const steps = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay)));
+      for (let j = 0; j <= steps; j++) {
+        const px = ax + ((bx - ax) * j) / steps;
+        const py = ay + ((by - ay) * j) / steps;
+        if (px > l - 1 && px < r + 1 && py > t - 1 && py < b + 1) return true;
+      }
+    }
+    return false;
+  }
+
+  for (const width of [300, 420, 560, 700]) {
+    it(`keeps every cost off its own line, and off the other costs, at ${width}px`, () => {
+      stubWidth(width);
+      for (const sample of SAMPLE_CASES) {
+        const { unmount, container } = render(
+          <DecoderProvider initialSampleId={sample.id}>
+            <HealthCostsPanel />
+          </DecoderProvider>,
+        );
+        const charts = [...container.querySelectorAll("svg")];
+        expect(charts.length).toBeGreaterThan(0);
+        for (const svg of charts) {
+          const labels = [...svg.querySelectorAll("[data-value-label]")];
+          expect(labels.length).toBeGreaterThan(0);
+          const boxes = labels.map((t) =>
+            valueBox(
+              t.textContent!,
+              Number(t.getAttribute("x")),
+              Number(t.getAttribute("y")),
+              t.getAttribute("text-anchor") as "start" | "end",
+            ),
+          );
+          labels.forEach((t, i) => {
+            const id = t.getAttribute("data-value-label");
+            const line = svg.querySelector(`polyline[data-plan-id="${id}"]`)!;
+            const points = line
+              .getAttribute("points")!
+              .split(" ")
+              .map((p) => p.split(",").map(Number) as [number, number]);
+            expect(
+              lineTouches(points, boxes[i]!),
+              `${sample.id} at ${width}px: ${t.textContent} on its own line`,
+            ).toBe(false);
+            for (let j = 0; j < i; j++) {
+              const [a, b] = [boxes[i]!, boxes[j]!];
+              const clash = a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+              expect(clash, `${sample.id} at ${width}px: two costs overlap`).toBe(false);
+            }
+          });
+        }
+        unmount();
+      }
+    });
+  }
 });

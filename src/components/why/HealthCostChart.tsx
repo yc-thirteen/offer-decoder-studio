@@ -2,12 +2,13 @@
  * Hand-built SVG: each plan's total yearly cost against medical spending (7A slide 37).
  * Dominated plans are a dashed correction line, the recommended plan a solid carbon line,
  * others ink. Lines are labeled directly, a vertical marker shows your expected spending,
- * and each plan's cost there is written on the chart. Drawn at the container's real pixel
+ * and each plan's cost there is written beside its dot, off its own line. Drawn at the container's real pixel
  * width so the 13px labels stay 13px on a phone.
  */
 import { formatMoney } from "@/components/stub";
 import { planCost } from "@/lib/engine";
-import { niceTicks, scale, spreadLabels, tickMoney, yAxisLeft } from "./chartKit";
+import { niceTicks, scale, spreadLabels, tickMoney, yAxisLeft, type Box } from "./chartKit";
+import { placeValueLabels } from "./healthValueLabels";
 import { lineLabel, type HealthChartData, type PlanLineKind } from "./healthChart";
 import { useElementWidth } from "./useElementWidth";
 
@@ -19,13 +20,6 @@ const STROKE: Record<PlanLineKind, string> = {
 
 /** Rough width of one 13px, 600-weight character, for deciding when a label must wrap. */
 const CHAR_PX = 7.4;
-
-/** [left, top, right, bottom] in px. */
-type Box = [number, number, number, number];
-
-function overlaps(a: Box, b: Box): boolean {
-  return a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
-}
 
 /** Text knocked out of the lines behind it with a stub-colored outline (not a shadow). */
 const HALO = { stroke: "var(--stub)", strokeWidth: 4, paintOrder: "stroke" as const };
@@ -81,12 +75,6 @@ export function HealthCostChart({ data, title }: { data: HealthChartData; title:
   );
 
   const xs = x(data.spend);
-  const valueYs = spreadLabels(
-    data.lines.map((l) => y(l.costAtSpend) + 4),
-    16,
-    y1 + 12,
-    y0 - 4,
-  );
 
   // Line labels are right-aligned at the plot edge. First try each one just above its own
   // line end; if any would cross a line, stack them in the band above the highest line end,
@@ -120,16 +108,15 @@ export function HealthCostChart({ data, title }: { data: HealthChartData; title:
   rank.forEach(({ i }, k) => (stackYs[i] = highest - 8 - k * labelGap));
   const endYs = boxesAt(nearYs).some(crossesALine) ? stackYs : nearYs;
   const labelBoxes = boxesAt(endYs);
-  // Values go right of the marker unless they would run into a line label or off the plot.
-  const valueBoxes = (left: boolean) =>
-    data.lines.map((l, i): Box => {
-      const w = formatMoney(l.costAtSpend).length * CHAR_PX;
-      const b = valueYs[i]! + 3;
-      return left ? [xs - 8 - w, b - 15, xs - 8, b] : [xs + 8, b - 15, xs + 8 + w, b];
-    });
-  const clash = (boxes: Box[]) =>
-    boxes.some((v) => v[2] > x1 || labelBoxes.some((lb) => overlaps(v, lb)));
-  const valuesLeft = clash(valueBoxes(false)) && !valueBoxes(true).some((v) => v[0] < x0);
+  // Each cost sits beside its dot, off its own line (healthValueLabels).
+  const values = placeValueLabels(
+    data.lines.map((l) => ({
+      y: y(l.costAtSpend),
+      text: formatMoney(l.costAtSpend),
+      lineY: (px: number) => y(planCost(l.plan, sx(Math.min(Math.max(px, x0), x1)))),
+    })),
+    { xs, plot: [x0, y1, x1, y0], avoid: labelBoxes },
+  );
 
   // The marker label sits beside the marker, on whichever side it fits, inside the chart.
   const markerText = `Your spending, ${formatMoney(data.spend)}`;
@@ -256,9 +243,10 @@ export function HealthCostChart({ data, title }: { data: HealthChartData; title:
           <g key={`value-${l.plan.id}`}>
             <circle cx={xs} cy={y(l.costAtSpend)} r={3.5} fill={STROKE[l.kind]} />
             <text
-              x={valuesLeft ? xs - 8 : xs + 8}
-              y={valueYs[i]}
-              textAnchor={valuesLeft ? "end" : "start"}
+              data-value-label={l.plan.id}
+              x={values[i]!.x}
+              y={values[i]!.y}
+              textAnchor={values[i]!.anchor}
               fill={STROKE[l.kind]}
               fontWeight={600}
               {...HALO}
