@@ -652,3 +652,27 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/479 tests, build). a11y: serious 0, critical 0, keyboard problems 0.
 Screens checked: yes. `npm run shots` (0 failed), plus 2x element crops of every health chart for chicago-vs-austin, university-staff, new-grad-roth, high-earner-family, and plan-crossover at 375, 768, and 1280. I used the ignored scratch `harness/shots/crops/crop.mjs`, pointed at `[data-value-label]`. Northfield at 375 is fixed. Every other chart, and 1280, is unchanged. Issues: none new.
 Next: the backlog is empty, so next comes critique round 3.
+
+## 2026-11-21T15:25:00Z | iteration 51
+Task: Critique round 3. Every backlog task was checked off and none were blocked.
+Result: done
+What changed: Took fresh shots (0 failed) and ran a11y and responsive. Took 2x element crops of every chart (`svg[role=img]`) in all 5 chart samples at 375, 768, and 1280, using the ignored scratch `harness/shots/crops/cropall.mjs`. Scored the rubric and added one TaxChart task under "Critique round 3". No product code changed.
+Scores (0–2):
+1. Reads as a pay stub at 1280 and 375: 2. Unchanged since round 2: header rule, square bordered stubs, notched perforation (horizontal at 375), boxed net pay and bottom line.
+2. Banned items absent: 2. No shadows, gradients, rounding, all-caps, arrows, emoji, monospace, or decorative icons.
+3. Right edge and tabular figures: 2. Struck and new amounts share one right edge at 1280, and wrap right-aligned at 375.
+4. Memo most prominent after the stubs: 2.
+5. Correction legible with recommended on: 2. Every changed line and both totals are struck in red, with the carbon new amount beside or under them.
+6. Charts follow the rules: 1. The health and match charts are clean in every sample at every width. The tax chart crops show collisions at 375 that earlier rounds missed, because they never cropped the tax chart. The dashed average line runs through "12%" (chicago-vs-austin, plan-crossover). The marker line runs through "22%" (university-staff). In high-earner-family offer 2, "Average 21.3% of your pay" sits on the 22% step.
+7. AA, focus, axe: 2. a11y: serious 0, critical 0, keyboard problems 0.
+8. No sideways scroll, nothing on notches or perforation: 2. responsive: 0 problems, 0 views failed.
+9. Copy rules: 2.
+10. Empty and error states: 2. Empty stubs keep their labels and the direction sentence.
+Decisions:
+- Round 2 asked to look again at Northfield's health chart at 375. Its y axis still runs from −$5,000 to $15,000, because `ticksFor` grows the top for the stacked two-line labels and the 4-tick step jumps to 5,000. The lines use the lower ~40% of the plot, but every value is written on the chart and nothing collides, so it follows the chart rules. I didn't add a task. A possible later refinement: let the tick count rise when the step would jump.
+- At 375 the match charts with equal dollars (Lakeshore, high-earner-family offer 1, university-staff offer 2, plan-crossover offer 1) set the two value labels side by side. Each one is next to its own dot and in its own color. That stands, as in round 2.
+- I didn't re-crop the life, method, and 404 screens beyond the full-page shots, because no code they render has changed since round 2.
+- No blocked tasks to retry.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/479 tests, build).
+Screens checked: yes. Looked at home recommended at 1280 (4 slices) and 375, home defaults at 768, empty at 375, plus contact sheets of every chart crop at 375. Issues: the tax chart collisions above.
+Next: the TaxChart label collision task from critique round 3.
