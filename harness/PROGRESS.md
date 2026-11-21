@@ -70,3 +70,13 @@ What changed: New `src/lib/engine/tax.ts`: incomeTax, marginalRate (an edge belo
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 6 files/51 tests + 2 todo, build)
 Screens checked: no (no UI change)
 Next: `health.ts` (out-of-pocket, plan cost, breakpoints, dominated plans, worst case, recommended plan) with unit tests.
+
+## 2026-11-21T04:48:03Z | iteration 8
+Task: `health.ts` (out-of-pocket, plan cost, breakpoints, dominated plans, worst case, recommended plan) with unit tests.
+Result: done
+What changed: New `src/lib/engine/health.ts`: outOfPocket, employerHsaDeposit, planCost, worstCaseCost, breakpoints (Set-deduped, sorted, +1 point at max×1.5+1000 exactly like engine.py), planCostCurves (unrounded [spend, cost] per plan, for the chart and runCase), dominatedPlanIds (same 1e-9 slack, identity-based self-skip, input order), recommendedPlan (score rounded to 6 dp, tie → lower premium → earlier plan).
+- Decisions: recommendedPlan throws "An offer needs at least one health plan." on an empty list (the edit form must validate this); if every plan is filtered out (only possible with duplicate ids) it falls back to all plans instead of crashing.
+- `health.test.ts`: unit tests for each function (deductible/coinsurance/cap, HSA only on eligible plans, kinks incl. coinsurance 0, crossing vs dominated vs identical plans, buffer vs no-buffer choice, premium tie-break) plus dominated ids, recommended plan id, and every cost-curve point for all 12 offers vs expected.json (within $1).
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 7 files/80 tests + 2 todo, build)
+Screens checked: no (no UI change)
+Next: `retirement.ts` (match tiers, match cap, max match %, vesting) with unit tests, including the 7B 6%→9% example.
