@@ -217,3 +217,19 @@ What changed: `OfferStub.tsx` adds EmptyStub. It shows "Load a sample or read an
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 23 files/270 tests, build). a11y: 0 serious, 0 critical.
 Screens checked: yes, empty, defaults, and recommended at 375, 768, and 1280. On the first pass, grouping Clear offers with the picker squeezed the 375 select to three letters, and at 1280 the switch fell to a second row. Fix: Clear offers is now its own item in the row, and the select is 16rem from lg. At 375 the controls take four rows (picker, Clear offers, toggle, switch); that is left for the Phase 6 responsive pass. At 1280 the row fits on one line, even with the switch on. No overflow, and the blank lines sit clear of the notches and the perforation.
 Next: Health plan costs chart (SVG, from the engine's breakpoints, dominated plans dashed red, recommended in carbon, an expected-spending marker, direct labels).
+
+## 2026-11-21T07:10:00Z | iteration 23
+Task: Health plan costs chart (SVG, from the engine's breakpoints, dominated plans dashed red, recommended in carbon, an expected-spending marker, direct labels).
+Result: done
+What changed: New `src/components/why/`, with five files:
+- `chartKit.ts` (pure scale, nice ticks, label spreading, and tick money, shared by the later panels).
+- `healthChart.ts` (pure: the spending window, the plan lines built from OfferResult.planCostCurves plus the engine's planCost/worstCaseCost, the conclusion sentence, and the line labels).
+- `HealthCostChart.tsx` (hand-built SVG, measured with ResizeObserver via `useElementWidth.ts`).
+- `HealthCostsPanel.tsx`.
+- `WhyElections.tsx` (h2 "Why these elections", mounted on `/` under the checklist).
+
+The engine index also re-exports `planCost` and `worstCaseCost`; the engine logic is unchanged. Charts use 1.5px ink axes at 60%, dotted gridlines at 20%, and 13px tabular labels. Dominated plans are a dashed correction line and the recommended plan is a solid 2.5px carbon line. A vertical marker shows "Your spending, $X", and each plan's cost there is written by its dot. The x-axis title is "Medical spending this year". There is no legend and no tooltip, and a screen-reader list repeats every value. 11 tests: chicago-vs-austin colors and dashes, the labels, the marker, no rects, the conclusion sentences (dominated default, single plan, no emergency fund, non-dominated default), every line of all 12 offers checked against the engine's planCost/kind, and the empty direction.
+- Decisions: one chart per offer, so a one-plan offer still shows its cost and its ceiling. The plan kind is also written in each label, so meaning never rests on color alone. The y range grows until every label fits above the highest line end. When a label beside its own line end would cross any line, the labels stack in that band instead (cost never falls as spending rises, so no line reaches it). Value labels flip to the left of the marker when they would hit a line label. The marker label stays inside the chart.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 24 files/281 tests, build). a11y: 0 serious, 0 critical.
+Screens checked: yes, home at 375, 768, and 1280, plus one-off panel shots of all 6 samples at 375 and 1280 (not committed). On the first pass, long labels at 375 spilled over the y axis and the right edge, the plan-crossover labels collided with the values and lines, and "Your spending, $12,000" was clipped. All of that is fixed above. Two things are left as is: the panel h3 and the employer h4 are both 17/600, so the hierarchy is soft (I'll look at it in the critique round), and the stacked labels can cross the marker line, but the knockout outline keeps them legible.
+Next: Match and vesting chart, plus the vesting timeline for years 0–6.

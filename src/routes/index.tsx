@@ -8,6 +8,7 @@ import {
   OfferStubs,
 } from "@/components/decoder";
 import { GuillocheBackground } from "@/components/stub";
+import { WhyElections } from "@/components/why";
 import { DecoderProvider } from "@/state/DecoderContext";
 
 export const Route = createFileRoute("/")({
@@ -37,6 +38,7 @@ function Index() {
           <OfferStubs />
           <MemoLine />
           <Checklist />
+          <WhyElections />
         </main>
       </div>
     </DecoderProvider>

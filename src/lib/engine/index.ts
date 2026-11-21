@@ -17,7 +17,14 @@ export * from "./types";
 export * from "./constants";
 export { calculate, defaultElections, findPlan, r2 } from "./calculate";
 export { checklist } from "./checklist";
-export { breakpoints, dominatedPlanIds, planCostCurves, recommendedPlan } from "./health";
+export {
+  breakpoints,
+  dominatedPlanIds,
+  planCost,
+  planCostCurves,
+  recommendedPlan,
+  worstCaseCost,
+} from "./health";
 export { DEFAULT_LIFE_PARAMS, humanCapital, lifeInsurance, type LifeParams } from "./life";
 export { isReady, recommend } from "./recommend";
 export { fullMatchDollars, matchCapPct, maxMatchPct, vestedPctByYear } from "./retirement";
