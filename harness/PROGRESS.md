@@ -617,3 +617,27 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/479 tests, build). a11y: serious 0, critical 0, keyboard problems 0.
 Screens checked: yes. `npm run shots` (0 failed), plus 2x element crops of every match chart for chicago-vs-austin, university-staff, new-grad-roth, and high-earner-family at 375, 768, and 1280. At 375 new-grad-roth offer 2 reads "Default 5%" to the left of its line, with the 8% line clear of it. university-staff Midway and new-grad-roth offer 1 are unchanged and clean. 768 and 1280 are unchanged. Issues: none.
 Next: the backlog is empty again, so next comes critique round 2.
+
+## 2026-11-21T14:20:00Z | iteration 49
+Task: Critique round 2. Every backlog task was checked off and none were blocked.
+Result: done
+What changed: Took fresh shots (0 failed) and ran a11y and responsive. Scored the rubric and added one chart task to BACKLOG under "Critique round 2". No product code changed.
+Scores (0–2):
+1. Reads as a pay stub at 1280 and 375: 2. Header rule, square bordered stubs, notched perforation (horizontal at 375), boxed net pay and bottom line.
+2. Banned items absent: 2. No shadows, gradients, rounding, all-caps, arrows, emoji, monospace, or decorative icons in any shot.
+3. Right edge and tabular figures: 2. Struck and new amounts share one right edge. At 375 the new amount wraps under the struck one, still right-aligned.
+4. Memo most prominent after the stubs: 2. 28/800 on the check-style underline, with room around it.
+5. Correction legible with recommended on: 2. Red strike plus the carbon new amount on every changed line and on both totals.
+6. Charts follow the rules: 1. Direct labels, no legends, and round 1's collisions are gone at every width. One collision is left: at 375, chicago-vs-austin Northfield's health chart puts the blue "$1,600" cost label on the solid $0 line. `placeValueLabels` doesn't treat the zero line as something to avoid.
+7. AA, focus, axe: 2. a11y: serious 0, critical 0, keyboard problems 0.
+8. No sideways scroll, nothing on notches or perforation: 2. responsive: 0 problems, 0 views failed at 375/768/1024.
+9. Copy rules: 2. Sentence case, buttons say what they do, no filler. Checklist, summary, and method read naturally.
+10. Empty and error states: 2. Empty stubs keep their labels with the direction sentence, the memo and each Why panel give direction, the editor errors are directive, and there's a 404 page.
+Decisions:
+- At 375 Lakeshore's match chart puts "$5,600" at the default dot and the blue "$5,600" at the recommended dot almost side by side. Each label is next to its own dot, in its marker's color, and crosses no line, so I didn't add a task.
+- At 375 the Northfield health chart's y axis runs from −$5,000 to $15,000 (step 5,000), because `ticksFor` grows the top to make room for the two-line labels. The lines fill only the lower third or so. It's readable, and the zero-line fix may change the layout, so I didn't add a separate task. Look again in round 3.
+- Earlier decisions stand: controls wrap into four rows at 375, and the sample select cuts off the selected title at 1280.
+- No blocked tasks to retry.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/479 tests, build).
+Screens checked: yes. Looked at home recommended at 1280/768/375 (the 375 one in 1400px slices), empty at 375, life at 1280, method at 768, plus full-resolution crops of the health, match, and life charts at 1280 and 2x zooms of the 375 health chart. Issues: the zero-line collision above.
+Next: the HealthCostChart zero-line task from critique round 2.
