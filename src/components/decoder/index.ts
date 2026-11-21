@@ -7,3 +7,12 @@ export {
 } from "./DecoderHeader";
 export { AboutYou } from "./AboutYou";
 export { groupDigits, parseAge, parseDollars, profileSummary } from "./profileFormat";
+export { OfferStub, OfferStubs } from "./OfferStub";
+export {
+  federalNote,
+  pct,
+  placeText,
+  stateTaxNote,
+  stateTaxRowLabel,
+  vestingNote,
+} from "./stubFormat";
