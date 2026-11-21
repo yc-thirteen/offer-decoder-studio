@@ -18,6 +18,7 @@ import {
   loadSample,
   openAboutYou,
   openLetterReader,
+  openPage,
   turnOnRecommended,
 } from "./lib/steps.mjs";
 
@@ -208,7 +209,7 @@ function inspect() {
  */
 async function selfTest(context) {
   const page = await context.newPage();
-  await page.goto(server.url + "/", { waitUntil: "networkidle" });
+  await openPage(page, server.url, "/");
   await page.evaluate(() => {
     const perf = document.querySelector("[data-perforation]").getBoundingClientRect();
     const stub = document.querySelector("[data-stub]");
@@ -262,7 +263,7 @@ try {
       if (view.widths && !view.widths.includes(width)) continue;
       const page = await context.newPage();
       try {
-        await page.goto(server.url + view.path, { waitUntil: "networkidle" });
+        await openPage(page, server.url, view.path);
         await page.evaluate(() => document.fonts.ready);
         if (view.run) await view.run(page);
         await page.waitForTimeout(250);

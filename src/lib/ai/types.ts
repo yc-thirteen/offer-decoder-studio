@@ -13,7 +13,7 @@ import type {
   Vesting,
 } from "@/lib/engine";
 
-/* ---------- Read offer letter ---------- */
+/* ---------- Upload offer letter ---------- */
 
 export interface ExtractRequest {
   /** Letter text, pasted or read from a .txt, PDF, or Word file. Never logged. */

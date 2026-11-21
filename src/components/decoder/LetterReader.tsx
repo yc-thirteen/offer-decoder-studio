@@ -1,5 +1,5 @@
 /**
- * The "Read offer letter" panel (harness/DESIGN.md "AI elements"), set like an inbox tray
+ * The "Upload offer letter" panel (harness/DESIGN.md "AI elements"), set like an inbox tray
  * inside the stub: paste the letter's text or drop a .txt, PDF, or Word file (its text is
  * pulled out in the browser, src/lib/letterFile.ts), then the reader fills a
  * review draft for the editor. When it can read nothing, the panel says so and opens no
@@ -113,7 +113,7 @@ export function LetterReader({
   return (
     <section aria-labelledby={headingId} className="border border-ink border-t-2 p-3 sm:p-4">
       <h3 id={headingId} className="m-0 text-base font-semibold">
-        Read offer letter
+        Upload offer letter
       </h3>
       <p className="m-0 mt-1 text-sm text-ink-soft">
         The reader fills this stub with what the letter states, and you check it before saving.
@@ -205,7 +205,7 @@ export function LetterReader({
             disabled={busy || opening}
             className="h-10 border border-ink bg-ink px-4 font-semibold text-stub underline-offset-3 hover:underline disabled:bg-ink-soft"
           >
-            Read offer letter
+            Upload offer letter
           </button>
           <button type="button" onClick={onCancel} className={BUTTON}>
             Cancel

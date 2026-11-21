@@ -32,6 +32,16 @@ export async function turnOnRecommended(page) {
   await page.waitForTimeout(600); // let the 180ms correction strike finish
 }
 
+/**
+ * Opens a page. The site starts with both stubs empty, so "/" loads the first sample, which
+ * the views and walks expect. A view that wants the empty state runs clearOffers after.
+ */
+export async function openPage(page, baseUrl, pagePath) {
+  const res = await page.goto(baseUrl + pagePath, { waitUntil: "networkidle" });
+  if (pagePath === "/") await loadSample(page);
+  return res;
+}
+
 export async function loadSample(page, id = FIRST_CASE.id) {
   const sample = CASES.find((c) => c.id === id) ?? FIRST_CASE;
   const picker = page
@@ -76,8 +86,8 @@ export async function editWithErrors(page) {
 export function openLetterReader(page) {
   return clickIfPresent(
     page,
-    page.getByRole("button", { name: /^read offer letter$/i }),
-    "Read offer letter button",
+    page.getByRole("button", { name: /^upload offer letter$/i }),
+    "Upload offer letter button",
   );
 }
 
@@ -86,7 +96,7 @@ export async function letterReview(page) {
   if (!(await openLetterReader(page))) return;
   await page.getByRole("button", { name: "Lakeshore Systems" }).first().click();
   await page
-    .getByRole("button", { name: /^read offer letter$/i })
+    .getByRole("button", { name: /^upload offer letter$/i })
     .first()
     .click();
   await page.getByLabel("Yearly salary").first().waitFor();

@@ -29,9 +29,9 @@ The project was built with [Lovable](https://lovable.dev/projects/1924fbbb-4710-
 
 ### Compare your own offers
 
-1. On a stub, choose **Read offer letter**.
+1. On a stub, choose **Upload offer letter**.
 2. Paste the letter, or drop or choose its file (PDF, Word .docx, or .txt). The text is pulled out in your browser, and the file itself is never uploaded.
-3. Choose **Read offer letter**. The reader fills in what the letter states and marks each of those fields "from letter". Anything the letter leaves out is underlined in red, with a note saying what to type in. It never guesses.
+3. Choose **Upload offer letter**. The reader fills in what the letter states and marks each of those fields "from letter". Anything the letter leaves out is underlined in red, with a note saying what to type in. It never guesses.
 4. Check the fields, fill in the gaps, and choose **Save offer**. Then do the same on the other stub.
 5. Fill in **About you**, then turn on **Use recommended elections** to see what to elect.
 
@@ -114,7 +114,7 @@ All the money math runs in the engine, in the browser, on every path. Only the t
 
 | Feature                   | Without Lovable Cloud (mock)                                                                                                                                              | With Lovable AI connected (the published site)                                                                                                                                                          |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Read offer letter**     | A deterministic sample reader reads the three sample letters (`src/data/letters/`) exactly. On any other text it says it reads only the samples. It never invents values. | Reads any pasted letter, or a dropped .txt, PDF, or Word file, with `anthropic/claude-sonnet-5` through the Lovable AI Gateway. It copies only the values the letter states and marks the rest missing. |
+| **Upload offer letter**   | A deterministic sample reader reads the three sample letters (`src/data/letters/`) exactly. On any other text it says it reads only the samples. It never invents values. | Reads any pasted letter, or a dropped .txt, PDF, or Word file, with `anthropic/claude-sonnet-5` through the Lovable AI Gateway. It copies only the values the letter states and marks the rest missing. |
 | **Plain-English summary** | A fixed template words the engine's numbers.                                                                                                                              | The model writes it from the same numbers. Any figure that isn't on the stubs is rejected.                                                                                                              |
 
 The browser picks the client in `src/lib/ai/index.ts`. It uses the HTTP client when `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` (or `VITE_SUPABASE_ANON_KEY`) are in the build, and the mock otherwise. See `.env.example` for the names, which are placeholders only.

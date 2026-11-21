@@ -3,7 +3,7 @@
  * Health plans and match tiers can be added and removed, vesting picks its type, and "Save
  * offer" validates the draft (offerDraft.ts). Errors appear under each field in correction
  * red, state the fix, and focus moves to the first one. Nothing reaches the store until the
- * draft is valid. Opened from "Read offer letter", it is the review state: fields the letter
+ * draft is valid. Opened from "Upload offer letter", it is the review state: fields the letter
  * filled carry a carbon "from letter" marker until edited or saved, and fields it left blank
  * are underlined in correction red with the reader's note on what is missing.
  */
@@ -321,7 +321,7 @@ export function OfferEditor({
   onCancel,
 }: {
   initial: OfferDraft;
-  /** Present when the draft came from "Read offer letter": the review state. */
+  /** Present when the draft came from "Upload offer letter": the review state. */
   marks?: LetterMarks | undefined;
   onSave: (offer: Offer) => void;
   onCancel: () => void;

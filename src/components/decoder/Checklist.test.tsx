@@ -160,7 +160,7 @@ describe("<Checklist />", () => {
     );
     expect(screen.queryByRole("tab")).toBeNull();
     expect(
-      screen.getByText("Load a sample or read an offer letter to see what to elect on day one."),
+      screen.getByText("Load a sample or upload an offer letter to see what to elect on day one."),
     ).toBeInTheDocument();
   });
 

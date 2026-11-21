@@ -98,8 +98,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* The decoder's state lives above the routes, so a visit to /method and back keeps
-          the offers and profile you typed. */}
-      <DecoderProvider>
+          the offers and profile you typed. It starts with both stubs empty, as after
+          "Clear offers"; the sample picker still loads any sample. */}
+      <DecoderProvider initialSampleId={null}>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
       </DecoderProvider>

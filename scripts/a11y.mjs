@@ -25,6 +25,7 @@ import {
   loadSample,
   openAboutYou,
   openLetterReader,
+  openPage,
   turnOnRecommended,
 } from "./lib/steps.mjs";
 
@@ -161,7 +162,7 @@ try {
     for (const view of VIEWS) {
       if (view.widths && !view.widths.includes(width)) continue;
       const page = await context.newPage();
-      await page.goto(server.url + view.path, { waitUntil: "networkidle" });
+      await openPage(page, server.url, view.path);
       if (view.run) await view.run(page);
       const result = await new AxeBuilder({ page })
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
@@ -191,7 +192,7 @@ try {
 
     for (const w of WALKS) {
       const page = await context.newPage();
-      await page.goto(server.url + "/", { waitUntil: "networkidle" });
+      await openPage(page, server.url, "/");
       const walk = await keyboardWalk(page, width, w.run);
       keyboardProblems += walk.problems.length;
       console.log(

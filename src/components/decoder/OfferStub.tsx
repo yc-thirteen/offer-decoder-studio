@@ -49,7 +49,7 @@ function StubHeader({
 }: {
   view: StubView;
   headingId: string;
-  /** "Read offer letter" and "Edit offer" (or "Fill in offer"), with "Offer saved" after a save. */
+  /** "Upload offer letter" and "Edit offer" (or "Fill in offer"), with "Offer saved" after a save. */
   action?: ReactNode;
 }) {
   const position = `Offer ${view.slot + 1} of 2`;
@@ -187,7 +187,7 @@ function EmptyStub({ perPaycheck }: { perPaycheck: boolean }) {
   const blank = <BlankAmount />;
   return (
     <>
-      <p className="m-0 mb-3">Load a sample or read an offer letter to fill this stub.</p>
+      <p className="m-0 mb-3">Load a sample or upload an offer letter to fill this stub.</p>
       <div className="text-ink-soft" data-testid="empty-stub-lines">
         <dl className="m-0">
           <LineItem label="Gross pay" amount={blank} />
@@ -270,7 +270,7 @@ export function OfferStub({
             aria-describedby={headingId}
             className={button}
           >
-            Read offer letter
+            Upload offer letter
           </button>
           <button
             ref={buttons.edit}

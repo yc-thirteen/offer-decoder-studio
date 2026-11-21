@@ -1,5 +1,5 @@
 /**
- * Read offer letter, the pure part: an ExtractResult becomes an editable OfferDraft plus
+ * Upload offer letter, the pure part: an ExtractResult becomes an editable OfferDraft plus
  * marks for the review state (harness/DESIGN.md "AI elements"). Fields the letter stated
  * carry a "from letter" mark until you edit them or save; fields it didn't state stay blank
  * (never guessed) and carry the reader's note on what is missing. Mark keys are the same

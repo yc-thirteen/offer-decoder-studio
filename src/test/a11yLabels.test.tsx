@@ -74,7 +74,7 @@ describe("decoder accessibility", () => {
         "aria-invalid",
         "true",
       );
-      fireEvent.click(within(second!).getByRole("button", { name: "Read offer letter" }));
+      fireEvent.click(within(second!).getByRole("button", { name: "Upload offer letter" }));
       expect(within(second!).getByRole("textbox")).toBeTruthy();
       expect(screen.getAllByRole("slider").length).toBeGreaterThan(0);
       checkPage(container);

@@ -3,7 +3,7 @@
  * Reads .txt directly, PDFs with pdf.js, and Word .docx files with mammoth. Both
  * libraries load only when such a file arrives, so they stay out of the page bundle
  * and out of server rendering. Everything runs in the browser; the file is never
- * uploaded. Only the text reaches the reader, after the user chooses "Read offer letter".
+ * uploaded. Only the text reaches the reader, after the user chooses "Upload offer letter".
  */
 
 export type LetterFileKind = "txt" | "pdf" | "docx";

@@ -1,6 +1,6 @@
 # The AI features and Lovable AI
 
-Offer Decoder has two AI features, **Read offer letter** and the **Plain-English summary**. Both run through two Lovable Cloud (Supabase) edge functions:
+Offer Decoder has two AI features, **Upload offer letter** and the **Plain-English summary**. Both run through two Lovable Cloud (Supabase) edge functions:
 
 - `supabase/functions/decode-offer` reads a letter into the stub's fields.
 - `supabase/functions/explain-stub` writes the summary from the engine's numbers.
@@ -27,9 +27,9 @@ To change the model or the gateway setup, ask Lovable in the project chat. Keep 
 
 ### In the app
 
-1. Open the published site and choose **Read offer letter** on either stub.
+1. Open the published site and choose **Upload offer letter** on either stub.
 2. The panel should no longer say "Sample reader: works on the three sample letters until the AI is connected." If that note is still there, the build is still on the mock. See Troubleshooting below.
-3. Paste the test letter below, or drop a PDF or Word copy of a real offer, and choose **Read offer letter**. After a few seconds:
+3. Paste the test letter below, or drop a PDF or Word copy of a real offer, and choose **Upload offer letter**. After a few seconds:
    - The stub fills in.
    - Each field the letter stated shows a "from letter" marker.
    - Anything it didn't state is underlined in red, with a note telling you what to type in.
@@ -98,8 +98,8 @@ An empty `text` returns HTTP 400 with `{"error": "The letter is empty. Paste its
 
 | Feature                                    | Without the Cloud env vars (mock)                                                                                    | With Lovable AI connected                                                                                                  |
 | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Read offer letter                          | Reads only the three sample letters. For any other text, it says it reads only the samples and never invents values. | Reads any pasted letter, or a dropped .txt, PDF, or Word file. It copies only stated values and marks the rest missing.    |
+| Upload offer letter                        | Reads only the three sample letters. For any other text, it says it reads only the samples and never invents values. | Reads any pasted letter, or a dropped .txt, PDF, or Word file. It copies only stated values and marks the rest missing.    |
 | Plain-English summary                      | Writes itself from a fixed template, built only from engine numbers                                                  | Writes on request with `anthropic/claude-sonnet-5`, from the same engine numbers. Any figure not on the stubs is rejected. |
 | All pay, tax, benefits, and checklist math | The engine in `src/lib/engine/`, always                                                                              | Unchanged. The model never does the math.                                                                                  |
 
-PDF and Word files are turned into text in the browser (`src/lib/letterFile.ts`), on both paths. The file itself is never uploaded, only its text, and only after you choose **Read offer letter**.
+PDF and Word files are turned into text in the browser (`src/lib/letterFile.ts`), on both paths. The file itself is never uploaded, only its text, and only after you choose **Upload offer letter**.

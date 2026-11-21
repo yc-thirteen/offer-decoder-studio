@@ -79,7 +79,7 @@ export function Checklist() {
 
       {!stub || !stub.offer ? (
         <p className="m-0 max-w-prose">
-          Load a sample or read an offer letter to see what to elect on day one.
+          Load a sample or upload an offer letter to see what to elect on day one.
         </p>
       ) : (
         <div

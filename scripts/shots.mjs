@@ -19,6 +19,7 @@ import {
   loadSample,
   openAboutYou,
   openLetterReader,
+  openPage,
   turnOnRecommended,
 } from "./lib/steps.mjs";
 
@@ -51,7 +52,7 @@ const VIEWS = [
   // Not in HARNESS.md's list: the first stub in Edit offer mode, after a failed save so the
   // directive errors show (the salary is cleared first).
   { name: "home-edit", path: "/", run: editWithErrors },
-  // Not in HARNESS.md's list: the "Read offer letter" panel open on the first stub.
+  // Not in HARNESS.md's list: the "Upload offer letter" panel open on the first stub.
   { name: "home-letter", path: "/", run: openLetterReader },
   // Not in HARNESS.md's list: the review state after the reader reads a sample letter.
   { name: "home-letter-review", path: "/", run: letterReview },
@@ -83,7 +84,7 @@ try {
       page.on("pageerror", (e) => errors.push(e.message));
       console.log(`${view.name} @ ${width}px`);
       try {
-        const res = await page.goto(server.url + view.path, { waitUntil: "networkidle" });
+        const res = await openPage(page, server.url, view.path);
         if (res && res.status() >= 400)
           console.log(`  note: HTTP ${res.status()} for ${view.path}`);
         await page.evaluate(() => document.fonts.ready);
