@@ -723,3 +723,26 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/483 tests, build).
 Screens checked: yes. `npm run shots` (0 failed), plus fresh 2x crops of every chart (ignored scratch `harness/shots/crops/cropall.mjs`). Looked at both new-grad-roth health charts at 375 and a contact sheet of the other 4 samples' health charts at 375. "$2,000" now sits above-right of its dot, clear of the ink line. Issues: none new.
 Next: the backlog is empty, so next comes critique round 5.
+
+## 2026-11-21T17:20:00Z | iteration 55
+Task: Critique round 5. Every backlog task was checked off and none were blocked.
+Result: done
+What changed: Took fresh shots (0 failed) and ran a11y and responsive. Took fresh 2x element crops of every chart in all 5 chart samples at 375, 768, and 1280 (ignored scratch `harness/shots/crops/cropall.mjs`). Built contact sheets with a new ignored scratch, `harness/shots/crops/sheet.mjs` (per sample at 375, 768 health and match, 1280 tax). Measured the real rate-label widths with a new ignored scratch, `harness/shots/crops/measure.mjs`. Added one tax-chart task under "Critique round 5". No product code changed.
+Scores (0–2):
+1. Reads as a pay stub at 1280 and 375: 2.
+2. Banned items absent: 2.
+3. Right edge and tabular figures: 2.
+4. Memo most prominent after the stubs: 2.
+5. Correction legible with recommended on: 2.
+6. Charts follow the rules: 1. Round 4's health fix holds: in new-grad-roth offer 2, "$2,000" now sits clear of the ink line at 375 and 768. The match and life charts are clean at every width, and the tax charts are clean at 1280. At 375, a 4x zoom shows the lower-step "12%" label end touching the 22% step's riser. Its halo cuts a notch in the riser (chicago-vs-austin and high-earner-family, both offers). Cause: TaxChart sizes "12%" as 24px (3 × CHAR_PX), but it renders 30.2px wide (getComputedTextLength), plus 2px of halo on each side. So the sweep's boxes are ~4px short at each end.
+7. AA, focus, axe: 2. a11y: serious 0, critical 0, keyboard problems 0.
+8. No sideways scroll, nothing on notches or perforation: 2. responsive: 0 problems, 0 views failed.
+9. Copy rules: 2.
+10. Empty and error states: 2. No code they render has changed since round 3.
+Decisions:
+- I scoped the width fix to TaxChart. The health and match charts' labels are mostly "$" and digits, and the crops show no touches there. Changing the shared `textBox` would shift every chart's layout for no visible gain.
+- In new-grad-roth at 375, the "$0" spending marker and the Default 0% marker sit on the y axis. That is honest to the data, so it stands (as in round 4).
+- No blocked tasks to retry.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/483 tests, build). ESLint lints the ignored scratch scripts, so I ran `eslint --fix` on the two new ones.
+Screens checked: yes. Looked at contact sheets of every chart crop at 375 for all 5 chart samples, the 768 health and match sheets, the 1280 tax sheet, 4x zooms of the "12%" labels, and the top of home recommended at 1280. Issues: the tax label width above.
+Next: the TaxChart rate-label width task from critique round 5.
