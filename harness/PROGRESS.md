@@ -89,3 +89,13 @@ What changed: New `src/lib/engine/retirement.ts`: matchCapPct, employee401kDolla
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 8 files/100 tests + 2 todo, build)
 Screens checked: no (no UI change)
 Next: `calculate.ts` (full pay calculation and bottom line) and `recommend.ts` (recommended elections).
+
+## 2026-11-21T04:53:20Z | iteration 10
+Task: `calculate.ts` (the full pay calculation and bottom line) and `recommend.ts` (recommended elections).
+Result: done
+What changed: New `src/lib/engine/calculate.ts`: r2 (cents, +1e-9 nudge like engine.py), otherWages (spouse only when mfj), defaultElections, findPlan, calculate() composing tax/health/retirement into every CalcResult field (rounded like engine.py; marginal rate unrounded). New `recommend.ts`: isReady and recommend() per the funds hierarchy (match cap → ceil(15 − max match %) when ready → never below default → HSA = tier limit − employer deposit when ready and eligible → Roth if offered and marginal ≤ 12% under the traditional probe).
+- Decisions: unknown planId throws "Choose one of this offer's health plans…" (engine.py would crash; the UI only offers valid ids); payPeriods ≤ 0 or salary ≤ 0 avoid division by zero instead of producing NaN.
+- Tests: `calculate.test.ts` (section 125 vs traditional vs Roth, HSA ignored on non-eligible plans, bottom-line identity, 401(k) cap, mfj spouse wages, r2) plus every CalcResult key for all 12 offers × default/recommended vs expected.json (numbers within $1, ids/booleans/account types exact). `recommend.test.ts` (ready/not ready, default floor, Roth threshold, no-match → 15%) plus recommendedElections deep-equal for all 12 offers.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 10 files/139 tests + 2 todo, build)
+Screens checked: no (no UI change)
+Next: `life.ts` and `checklist.ts`, and replace the two lecture-checks `it.todo` entries.
