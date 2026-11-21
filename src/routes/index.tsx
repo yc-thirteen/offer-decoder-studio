@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { DecoderProvider } from "@/state/DecoderContext";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -15,5 +16,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  return <main className="min-h-screen bg-background" />;
+  return (
+    <DecoderProvider>
+      <main className="min-h-screen" />
+    </DecoderProvider>
+  );
 }

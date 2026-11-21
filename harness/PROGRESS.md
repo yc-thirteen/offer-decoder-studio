@@ -138,3 +138,13 @@ What changed: New `src/components/stub/`: `formatMoney` (whole dollars or cents,
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 14 files/200 tests, build). a11y: 0 serious, 0 critical on /, /method, and /dev/components.
 Screens checked: yes, at 375, 768, and 1280. The stub, notches, perforation, strike, stamps, and right edge are good, with no overflow. Deferred to the Phase 6 responsive pass: at 768, side-by-side stubs are about 345px wide, so many labels wrap to two lines. Consider stacking until lg.
 Next: Phase 3, app state (profile, two offers, elections mode, annual or per paycheck, chosen sample) in one store.
+
+## 2026-11-21T05:19:38Z | iteration 15
+Task: App state (profile, two offers, elections mode, annual or per-paycheck, chosen sample) in one store, using React context or useReducer. The engine runs from state, and components only format.
+Result: done
+What changed: New `src/state/decoderState.ts` (pure, no React): SAMPLE_CASES, DecoderState {profile, offers: [Offer|null, Offer|null], electionsMode default|recommended, periodMode annual|perPaycheck, sampleId}, decoderReducer (loadSample, setProfile patch, setOffer, clearOffers, setElectionsMode, setPeriodMode), and deriveView(), which runs the engine and returns per-stub {offer, result, calc for the current mode, divisor (1 or payPeriods), error} plus winners. New `src/state/DecoderContext.tsx`: DecoderProvider (useReducer + memoized view) and useDecoder(). `/` is wrapped in the provider (nothing visible yet).
+- Decisions: starts on the first sample (chicago-vs-austin) with defaults and annual amounts; `initialSampleId={null}` starts empty. Samples are structuredClone'd so edits never mutate the imported JSON. Editing an offer keeps sampleId (the picker still names what was loaded); Clear offers sets it to null. Both offers run through runCase so the winner logic stays in the engine; if the engine throws (e.g. a bad plan id), each offer runs alone so the directive error lands on the right stub and the other stub still renders. Per-paycheck is exposed as a divisor so components only divide-and-format.
+- Tests: 10 reducer/view tests (all 6 samples load and match expected.json winners and net pay in both modes, no mutation, profile recompute, modes, clear, lone offer, error isolation) and 3 provider tests.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 16 files/213 tests, build)
+Screens checked: no (no visible UI change; `/` still renders an empty main)
+Next: Header and controls row (sample picker with all 6 cases, Annual/Per paycheck toggle, recommended switch).

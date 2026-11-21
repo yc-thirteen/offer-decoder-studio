@@ -23,7 +23,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [x] Components in `src/components/stub/`: `GuillocheBackground`, `Perforation` (vertical and horizontal), `StubShell` (with notches), `LineItem`, `Amount` (static, struck, and new states with the 180ms correction and reduced-motion support, plus an accessible label like "was $4,500, now $9,000"), and `Stamp`. Add a `/dev/components` route showing every state. Check it with screenshots.
 
 ## Phase 3: decoder page
-- [ ] App state (profile, two offers, elections mode, annual or per-paycheck, chosen sample) in one store, using React context or useReducer. The engine runs from state, and components only format.
+- [x] App state (profile, two offers, elections mode, annual or per-paycheck, chosen sample) in one store, using React context or useReducer. The engine runs from state, and components only format.
 - [ ] Header and controls row (sample picker with all 6 cases, the Annual/Per paycheck toggle, and the recommended switch).
 - [ ] About you block (all profile fields; spouse's wages only when filing jointly; a disclosure on mobile).
 - [ ] The two stubs bound to engine output, with every line item, note, stamp, and both modes. Check them against the fixture numbers for chicago-vs-austin in a component test.
