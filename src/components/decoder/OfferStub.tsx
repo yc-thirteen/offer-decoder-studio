@@ -256,6 +256,8 @@ export function OfferStub({
     setPanel(null);
   };
 
+  // Both stubs have the same two buttons, so each one is described by its stub's heading
+  // (the employer, or "Offer N of 2") to tell them apart in a screen reader's list.
   const button = "h-10 border border-ink bg-stub px-3 font-semibold";
   const action = (
     <span className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -265,6 +267,7 @@ export function OfferStub({
             ref={buttons.read}
             type="button"
             onClick={() => setPanel({ for: offer, kind: "read", origin: "read" })}
+            aria-describedby={headingId}
             className={button}
           >
             Read offer letter
@@ -273,6 +276,7 @@ export function OfferStub({
             ref={buttons.edit}
             type="button"
             onClick={() => setPanel({ for: offer, kind: "edit", origin: "edit" })}
+            aria-describedby={headingId}
             className={button}
           >
             {offer ? "Edit offer" : "Fill in offer"}

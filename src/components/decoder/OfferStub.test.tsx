@@ -168,6 +168,23 @@ describe("OfferStubs bound to the engine (chicago-vs-austin)", () => {
     expect(within(empty).getByText("Your bottom line per paycheck")).toBeTruthy();
   });
 
+  it("each stub's buttons are described by that stub's heading", () => {
+    setup();
+    const edits = screen.getAllByRole("button", { name: "Edit offer" });
+    expect(edits.map((b) => b.getAttribute("aria-describedby"))).toEqual([
+      "offer-stub-1",
+      "offer-stub-2",
+    ]);
+    expect(edits[0]).toHaveAccessibleDescription("Northfield Health");
+    expect(
+      screen.getAllByRole("button", { name: "Read offer letter" })[1],
+    ).toHaveAccessibleDescription("Lakeshore Systems");
+    fireEvent.click(screen.getByRole("button", { name: "Clear offers" }));
+    expect(screen.getAllByRole("button", { name: "Fill in offer" })[0]).toHaveAccessibleDescription(
+      "Offer 1 of 2",
+    );
+  });
+
   it("Clear offers empties both stubs and Load sample fills them again", () => {
     setup();
     fireEvent.click(screen.getByRole("button", { name: "Clear offers" }));

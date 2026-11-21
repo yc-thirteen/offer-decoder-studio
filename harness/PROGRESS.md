@@ -454,3 +454,22 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 39 files/448 tests, build). a11y: serious 0, critical 0.
 Screens checked: yes, empty at 375. The guilloché renders as before, and there is no visible change without image files (none exist yet).
 Next: accessibility pass.
+
+## 2026-11-21T10:11:18Z | iteration 38
+Task: Accessibility pass: zero serious axe violations, keyboard order, a visible focus ring, and labels on every input.
+Result: done
+What changed: `npm run a11y` now covers far more of the page.
+- axe runs on the decoder's interactive states, not just first load: recommended on, the life panel with recommended on, About you opened (375), the editor after a failed save, the letter reader, its review state, and the empty page. It still covers /method, /dev/components, and the 404 page.
+- New keyboard walks Tab through four states: a sample with recommended on, the life panel, the editor with errors, and the letter review. Each stop must be visible, have a 2px+ outline that no overflow ancestor clips, and have an accessible name. At 375 the walk also flags any stop more than 40px above the one before it.
+- The page steps are now shared in `scripts/lib/steps.mjs`, which `shots.mjs` uses too. Its views are unchanged.
+- In `OfferStub.tsx`, each stub's "Read offer letter" and "Edit offer"/"Fill in offer" buttons get `aria-describedby` set to that stub's heading, so a screen reader's button list can tell the two pairs apart.
+- New `src/test/a11yLabels.test.tsx` renders the whole decoder with the editor (in error), the reader, and the life sliders open at once. It checks that every input, select, textarea, and button has an accessible name, that nothing has a positive tabIndex, and that no id is duplicated. It runs on the empty page too. There is also a new OfferStub test for the descriptions.
+Findings: the page already passed everything checked: 0 serious and 0 critical axe violations in all 21 view/width runs, and 0 keyboard problems across 8 walks (21 to 60 stops each). The order runs header link → sample picker → Load sample → Clear offers → Annual/Per paycheck → recommended switch → About you → stub 1 (and its editor fields when open) → stub 2 → checklist tab → checklist items → life sliders and "Use lecture values".
+Decisions:
+- I kept the button names and added descriptions, rather than renaming them to "Edit offer: Northfield Health". The visible text and every existing selector stay the same, and the sections are already labeled by their headings.
+- Repeated health-plan field labels ("Plan name", "Deductible") are fine as they are, because each plan is a fieldset with its own legend.
+- The walk's starting point is a temporary element focused at the top of the body. A plain blur() leaves Chrome's tab start where focus was, and my first run missed the header controls because of that.
+- `dom-accessibility-api` is only a transitive dependency, so the label test uses jest-dom's `toHaveAccessibleName()` instead of importing it.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 40 files/451 tests, build). a11y: serious 0, critical 0, keyboard problems 0.
+Screens checked: yes. I took one-off close-ups of focus on the recommended switch, the Annual segment, the selected checklist tab, a checklist box, and the sample select at 375. The carbon ring is visible and offset outside the carbon-filled controls. A full `npm run shots` run had 0 failures and no overflow warnings, and home-recommended-1280 looks the same as before. No issues found.
+Next: responsive pass at 375 and 768.

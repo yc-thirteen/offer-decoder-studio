@@ -9,66 +9,21 @@
 // screenshot is still taken, so the run never fails just because the UI is
 // unfinished. Update the selectors here if the UI copy changes.
 import { chromium } from "@playwright/test";
-import { mkdirSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, rmSync } from "node:fs";
 import path from "node:path";
 import { ROOT, buildAndServe } from "./lib/serve.mjs";
+import {
+  clearOffers,
+  editWithErrors,
+  letterReview,
+  loadSample,
+  openAboutYou,
+  openLetterReader,
+  turnOnRecommended,
+} from "./lib/steps.mjs";
 
 const OUT = path.join(ROOT, "harness/shots/latest");
 const WIDTHS = [375, 768, 1280];
-const CASES = JSON.parse(
-  readFileSync(path.join(ROOT, "harness/fixtures/cases.json"), "utf8"),
-).cases;
-const FIRST_CASE = CASES[0];
-
-/** Clicks the first visible match, or logs a skip. Returns true if clicked. */
-async function clickIfPresent(page, locator, what) {
-  const el = locator.first();
-  if ((await el.count()) === 0 || !(await el.isVisible())) {
-    console.log(`  skipped: ${what} not found`);
-    return false;
-  }
-  await el.scrollIntoViewIfNeeded();
-  await el.click();
-  return true;
-}
-
-async function turnOnRecommended(page) {
-  const name = /use recommended elections/i;
-  const sw = page.getByRole("switch", { name }).or(page.getByRole("checkbox", { name }));
-  const el = sw.first();
-  if ((await el.count()) === 0) return console.log("  skipped: recommended switch not found");
-  const state = (await el.getAttribute("aria-checked")) ?? String(await el.isChecked());
-  if (state !== "true") await el.click();
-  await page.waitForTimeout(600); // let the 180ms correction strike finish
-}
-
-async function loadFirstSample(page) {
-  await loadSample(page, FIRST_CASE.id);
-}
-
-async function loadSample(page, id) {
-  const sample = CASES.find((c) => c.id === id) ?? FIRST_CASE;
-  const picker = page
-    .getByLabel(/load a sample/i)
-    .or(page.getByRole("combobox", { name: /sample/i }));
-  const el = picker.first();
-  if ((await el.count()) === 0) return console.log("  skipped: sample picker not found");
-  const tag = await el.evaluate((n) => n.tagName.toLowerCase());
-  if (tag === "select") {
-    const values = await el.locator("option").evaluateAll((os) => os.map((o) => o.value));
-    await el.selectOption(values.includes(sample.id) ? sample.id : { index: 0 });
-  } else {
-    await el.click();
-    const opt = page.getByRole("option", { name: new RegExp(sample.title.slice(0, 20), "i") });
-    const target = (await opt.count()) > 0 ? opt.first() : page.getByRole("option").first();
-    await target.click();
-  }
-  await clickIfPresent(
-    page,
-    page.getByRole("button", { name: /^load sample$/i }),
-    "Load sample button",
-  );
-}
 
 async function openChecklist(page) {
   // The checklist sits on the page under the memo; its tabs pick the offer (the first is selected).
@@ -87,74 +42,19 @@ const VIEWS = [
     name: "home-checklist",
     path: "/",
     run: async (page) => {
-      await loadFirstSample(page);
+      await loadSample(page);
       await openChecklist(page);
     },
   },
   // Not in HARNESS.md's list: About you opened behind its mobile disclosure (skipped at md and up).
-  {
-    name: "home-about-open",
-    path: "/",
-    run: (page) =>
-      clickIfPresent(
-        page,
-        page.getByRole("button", { name: /change your details/i }),
-        "Change your details button",
-      ),
-  },
+  { name: "home-about-open", path: "/", run: openAboutYou },
   // Not in HARNESS.md's list: the first stub in Edit offer mode, after a failed save so the
   // directive errors show (the salary is cleared first).
-  {
-    name: "home-edit",
-    path: "/",
-    run: async (page) => {
-      if (
-        !(await clickIfPresent(
-          page,
-          page.getByRole("button", { name: /^edit offer$/i }),
-          "Edit offer button",
-        ))
-      )
-        return;
-      await page.getByLabel("Yearly salary").first().fill("");
-      await page
-        .getByRole("button", { name: /^save offer$/i })
-        .first()
-        .click();
-    },
-  },
+  { name: "home-edit", path: "/", run: editWithErrors },
   // Not in HARNESS.md's list: the "Read offer letter" panel open on the first stub.
-  {
-    name: "home-letter",
-    path: "/",
-    run: (page) =>
-      clickIfPresent(
-        page,
-        page.getByRole("button", { name: /^read offer letter$/i }),
-        "Read offer letter button",
-      ),
-  },
+  { name: "home-letter", path: "/", run: openLetterReader },
   // Not in HARNESS.md's list: the review state after the reader reads a sample letter.
-  {
-    name: "home-letter-review",
-    path: "/",
-    run: async (page) => {
-      if (
-        !(await clickIfPresent(
-          page,
-          page.getByRole("button", { name: /^read offer letter$/i }),
-          "Read offer letter button",
-        ))
-      )
-        return;
-      await page.getByRole("button", { name: "Lakeshore Systems" }).first().click();
-      await page
-        .getByRole("button", { name: /^read offer letter$/i })
-        .first()
-        .click();
-      await page.getByLabel("Yearly salary").first().waitFor();
-    },
-  },
+  { name: "home-letter-review", path: "/", run: letterReview },
   // Not in HARNESS.md's list: a sample where someone depends on your income, so the life
   // insurance panel shows (it is hidden for the first sample).
   { name: "home-life", path: "/", run: (page) => loadSample(page, "one-income-family") },
@@ -163,16 +63,7 @@ const VIEWS = [
   // Not in HARNESS.md's list: the component sheet, so stub parts can be checked visually.
   { name: "dev-components", path: "/dev/components" },
   { name: "dev-components-recommended", path: "/dev/components", run: turnOnRecommended },
-  {
-    name: "empty",
-    path: "/",
-    run: (page) =>
-      clickIfPresent(
-        page,
-        page.getByRole("button", { name: /clear offers/i }),
-        "Clear offers button",
-      ),
-  },
+  { name: "empty", path: "/", run: clearOffers },
 ];
 
 const server = await buildAndServe();
