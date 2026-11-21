@@ -688,3 +688,27 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/483 tests, build). a11y: serious 0, critical 0, keyboard problems 0.
 Screens checked: yes. `npm run shots` (0 failed), plus 2x crops of every tax chart for all 6 samples at 375, 768, and 1280, using the ignored scratch `harness/shots/crops/croptax.mjs` and contact sheets. Every chart at every width is clear. High-earner-family offer 2 now reads "Average 21.3%" right of the marker, under the 24% step. Issues: none new.
 Next: the backlog is empty, so next comes critique round 4.
+
+## 2026-11-21T16:25:00Z | iteration 53
+Task: Critique round 4. Every backlog task was checked off and none were blocked.
+Result: done
+What changed: Took fresh shots (0 failed) and ran a11y and responsive. Took fresh 2x element crops of every chart in all 5 chart samples at 375, 768, and 1280, using the ignored scratch `harness/shots/crops/cropall.mjs`, then built contact sheets (375 per sample, plus a 1280 tax sheet). Scored the rubric and added one health-chart task under "Critique round 4". No product code changed.
+Scores (0–2):
+1. Reads as a pay stub at 1280 and 375: 2. Header rule, square bordered stubs, notched perforation (horizontal at 375), and boxed net pay and bottom line.
+2. Banned items absent: 2.
+3. Right edge and tabular figures: 2.
+4. Memo most prominent after the stubs: 2.
+5. Correction legible with recommended on: 2.
+6. Charts follow the rules: 1. Round 3's tax collisions are gone at every width: rate labels clear the average line, the marker, and the staircase, and "Average X%" sits right of the marker. The match and life charts are clean. One new collision is left: at 375, in new-grad-roth offer 2's health chart, the steep ink HSA Plan 3200 line runs through the "$" of the blue "$2,000" cost label (seen in a 2x zoom). The rendered sweep only checks each label against its own line, so it misses this.
+7. AA, focus, axe: 2. a11y: serious 0, critical 0, keyboard problems 0.
+8. No sideways scroll, nothing on notches or perforation: 2. responsive: 0 problems, 0 views failed.
+9. Copy rules: 2.
+10. Empty and error states: 2. Unchanged since round 3, and no code they render has changed.
+Decisions:
+- In university-staff at 375 and 1280, the average line (11.6%, 11.2%) runs just under the 12% step, so the dashed and solid lines nearly touch. That comes from the data, not from a label, and the average has its own label, so I didn't add a task.
+- At 1280 some own-rate labels read "22%" or "24%" without "marginal" (university-staff, high-earner-family), because the longer text doesn't fit the step. They are still carbon, and the conclusion sentence names the marginal rate, so this stands.
+- At 375 in new-grad-roth offer 1, the $500 spending marker sits about 6px right of the y axis. That is honest to the data, so it stands.
+- No blocked tasks to retry.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/483 tests, build).
+Screens checked: yes. Looked at home recommended at 1280 (2 slices) and at 375, contact sheets of every chart crop at 375 for all 5 chart samples, a 1280 tax sheet, and a 2x zoom of the new-grad-roth offer 2 health chart. Issues: the health cost label collision above.
+Next: the health chart cost-label task from critique round 4.
