@@ -255,7 +255,7 @@ describe("the cost beside each dot", () => {
   }
 
   for (const width of [300, 420, 560, 700]) {
-    it(`keeps every cost off its own line, and off the other costs, at ${width}px`, () => {
+    it(`keeps every cost off its own line, the $0 line, and the other costs, at ${width}px`, () => {
       stubWidth(width);
       for (const sample of SAMPLE_CASES) {
         const { unmount, container } = render(
@@ -287,6 +287,18 @@ describe("the cost beside each dot", () => {
               lineTouches(points, boxes[i]!),
               `${sample.id} at ${width}px: ${t.textContent} on its own line`,
             ).toBe(false);
+            const zero = svg.querySelector("[data-zero-line]");
+            if (zero) {
+              const zy = Number(zero.getAttribute("y1"));
+              const ends: [number, number][] = [
+                [Number(zero.getAttribute("x1")), zy],
+                [Number(zero.getAttribute("x2")), zy],
+              ];
+              expect(
+                lineTouches(ends, boxes[i]!),
+                `${sample.id} at ${width}px: ${t.textContent} on the $0 line`,
+              ).toBe(false);
+            }
             for (let j = 0; j < i; j++) {
               const [a, b] = [boxes[i]!, boxes[j]!];
               const clash = a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];

@@ -115,7 +115,12 @@ export function HealthCostChart({ data, title }: { data: HealthChartData; title:
       text: formatMoney(l.costAtSpend),
       lineY: (px: number) => y(planCost(l.plan, sx(Math.min(Math.max(px, x0), x1)))),
     })),
-    { xs, plot: [x0, y1, x1, y0], avoid: labelBoxes },
+    {
+      xs,
+      plot: [x0, y1, x1, y0],
+      // The solid $0 line, drawn when costs can go negative, reads as an underline if touched.
+      avoid: yLo < 0 ? [...labelBoxes, [x0, y(0) - 1, x1, y(0) + 1]] : labelBoxes,
+    },
   );
 
   // The marker label sits beside the marker, on whichever side it fits, inside the chart.
@@ -186,7 +191,15 @@ export function HealthCostChart({ data, title }: { data: HealthChartData; title:
           strokeWidth={1.5}
         />
         {yLo < 0 && (
-          <line x1={x0} x2={x1} y1={y(0)} y2={y(0)} stroke="var(--ink)" strokeOpacity={0.6} />
+          <line
+            data-zero-line
+            x1={x0}
+            x2={x1}
+            y1={y(0)}
+            y2={y(0)}
+            stroke="var(--ink)"
+            strokeOpacity={0.6}
+          />
         )}
 
         {/* Expected-spending marker */}

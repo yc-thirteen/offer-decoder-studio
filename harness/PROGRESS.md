@@ -641,3 +641,14 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/479 tests, build).
 Screens checked: yes. Looked at home recommended at 1280/768/375 (the 375 one in 1400px slices), empty at 375, life at 1280, method at 768, plus full-resolution crops of the health, match, and life charts at 1280 and 2x zooms of the 375 health chart. Issues: the zero-line collision above.
 Next: the HealthCostChart zero-line task from critique round 2.
+
+## 2026-11-21T14:55:00Z | iteration 50
+Task: Rubric 6. In `HealthCostChart.tsx`, keep the cost labels off the solid $0 line (chicago-vs-austin Northfield "$1,600" at 375), and test it at 300/420/560/700px.
+Result: done
+What changed: When `yLo < 0`, `HealthCostChart` now passes the $0 line to `placeValueLabels` as an extra `avoid` box, `[x0, y(0) - 1, x1, y(0) + 1]`, so touching it counts as a clash (weight 4), the same as touching a line label. The $0 line is tagged `data-zero-line`. The rendered sweep in `HealthCostsPanel.test.tsx` now also checks that no cost box touches the $0 line (±1px). The sweep fails on the old chart at 300px and passes with the fix.
+Decisions:
+- I didn't change `healthValueLabels.ts`. The existing `avoid` input already covers this, so the placement rules stay the same.
+- At 375 Northfield's "$1,600" now sits below-right of its dot, one step down and just under the $0 line. It stays next to its own dot, in blue, and no line crosses it. Round 2 also flagged the −$5,000 to $15,000 axis at 375. I left it alone, and round 3 should look at it again.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/479 tests, build). a11y: serious 0, critical 0, keyboard problems 0.
+Screens checked: yes. `npm run shots` (0 failed), plus 2x element crops of every health chart for chicago-vs-austin, university-staff, new-grad-roth, high-earner-family, and plan-crossover at 375, 768, and 1280. I used the ignored scratch `harness/shots/crops/crop.mjs`, pointed at `[data-value-label]`. Northfield at 375 is fixed. Every other chart, and 1280, is unchanged. Issues: none new.
+Next: the backlog is empty, so next comes critique round 3.
