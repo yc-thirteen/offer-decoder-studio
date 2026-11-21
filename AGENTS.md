@@ -28,3 +28,6 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Existing offer Edge Functions use the Lovable AI Gateway SDK through a pinned shared import map; preserve the handler contract and no-login access because the frontend already calls these endpoints.
+- Generate AI model declarations with the SDK CLI and load their augmentation from src/ai-gateway.types.ts; do not hand-edit generated contracts.

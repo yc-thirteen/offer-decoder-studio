@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   EXTRACT_FIELD_KEYS,
   HttpAIClient,
@@ -9,6 +9,7 @@ import {
 } from "./index";
 
 const URL = "https://example-ref.supabase.co";
+afterEach(() => vi.unstubAllEnvs());
 
 describe("getAIClient", () => {
   it("returns the mock client with no env vars", () => {
@@ -18,6 +19,9 @@ describe("getAIClient", () => {
   });
 
   it("returns the mock client in the test environment (no Cloud vars set)", () => {
+    vi.stubEnv("VITE_SUPABASE_URL", "");
+    vi.stubEnv("VITE_SUPABASE_PUBLISHABLE_KEY", "");
+    vi.stubEnv("VITE_SUPABASE_ANON_KEY", "");
     expect(getAIClient().kind).toBe("mock");
   });
 

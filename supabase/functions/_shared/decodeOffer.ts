@@ -42,7 +42,7 @@ export const DECODE_COPY: FailureCopy & {
   empty: "The letter is empty. Paste its text or drop the letter's file.",
   long: "This letter is too long to read. Paste only the offer and benefits sections.",
   notConnected:
-    "The letter reader isn't connected yet. Add the ANTHROPIC_API_KEY secret in Lovable Cloud, or type the offer in by hand.",
+    "The letter reader isn't connected yet. Turn on Lovable AI for this project, or type the offer in by hand.",
   timeout: "The letter reader took too long. Read the letter again, or type the offer in by hand.",
   upstream:
     "The letter reader couldn't reach the model. Read the letter again, or type the offer in by hand.",

@@ -1,18 +1,19 @@
 /**
  * The decode-offer and explain-stub edge functions (supabase/functions), run here
- * against a fake Anthropic API. No network and no real key.
+ * against a fake Gateway SDK call. No network and no real key.
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { generateMessage, ConfigurationError, OperationFailedError } from "@lovable.dev/ai-gateway";
+vi.mock("@lovable.dev/ai-gateway", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@lovable.dev/ai-gateway")>();
+  return { ...actual, generateMessage: vi.fn() };
+});
 import sampleCases from "@/data/sampleCases.json";
 import extractions from "@/data/letters/expected-extractions.json";
 import { STATE_RATES, runCase, type Offer, type Profile } from "@/lib/engine";
-import {
-  ANTHROPIC_VERSION,
-  MODEL,
-  UPSTREAM_TIMEOUT_MS,
-} from "../../../supabase/functions/_shared/anthropic.ts";
+import { UPSTREAM_TIMEOUT_MS } from "../../../supabase/functions/_shared/anthropic.ts";
 import {
   DECODE_COPY,
   EXTRACT_SCHEMA,
@@ -41,22 +42,41 @@ const letterText = (file: string) =>
 const KEY = "test-key-not-real";
 
 /** A Messages API response whose text block is `text`. */
-function modelReply(text: string, stop_reason = "end_turn") {
+function modelReply(text: string, stop_reason = "tool_use") {
+  let input: unknown;
+  try {
+    input = JSON.parse(text);
+  } catch {
+    input = text;
+  }
   return new Response(
     JSON.stringify({
       type: "message",
       stop_reason,
       content: [
         { type: "thinking", thinking: "" },
-        { type: "text", text },
+        { type: "tool_use", name: "answer", id: "test", input },
       ],
     }),
     { status: 200, headers: { "content-type": "application/json" } },
   );
 }
 
+function useFakeGateway(fetch: typeof globalThis.fetch) {
+  vi.mocked(generateMessage).mockImplementation(async (payload, options) => {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/messages", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      ...(options?.signal ? { signal: options.signal } : {}),
+    });
+    if (!res.ok) throw new OperationFailedError("redacted", { httpStatus: res.status });
+    return await res.json();
+  });
+}
 function fakeAnthropic(reply: () => Response | Promise<Response>) {
-  return vi.fn<typeof fetch>(async () => reply());
+  const fetch = vi.fn<typeof globalThis.fetch>(async () => reply());
+  useFakeGateway(fetch);
+  return fetch;
 }
 
 const post = (fn: string, body: unknown) =>
@@ -95,6 +115,45 @@ describe("edge function contracts match the app", () => {
   });
 });
 
+describe("gateway failures", () => {
+  it.each([
+    [429, "The AI is busy. Wait a minute, then try again."],
+    [402, "The AI is out of credits. Add credits in Lovable, or type the offer in by hand."],
+  ])("returns status %s and its recovery message for both functions", async (status, error) => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetch = fakeAnthropic(() => new Response("not JSON", { status: Number(status) }));
+    const decode = await handleDecodeOffer(post("decode-offer", { text: "Offer" }), {
+      apiKey: KEY,
+      fetch,
+    });
+    expect(decode.status).toBe(status);
+    expect(await decode.json()).toEqual({ error });
+    const explain = await handleExplainStub(
+      post("explain-stub", requestFor("chicago-vs-austin", "recommended")),
+      { apiKey: KEY, fetch },
+    );
+    expect(explain.status).toBe(status);
+    expect(await explain.json()).toEqual({ error });
+    expect(console.error).toHaveBeenCalledWith(status);
+  });
+  it("rejects valid JSON whose values violate the requested schema", async () => {
+    const fields = parseLetter(letterText("cascade.txt"));
+    const fetch = fakeAnthropic(() =>
+      modelReply(
+        JSON.stringify({
+          fields: { ...fields, salary: { source: "letter", value: "not a number" } },
+        }),
+      ),
+    );
+    const res = await handleDecodeOffer(post("decode-offer", { text: "Offer" }), {
+      apiKey: KEY,
+      fetch,
+    });
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({ error: DECODE_COPY.invalid });
+  });
+});
+
 describe("decode-offer", () => {
   it("answers CORS preflight and rejects other methods", async () => {
     const pre = await handleDecodeOffer(
@@ -130,6 +189,7 @@ describe("decode-offer", () => {
 
   it("says how to connect when the secret is missing", async () => {
     const fetch = fakeAnthropic(() => modelReply("{}"));
+    vi.mocked(generateMessage).mockRejectedValueOnce(new ConfigurationError("missing"));
     const res = await handleDecodeOffer(post("decode-offer", { text: "Offer" }), {
       apiKey: undefined,
       fetch,
@@ -139,22 +199,26 @@ describe("decode-offer", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it("calls the Messages API with the key, version, model, and JSON schema", async () => {
+  it("calls Claude on the gateway with structured JSON and the existing budget", async () => {
     const text = letterText("cascade.txt");
     const fetch = fakeAnthropic(() => modelReply(JSON.stringify({ fields: parseLetter(text) })));
     await handleDecodeOffer(post("decode-offer", { text }), { apiKey: KEY, fetch });
-    const [url, init] = fetch.mock.calls[0]!;
-    expect(url).toBe("https://api.anthropic.com/v1/messages");
-    const headers = init!.headers as Record<string, string>;
-    expect(headers["x-api-key"]).toBe(KEY);
-    expect(headers["anthropic-version"]).toBe(ANTHROPIC_VERSION);
-    expect(ANTHROPIC_VERSION).toBe("2023-06-01");
-    const body = JSON.parse(init!.body as string);
-    expect(body.model).toBe(MODEL);
-    expect(MODEL).toBe("claude-sonnet-5-5");
-    expect(body.output_config.format).toEqual({ type: "json_schema", schema: EXTRACT_SCHEMA });
+    const calls = vi.mocked(generateMessage).mock.calls;
+    const latest = calls.at(-1);
+    if (!latest) throw new Error("No model call");
+    const [body, options] = latest;
+    expect(body.model).toBe("anthropic/claude-sonnet-5");
+    expect(body.max_tokens).toBe(16000);
+    expect(body.tools?.[0]).toMatchObject({ name: "answer", input_schema: EXTRACT_SCHEMA });
+    expect(body.tool_choice).toEqual({
+      type: "tool",
+      name: "answer",
+      disable_parallel_tool_use: true,
+    });
     expect(body.system).toContain("never guess");
-    expect(body.messages[0].content).toContain(text);
+    expect(body.messages[0]?.content).toContain(text);
+    expect(options?.maxRetries).toBe(0);
+    expect(options?.signal).toBeInstanceOf(AbortSignal);
   });
 
   it.each(extractions.letters)(
@@ -216,6 +280,7 @@ describe("decode-offer", () => {
 
   it("turns refusals, truncation, upstream errors, network failures, and timeouts into directive errors", async () => {
     const run = async (fetch: typeof globalThis.fetch, timeoutMs?: number) => {
+      useFakeGateway(fetch);
       const res = await handleDecodeOffer(post("decode-offer", { text: "Offer" }), {
         apiKey: KEY,
         fetch,
@@ -251,7 +316,7 @@ describe("decode-offer", () => {
         ),
     );
     expect(await run(hang, 10)).toEqual([504, DECODE_COPY.timeout]);
-    expect(UPSTREAM_TIMEOUT_MS).toBeLessThan(20_000);
+    expect(UPSTREAM_TIMEOUT_MS).toBe(18_000);
   });
 
   it("never logs the letter text", async () => {
@@ -270,10 +335,8 @@ describe("decode-offer", () => {
       },
     ];
     for (const reply of replies) {
-      await handleDecodeOffer(post("decode-offer", { text }), {
-        apiKey: KEY,
-        fetch: vi.fn<typeof fetch>(async () => reply()),
-      });
+      const fetch = fakeAnthropic(reply);
+      await handleDecodeOffer(post("decode-offer", { text }), { apiKey: KEY, fetch });
     }
     expect(logged.join("\n")).not.toContain("SECRET-LETTER");
   });

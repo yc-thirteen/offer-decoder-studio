@@ -15,7 +15,7 @@ export const EXPLAIN_COPY: FailureCopy & {
   badJson: "Send the two offers' numbers as JSON.",
   badRequest: "Load two offers to get a plain-English summary.",
   notConnected:
-    "The summary writer isn't connected yet. Add the ANTHROPIC_API_KEY secret in Lovable Cloud, or read the stubs and checklist.",
+    "The summary writer isn't connected yet. Turn on Lovable AI for this project, or read the stubs and checklist.",
   timeout: "The summary took too long. Ask for it again, or read the stubs and checklist.",
   upstream:
     "The summary writer couldn't reach the model. Ask again, or read the stubs and checklist.",

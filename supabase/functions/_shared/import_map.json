@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@lovable.dev/ai-gateway": "npm:@lovable.dev/ai-gateway@0.1.13",
+    "ajv": "npm:ajv@8.20.0"
+  }
+}

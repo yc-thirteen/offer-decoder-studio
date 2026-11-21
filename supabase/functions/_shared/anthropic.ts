@@ -76,50 +76,67 @@ const isRec = (v: unknown): v is Rec => typeof v === "object" && v !== null && !
 /** Calls the model and returns its JSON answer, or throws a FunctionError. */
 export async function callModel(call: ModelCall): Promise<unknown> {
   const { copy } = call;
-  const apiKey = call.apiKey?.trim();
-  if (!apiKey) throw new FunctionError(500, copy.notConnected);
-
-  const fetchImpl = call.fetch ?? ((...args) => globalThis.fetch(...args));
+  const { generateMessage, GatewayError } = await import("@lovable.dev/ai-gateway");
+  const { default: Ajv } = await import("ajv");
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), call.timeoutMs ?? UPSTREAM_TIMEOUT_MS);
 
-  let res: Response;
   let body: unknown;
   try {
-    res = await fetchImpl(ANTHROPIC_URL, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": ANTHROPIC_VERSION,
-        "anthropic-beta": FALLBACK_BETA,
+    body = await generateMessage(
+      {
+        model: "anthropic/claude-sonnet-5",
+        max_tokens: 16000,
+        system: call.system,
+        messages: [{ role: "user", content: call.user }],
+        output_config: { effort: "low" },
+        tools: [
+          {
+            name: "answer",
+            description: "Return the answer matching this JSON schema.",
+            input_schema: call.schema,
+          },
+        ],
+        tool_choice: { type: "tool", name: "answer", disable_parallel_tool_use: true },
       },
-      body: JSON.stringify(messagesBody(call.system, call.user, call.schema)),
-      signal: controller.signal,
-    });
-    body = await res.json();
-  } catch {
+      { signal: controller.signal, maxRetries: 0 },
+    );
+  } catch (error) {
     if (controller.signal.aborted) throw new FunctionError(504, copy.timeout);
+    if (error instanceof GatewayError) {
+      if (error.httpStatus !== undefined) console.error(error.httpStatus);
+      if (error.httpStatus === 429)
+        throw new FunctionError(429, "The AI is busy. Wait a minute, then try again.");
+      if (error.httpStatus === 402)
+        throw new FunctionError(
+          402,
+          "The AI is out of credits. Add credits in Lovable, or type the offer in by hand.",
+        );
+      if (error.code === "configuration_error" || error.code === "authentication_error")
+        throw new FunctionError(500, copy.notConnected);
+    }
     throw new FunctionError(502, copy.upstream);
   } finally {
     clearTimeout(timer);
   }
 
-  if (!res.ok || !isRec(body)) {
-    // Status only: the body can echo the prompt, which holds the letter.
-    console.error(`anthropic request failed with status ${res.status}`);
-    throw new FunctionError(502, copy.upstream);
-  }
+  if (!isRec(body)) throw new FunctionError(502, copy.upstream);
   if (body.stop_reason === "refusal") throw new FunctionError(502, copy.refused);
-  if (body.stop_reason !== "end_turn") throw new FunctionError(502, copy.invalid);
+  if (body.stop_reason !== "tool_use") throw new FunctionError(502, copy.invalid);
 
   const content = Array.isArray(body.content) ? body.content : [];
-  const text = content
-    .filter((b): b is Rec => isRec(b) && b.type === "text" && typeof b.text === "string")
-    .map((b) => b.text as string)
-    .join("");
   try {
-    return JSON.parse(text);
+    const tools = content.filter(
+      (block): block is Record<string, unknown> =>
+        typeof block === "object" && block !== null && "type" in block && block.type === "tool_use",
+    );
+    const tool = tools[0];
+    if (tools.length !== 1 || tool?.["name"] !== "answer")
+      throw new FunctionError(502, copy.invalid);
+    const answer: unknown = JSON.parse(JSON.stringify(tool["input"]));
+    const validate = new Ajv({ strict: false, logger: false }).compile(call.schema);
+    if (!validate(answer)) throw new FunctionError(502, copy.invalid);
+    return answer;
   } catch {
     throw new FunctionError(502, copy.invalid);
   }

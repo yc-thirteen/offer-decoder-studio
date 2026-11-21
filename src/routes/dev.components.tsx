@@ -17,6 +17,13 @@ export const Route = createFileRoute("/dev/components")({
       { title: "Stub components (dev) | Offer Decoder" },
       { name: "description", content: "Every state of the pay stub components, for checking." },
       { name: "robots", content: "noindex" },
+      { property: "og:title", content: "Stub components (dev) | Offer Decoder" },
+      {
+        property: "og:description",
+        content: "Every state of the Offer Decoder pay stubs, for checking.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: DevComponents,
