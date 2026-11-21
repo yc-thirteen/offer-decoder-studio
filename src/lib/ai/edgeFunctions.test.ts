@@ -13,7 +13,7 @@ vi.mock("@lovable.dev/ai-gateway", async (importOriginal) => {
 import sampleCases from "@/data/sampleCases.json";
 import extractions from "@/data/letters/expected-extractions.json";
 import { STATE_RATES, runCase, type Offer, type Profile } from "@/lib/engine";
-import { UPSTREAM_TIMEOUT_MS } from "../../../supabase/functions/_shared/anthropic.ts";
+import { MODEL, UPSTREAM_TIMEOUT_MS } from "../../../supabase/functions/_shared/anthropic.ts";
 import {
   DECODE_COPY,
   EXTRACT_SCHEMA,
@@ -62,7 +62,7 @@ function modelReply(text: string, stop_reason = "tool_use") {
   );
 }
 
-function useFakeGateway(fetch: typeof globalThis.fetch) {
+function routeGatewayTo(fetch: typeof globalThis.fetch) {
   vi.mocked(generateMessage).mockImplementation(async (payload, options) => {
     const res = await fetch("https://ai.gateway.lovable.dev/v1/messages", {
       method: "POST",
@@ -75,7 +75,7 @@ function useFakeGateway(fetch: typeof globalThis.fetch) {
 }
 function fakeAnthropic(reply: () => Response | Promise<Response>) {
   const fetch = vi.fn<typeof globalThis.fetch>(async () => reply());
-  useFakeGateway(fetch);
+  routeGatewayTo(fetch);
   return fetch;
 }
 
@@ -117,9 +117,9 @@ describe("edge function contracts match the app", () => {
 
 describe("gateway failures", () => {
   it.each([
-    [429, "The AI is busy. Wait a minute, then try again."],
-    [402, "The AI is out of credits. Add credits in Lovable, or type the offer in by hand."],
-  ])("returns status %s and its recovery message for both functions", async (status, error) => {
+    [429, "busy"],
+    [402, "noCredits"],
+  ] as const)("returns status %s and each function's own %s message", async (status, key) => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     const fetch = fakeAnthropic(() => new Response("not JSON", { status: Number(status) }));
     const decode = await handleDecodeOffer(post("decode-offer", { text: "Offer" }), {
@@ -127,13 +127,13 @@ describe("gateway failures", () => {
       fetch,
     });
     expect(decode.status).toBe(status);
-    expect(await decode.json()).toEqual({ error });
+    expect(await decode.json()).toEqual({ error: DECODE_COPY[key] });
     const explain = await handleExplainStub(
       post("explain-stub", requestFor("chicago-vs-austin", "recommended")),
       { apiKey: KEY, fetch },
     );
     expect(explain.status).toBe(status);
-    expect(await explain.json()).toEqual({ error });
+    expect(await explain.json()).toEqual({ error: EXPLAIN_COPY[key] });
     expect(console.error).toHaveBeenCalledWith(status);
   });
   it("rejects valid JSON whose values violate the requested schema", async () => {
@@ -207,7 +207,7 @@ describe("decode-offer", () => {
     const latest = calls.at(-1);
     if (!latest) throw new Error("No model call");
     const [body, options] = latest;
-    expect(body.model).toBe("anthropic/claude-sonnet-5");
+    expect(body.model).toBe(MODEL);
     expect(body.max_tokens).toBe(16000);
     expect(body.tools?.[0]).toMatchObject({ name: "answer", input_schema: EXTRACT_SCHEMA });
     expect(body.tool_choice).toEqual({
@@ -219,6 +219,7 @@ describe("decode-offer", () => {
     expect(body.messages[0]?.content).toContain(text);
     expect(options?.maxRetries).toBe(0);
     expect(options?.signal).toBeInstanceOf(AbortSignal);
+    expect(options?.apiKey).toBe(KEY);
   });
 
   it.each(extractions.letters)(
@@ -280,7 +281,7 @@ describe("decode-offer", () => {
 
   it("turns refusals, truncation, upstream errors, network failures, and timeouts into directive errors", async () => {
     const run = async (fetch: typeof globalThis.fetch, timeoutMs?: number) => {
-      useFakeGateway(fetch);
+      routeGatewayTo(fetch);
       const res = await handleDecodeOffer(post("decode-offer", { text: "Offer" }), {
         apiKey: KEY,
         fetch,

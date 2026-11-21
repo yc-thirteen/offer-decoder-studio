@@ -25,6 +25,9 @@ export const EXPLAIN_COPY: FailureCopy & {
   offStub:
     "The summary writer used a number that isn't on your stubs, so it wasn't shown. Ask again, or read the stubs and checklist.",
   failed: "The summary writer failed. Ask again, or read the stubs and checklist.",
+  busy: "The summary writer is busy. Wait a minute and ask again, or read the stubs and checklist.",
+  noCredits:
+    "The summary writer is out of Lovable AI credits. Add credits in Lovable, or read the stubs and checklist.",
 };
 
 const NUMBER_KEYS = [

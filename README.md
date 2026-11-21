@@ -97,10 +97,10 @@ Then open the address Vite prints.
 
 All the money math runs in the engine, in the browser, on every path. Only the two AI features have a mock.
 
-| Feature                   | Without an API key (default)                                                                                                                                              | With the key connected                                                                                                    |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| **Read offer letter**     | A deterministic sample reader reads the three sample letters (`src/data/letters/`) exactly. On any other text it says it reads only the samples. It never invents values. | Reads any pasted letter with `claude-sonnet-5-5`. It copies only the values the letter states and marks the rest missing. |
-| **Plain-English summary** | A fixed template words the engine's numbers.                                                                                                                              | The model writes it from the same numbers. Any figure that isn't on the stubs is rejected.                                |
+| Feature                   | Without Lovable Cloud (mock)                                                                                                                                              | With Lovable AI connected (the published site)                                                                                                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Read offer letter**     | A deterministic sample reader reads the three sample letters (`src/data/letters/`) exactly. On any other text it says it reads only the samples. It never invents values. | Reads any pasted letter, or a dropped .txt, PDF, or Word file, with `anthropic/claude-sonnet-5` through the Lovable AI Gateway. It copies only the values the letter states and marks the rest missing. |
+| **Plain-English summary** | A fixed template words the engine's numbers.                                                                                                                              | The model writes it from the same numbers. Any figure that isn't on the stubs is rejected.                                                                                                              |
 
 The browser picks the client in `src/lib/ai/index.ts`. It uses the HTTP client when `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` (or `VITE_SUPABASE_ANON_KEY`) are in the build, and the mock otherwise. See `.env.example` for the names, which are placeholders only.
 
@@ -108,12 +108,11 @@ The images are optional too. Without them, the site draws an SVG favicon and the
 
 ## Connect the AI
 
-The real path is built and tested. The only human step is adding the Anthropic API key as a Lovable Cloud secret named `ANTHROPIC_API_KEY`. [`docs/AI_SETUP_LOVABLE.md`](docs/AI_SETUP_LOVABLE.md) covers:
+It's already connected. Both edge functions call the Lovable AI Gateway with `LOVABLE_API_KEY`, which Lovable creates and manages, and usage comes out of the workspace's Lovable AI credits. There's no separate AI key to add. [`docs/AI_SETUP_LOVABLE.md`](docs/AI_SETUP_LOVABLE.md) covers:
 
-- the prompt to paste into Lovable to enable Cloud and deploy both functions unchanged
-- where to add the secret
+- how the functions and gateway are set up
 - how to confirm it works
-- troubleshooting
+- troubleshooting, including running out of credits
 
 The key is read only inside the edge functions and never reaches the browser. Don't put it in the repo or in `.env` files.
 

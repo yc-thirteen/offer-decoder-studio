@@ -34,10 +34,10 @@ describe("docs/AI_SETUP_LOVABLE.md", () => {
     for (const fn of ["decode-offer", "explain-stub"]) {
       expect(existsSync(path.join(root, "supabase/functions", fn, "index.ts"))).toBe(true);
       const src = readFileSync(path.join(root, "supabase/functions", fn, "index.ts"), "utf8");
-      expect(src).toContain('Deno.env.get("ANTHROPIC_API_KEY")');
+      expect(src).toContain('Deno.env.get("LOVABLE_API_KEY")');
       expect(doc).toContain(`supabase/functions/${fn}`);
     }
-    expect(doc).toContain("ANTHROPIC_API_KEY");
+    expect(doc).toContain("LOVABLE_API_KEY");
     expect(
       aiConfigFromEnv({
         VITE_SUPABASE_URL: "https://x.supabase.co",

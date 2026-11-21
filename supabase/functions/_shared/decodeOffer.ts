@@ -50,6 +50,9 @@ export const DECODE_COPY: FailureCopy & {
   invalid:
     "The letter reader sent back something unreadable. Read the letter again, or type the offer in by hand.",
   failed: "The letter reader failed. Read the letter again, or type the offer in by hand.",
+  busy: "The letter reader is busy. Wait a minute and read the letter again, or type the offer in by hand.",
+  noCredits:
+    "The letter reader is out of Lovable AI credits. Add credits in Lovable, or type the offer in by hand.",
 };
 
 const num = { type: "number" };

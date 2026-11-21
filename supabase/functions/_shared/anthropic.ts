@@ -1,15 +1,13 @@
 /**
  * Shared plumbing for the decode-offer and explain-stub edge functions: CORS, JSON
- * responses, and one call to the Anthropic Messages API that must come back as
- * JSON matching a schema. Pure TypeScript with no Deno or npm imports, so the
- * Vitest suite can run it. Nothing here logs request or response text.
+ * responses, and one call through the Lovable AI Gateway (@lovable.dev/ai-gateway,
+ * which reads the managed LOVABLE_API_KEY) that must come back as JSON matching a
+ * schema. The SDK and Ajv load lazily, mapped in import_map.json for Deno, so the
+ * Vitest suite can run this file. Nothing here logs request or response text.
  */
 
-export const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
-export const ANTHROPIC_VERSION = "2023-06-01";
-export const MODEL = "claude-sonnet-5-5";
-/** Server-side refusal fallback (beta). "default" routes by refusal category. */
-export const FALLBACK_BETA = "server-side-fallback-2026-07-01";
+/** The gateway's model ID. Claude through Lovable's gateway, billed to Lovable AI credits. */
+export const MODEL = "anthropic/claude-sonnet-5";
 /** The browser gives up at 20s; answer first so it shows this function's message. */
 export const UPSTREAM_TIMEOUT_MS = 18_000;
 
@@ -43,6 +41,10 @@ export interface FailureCopy {
   upstream: string;
   refused: string;
   invalid: string;
+  /** The gateway's rate limit (429). */
+  busy: string;
+  /** The workspace is out of Lovable AI credits (402). */
+  noCredits: string;
 }
 
 export interface ModelCall {
@@ -55,20 +57,6 @@ export interface ModelCall {
   timeoutMs?: number;
 }
 
-/** The Messages API request body. JSON output is enforced by the schema. */
-export function messagesBody(system: string, user: string, schema: Record<string, unknown>) {
-  return {
-    model: MODEL,
-    max_tokens: 16000,
-    system,
-    messages: [{ role: "user", content: user }],
-    // Low effort keeps the round trip inside the browser's 20s limit; the task is
-    // copying, not reasoning.
-    output_config: { effort: "low", format: { type: "json_schema", schema } },
-    fallbacks: "default",
-  };
-}
-
 /** The response properties read here, so access stays dot-style under strict TS. */
 type Rec = Partial<Record<"stop_reason" | "content" | "type" | "text", unknown>>;
 const isRec = (v: unknown): v is Rec => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -76,6 +64,7 @@ const isRec = (v: unknown): v is Rec => typeof v === "object" && v !== null && !
 /** Calls the model and returns its JSON answer, or throws a FunctionError. */
 export async function callModel(call: ModelCall): Promise<unknown> {
   const { copy } = call;
+  const apiKey = call.apiKey?.trim();
   const { generateMessage, GatewayError } = await import("@lovable.dev/ai-gateway");
   const { default: Ajv } = await import("ajv");
   const controller = new AbortController();
@@ -85,7 +74,7 @@ export async function callModel(call: ModelCall): Promise<unknown> {
   try {
     body = await generateMessage(
       {
-        model: "anthropic/claude-sonnet-5",
+        model: MODEL,
         max_tokens: 16000,
         system: call.system,
         messages: [{ role: "user", content: call.user }],
@@ -99,19 +88,19 @@ export async function callModel(call: ModelCall): Promise<unknown> {
         ],
         tool_choice: { type: "tool", name: "answer", disable_parallel_tool_use: true },
       },
-      { signal: controller.signal, maxRetries: 0 },
+      {
+        signal: controller.signal,
+        maxRetries: 0,
+        // The function passes LOVABLE_API_KEY; without it the SDK reads the same env var.
+        ...(apiKey ? { apiKey } : {}),
+      },
     );
   } catch (error) {
     if (controller.signal.aborted) throw new FunctionError(504, copy.timeout);
     if (error instanceof GatewayError) {
       if (error.httpStatus !== undefined) console.error(error.httpStatus);
-      if (error.httpStatus === 429)
-        throw new FunctionError(429, "The AI is busy. Wait a minute, then try again.");
-      if (error.httpStatus === 402)
-        throw new FunctionError(
-          402,
-          "The AI is out of credits. Add credits in Lovable, or type the offer in by hand.",
-        );
+      if (error.httpStatus === 429) throw new FunctionError(429, copy.busy);
+      if (error.httpStatus === 402) throw new FunctionError(402, copy.noCredits);
       if (error.code === "configuration_error" || error.code === "authentication_error")
         throw new FunctionError(500, copy.notConnected);
     }

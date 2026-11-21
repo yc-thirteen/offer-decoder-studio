@@ -36,11 +36,7 @@ describe("README.md", () => {
   });
 
   it("matches the AI switch, secret, and model", () => {
-    for (const name of [
-      "VITE_SUPABASE_URL",
-      "VITE_SUPABASE_PUBLISHABLE_KEY",
-      "ANTHROPIC_API_KEY",
-    ]) {
+    for (const name of ["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY", "LOVABLE_API_KEY"]) {
       expect(readme).toContain(name);
     }
     expect(readme).toContain(MODEL);

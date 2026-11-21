@@ -1,75 +1,35 @@
-# Connecting the AI features in Lovable
+# The AI features and Lovable AI
 
-Offer Decoder has two AI features: **Read offer letter** and the **Plain-English summary**. Out of the box, both run on a mock client that needs no key:
+Offer Decoder has two AI features, **Read offer letter** and the **Plain-English summary**. Both run through two Lovable Cloud (Supabase) edge functions:
+
+- `supabase/functions/decode-offer` reads a letter into the stub's fields.
+- `supabase/functions/explain-stub` writes the summary from the engine's numbers.
+
+Both functions call `anthropic/claude-sonnet-5` through the **Lovable AI Gateway**, using the `@lovable.dev/ai-gateway` SDK. Their shared code is in `supabase/functions/_shared/`, and the SDK version is pinned in `import_map.json`. Usage is billed to the workspace's Lovable AI credits, and there's no separate AI account or key to manage.
+
+The browser switches from the mock client to these functions on its own when `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are in the build. The app reads them in `src/lib/ai/index.ts`. Without them, both features run on a mock that needs nothing:
 
 - The sample reader reads only the three sample letters.
 - The sample writer fills a fixed template with the engine's numbers.
 
-The real path is already built and tested. Two Lovable Cloud (Supabase) edge functions call the Anthropic API:
+## How it's set up
 
-- `supabase/functions/decode-offer`
-- `supabase/functions/explain-stub`
+The setup is already done, and there are no human steps. For reference:
 
-The browser switches to them automatically once the Cloud URL and publishable key are in the build.
+- Lovable Cloud and Lovable AI are on for the project.
+- Lovable creates and manages `LOVABLE_API_KEY`. The functions read it with `Deno.env.get("LOVABLE_API_KEY")` and pass it to the SDK. It never reaches the browser, and it shouldn't go in the repo or in `.env` files.
+- Both functions have `verify_jwt = false` in `supabase/config.toml`. The app has no sign-in, and the browser calls the functions with the publishable key, which is public by design. Newer publishable keys (`sb_publishable_…`) aren't JWTs, so with JWT verification on, every call would return 401.
+- The model never does the math. It copies what a letter states, or words numbers the engine already computed. Both answers are checked against a JSON schema in the function, then checked again in the browser (`src/lib/ai/validate.ts`).
 
-**The only human step is adding the Anthropic API key as a secret.** Everything else is a prompt you paste into Lovable.
-
-## What you need
-
-- The Lovable project for this repo, open in the editor.
-- An Anthropic API key from [console.anthropic.com](https://console.anthropic.com) (Settings → API keys). It starts with `sk-ant-`. Keep it out of chat messages, code, and commits.
-
-## Steps
-
-### 1. Enable Lovable Cloud and deploy the functions
-
-Paste this prompt into the Lovable chat as is:
-
-```text
-Enable Lovable Cloud for this project if it isn't enabled yet.
-
-Then deploy the two edge functions that already exist in the repo, without changing their code:
-- supabase/functions/decode-offer (index.ts)
-- supabase/functions/explain-stub (index.ts)
-Both import shared code from supabase/functions/_shared/ (anthropic.ts, decodeOffer.ts, explainStub.ts). Deploy that folder with them and leave it unchanged too.
-
-Both functions are called from the browser with the project's publishable key, and there is no user login. Set verify_jwt = false for both functions in supabase/config.toml.
-
-Make sure VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are available to the frontend build. The app reads them in src/lib/ai/index.ts.
-
-Don't add a database table, change any other file, or move these calls to a different AI provider or gateway.
-
-When you're done, ask me to add a secret named ANTHROPIC_API_KEY.
-```
-
-Why these instructions:
-
-- **The functions stay unchanged.** They're covered by tests in `src/lib/ai/edgeFunctions.test.ts`, which check that all three sample letters round-trip through `decode-offer` into the fixture offers. The tests also check that `explain-stub` rejects any number that isn't on the stubs.
-- **`verify_jwt = false`.** The app has no sign-in. Newer publishable keys (`sb_publishable_…`) aren't JWTs, so with JWT verification on, every call returns 401.
-- **The provider stays Anthropic.** The project spec names the Anthropic API and model `claude-sonnet-5-5`. Lovable lets a project bring its own key for a provider when Lovable doesn't supply one, and the key is read only inside the functions.
-
-### 2. Add the `ANTHROPIC_API_KEY` secret (the human step)
-
-1. When Lovable asks for the secret, paste your Anthropic key into its secure secret field. Don't paste it into the chat. If Lovable doesn't ask, open **Cloud → Secrets** and add it there.
-2. The name must be exactly `ANTHROPIC_API_KEY`.
-3. Save it. The functions read it on their next call, so you don't need to redeploy.
-
-The key never reaches the browser:
-
-- The functions read it with `Deno.env.get("ANTHROPIC_API_KEY")`.
-- The browser only sends the publishable key, which is public by design.
-
-### 3. Publish
-
-Publish (or update) the site so the build picks up the Cloud URL and publishable key.
+To change the model or the gateway setup, ask Lovable in the project chat. Keep the handler contract in `supabase/functions/_shared/anthropic.ts` (`callModel` returns JSON matching the schema it's given), because the tests in `src/lib/ai/edgeFunctions.test.ts` cover it.
 
 ## Confirm it's working
 
 ### In the app
 
-1. Open the site and choose **Read offer letter** on either stub.
+1. Open the published site and choose **Read offer letter** on either stub.
 2. The panel should no longer say "Sample reader: works on the three sample letters until the AI is connected." If that note is still there, the build is still on the mock. See Troubleshooting below.
-3. Paste the test letter below and choose **Read offer letter**. After a few seconds:
+3. Paste the test letter below, or drop a PDF or Word copy of a real offer, and choose **Read offer letter**. After a few seconds:
    - The stub fills in.
    - Each field the letter stated shows a "from letter" marker.
    - Anything it didn't state is underlined in red, with a note telling you what to type in.
@@ -99,7 +59,7 @@ Sincerely,
 People Team
 ```
 
-If the reader leaves a field or two missing, that's correct behavior. It copies only what the letter states and never guesses.
+If the reader leaves a field or two missing, that's correct behavior. It copies only what the letter states and never guesses. Many real offer letters leave the health plan details out and put them in a separate benefits summary. Paste that summary into the same box, under the letter.
 
 ### From a terminal (optional)
 
@@ -118,24 +78,28 @@ A working setup returns `{"fields": {...}}`:
 - Every field has `"source": "letter"` or `"source": "missing"`.
 - For this short text, most fields are missing.
 
-An empty `text` returns HTTP 400 with `{"error": "The letter is empty. Paste its text or drop the letter's file."}`. That error shows the function is deployed even before the secret is added.
+An empty `text` returns HTTP 400 with `{"error": "The letter is empty. Paste its text or drop the letter's file."}`. That shows the function is deployed, without spending any AI credits.
 
 ## Troubleshooting
 
-| What you see                                                                                                                  | What it means                                                                                                                                                     | What to do                                                                                                               |
-| ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| The "Sample reader" note is still in the panel                                                                                | The published build has no `VITE_SUPABASE_URL` or publishable key, so it chose the mock                                                                           | Ask Lovable: "Make VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY available to the frontend build, then republish." |
-| "The letter reader isn't connected yet. Add the ANTHROPIC_API_KEY secret in Lovable Cloud, or type the offer in by hand."     | The function is deployed, but the secret is missing or misnamed                                                                                                   | Add the secret named exactly `ANTHROPIC_API_KEY` (step 2)                                                                |
-| "The summary writer isn't connected yet. Add the ANTHROPIC_API_KEY secret in Lovable Cloud, or read the stubs and checklist." | The same as above, for the summary                                                                                                                                | The same as above                                                                                                        |
-| "Couldn't reach the letter reader…" or "The letter reader didn't answer…", and the terminal check returns 401                 | JWT verification is on, and the publishable key isn't a JWT                                                                                                       | Ask Lovable: "Set verify_jwt = false for decode-offer and explain-stub in supabase/config.toml and redeploy them."       |
-| "…couldn't reach the model…"                                                                                                  | The Anthropic API rejected the call: a wrong or revoked key, no credits, or the API is overloaded. The function logs show the status code, never the letter text. | Check the key and billing in the Anthropic console, then try again                                                       |
-| "The letter reader took longer than 20 seconds…"                                                                              | The model was slow, and the browser gave up                                                                                                                       | Try again. Very long letters are slower, so paste only the offer and benefits sections.                                  |
-| "The summary writer used a number that isn't on your stubs, so it wasn't shown…"                                              | The safety check caught the model inventing a figure                                                                                                              | Ask again. This is the check working as intended.                                                                        |
+| What you see                                                                                                    | What it means                                                                                              | What to do                                                                                                                      |
+| --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| The "Sample reader" note is still in the panel                                                                  | The published build has no `VITE_SUPABASE_URL` or publishable key, so it chose the mock                    | Ask Lovable: "Make VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY available to the frontend build, then republish."        |
+| "The letter reader isn't connected yet. Turn on Lovable AI for this project, or type the offer in by hand."     | The gateway rejected the function's credentials, or Lovable AI is off                                      | Ask Lovable: "Make sure Lovable AI is enabled and LOVABLE_API_KEY is available to the decode-offer and explain-stub functions." |
+| "The summary writer isn't connected yet. Turn on Lovable AI for this project, or read the stubs and checklist." | The same as above, for the summary                                                                         | The same as above                                                                                                               |
+| "…is out of Lovable AI credits…"                                                                                | The workspace used up its AI credits (the gateway returned 402)                                            | Add credits in Lovable's workspace settings, then try again                                                                     |
+| "…is busy. Wait a minute…"                                                                                      | The workspace hit the gateway's per-minute request limit (429)                                             | Wait a minute, then try again                                                                                                   |
+| "Couldn't reach the letter reader…" or "The letter reader didn't answer…", and the terminal check returns 401   | JWT verification is on, and the publishable key isn't a JWT                                                | Ask Lovable: "Set verify_jwt = false for decode-offer and explain-stub in supabase/config.toml and redeploy them."              |
+| "…couldn't reach the model…"                                                                                    | The gateway call failed for another reason. The function logs show the status code, never the letter text. | Try again. If it keeps happening, check the function logs in Lovable Cloud.                                                     |
+| "The letter reader took longer than 20 seconds…"                                                                | The model was slow, and the browser gave up                                                                | Try again. Very long letters are slower, so paste only the offer and benefits sections.                                         |
+| "The summary writer used a number that isn't on your stubs, so it wasn't shown…"                                | The safety check caught the model inventing a figure                                                       | Ask again. This is the check working as intended.                                                                               |
 
 ## What is and isn't mocked
 
-| Feature                                    | Without the key (mock)                                                                                               | With the key                                                                                                       |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Read offer letter                          | Reads only the three sample letters. For any other text, it says it reads only the samples and never invents values. | Reads any pasted letter. It copies only stated values and marks the rest missing.                                  |
-| Plain-English summary                      | Writes itself from a fixed template, built only from engine numbers                                                  | Writes on request with `claude-sonnet-5-5`, from the same engine numbers. Any figure not on the stubs is rejected. |
-| All pay, tax, benefits, and checklist math | The engine in `src/lib/engine/`, always                                                                              | Unchanged. The model never does the math.                                                                          |
+| Feature                                    | Without the Cloud env vars (mock)                                                                                    | With Lovable AI connected                                                                                                  |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Read offer letter                          | Reads only the three sample letters. For any other text, it says it reads only the samples and never invents values. | Reads any pasted letter, or a dropped .txt, PDF, or Word file. It copies only stated values and marks the rest missing.    |
+| Plain-English summary                      | Writes itself from a fixed template, built only from engine numbers                                                  | Writes on request with `anthropic/claude-sonnet-5`, from the same engine numbers. Any figure not on the stubs is rejected. |
+| All pay, tax, benefits, and checklist math | The engine in `src/lib/engine/`, always                                                                              | Unchanged. The model never does the math.                                                                                  |
+
+PDF and Word files are turned into text in the browser (`src/lib/letterFile.ts`), on both paths. The file itself is never uploaded, only its text, and only after you choose **Read offer letter**.
