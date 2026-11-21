@@ -10,7 +10,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [x] Copy `harness/fixtures/cases.json` to `src/data/sampleCases.json`, the letters to `src/data/letters/`, and add a test asserting the copies are byte-identical to the originals.
 
 ## Phase 1: engine (`src/lib/engine/`, pure TypeScript, no React)
-- [ ] `types.ts` (Profile, Offer, HealthPlan, MatchTier, Vesting, Elections, CalcResult, LifeResult, CaseResult) and `constants.ts`, both taken exactly from FINANCE_SPEC.md.
+- [x] `types.ts` (Profile, Offer, HealthPlan, MatchTier, Vesting, Elections, CalcResult, LifeResult, CaseResult) and `constants.ts`, both taken exactly from FINANCE_SPEC.md.
 - [ ] `tax.ts` (income tax, marginal rate, payroll taxes, state) plus the `lecture-checks` test using `harness/fixtures/lecture-checks.json`.
 - [ ] `health.ts` (out-of-pocket, plan cost, breakpoints, dominated plans, worst case, recommended plan) with unit tests.
 - [ ] `retirement.ts` (match tiers, match cap, max match %, vesting) with unit tests, including the 7B example where 6% in gets 9% total.

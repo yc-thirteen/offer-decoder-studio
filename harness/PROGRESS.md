@@ -51,3 +51,12 @@ What changed: New `src/data/sampleCases.json` and `src/data/letters/` (cascade.t
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 3 files/8 tests, build)
 Screens checked: no (no UI change)
 Next: Phase 1 — engine types.ts and constants.ts from FINANCE_SPEC.md.
+
+## 2026-11-21T04:42:27Z | iteration 6
+Task: `types.ts` (Profile, Offer, HealthPlan, MatchTier, Vesting, Elections, CalcResult, LifeResult, CaseResult) and `constants.ts`, both taken exactly from FINANCE_SPEC.md.
+Result: done
+What changed: New `src/lib/engine/types.ts`: field names mirror cases.json/expected.json exactly (e.g. `filingStatus: "single" | "mfj"`, `otherHouseholdWages`, `winnerBy_default`) so fixtures load with no mapping layer; also OfferResult, ChecklistId union, CostPoint, SampleCase, Vesting as a discriminated union (immediate / cliff years / graded schedule), optional `customStateRate` for OTHER. New `src/lib/engine/constants.ts`: brackets as [upTo, rate] with Infinity top edge, std deduction, SS/Medicare, 401(k)/HSA limits, 15% target, Roth ≤12%, 15% retirement tax, STATE_RATES, LIFE — values copied from engine.py (agrees with the spec; no discrepancy found).
+- `constants.test.ts`: compile-time exhaustive key lists for CalcResult/LifeResult/OfferResult/Profile, checked at runtime against every fixture object, plus spot checks of the constants. Decision: fixture JSON is cast to loose records in tests because TS infers per-case literal unions for JSON imports that don't unify.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 4 files/13 tests, build)
+Screens checked: no (no UI change)
+Next: `tax.ts` plus the `lecture-checks` test.
