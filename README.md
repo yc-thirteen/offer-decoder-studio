@@ -17,7 +17,7 @@ The project was built with [Lovable](https://lovable.dev/projects/1924fbbb-4710-
     - the "Use recommended elections" switch
   - **About you:** filing status, spouse's wages, coverage tier, expected medical spending, emergency fund, high-interest debt, dependents, age, and savings.
   - **Two stubs:** every line from gross pay to net pay, the employer's 401(k) match and HSA deposit, expected medical bills, and "Your yearly bottom line".
-    - Each stub can be edited by hand or filled from an offer letter.
+    - Each stub can be edited by hand, or filled from a real offer letter: paste its text, or drop the letter as a PDF, Word (.docx), or .txt file.
   - **The memo line:** which offer wins and by how much. When electing correctly flips the winner, it says that too. A plain-English summary sits under it.
   - **The checklist:** what to elect at each employer, in the order of the lecture's funds hierarchy.
   - **Why these elections:** four panels with hand-built SVG charts:
@@ -26,6 +26,20 @@ The project was built with [Lovable](https://lovable.dev/projects/1924fbbb-4710-
     - life insurance (shown only when someone depends on your income)
     - marginal vs average tax
 - **`/method`:** every rule in plain language, the 2026 constants with the lecture slide each came from, and what the site simplifies or leaves out.
+
+### Compare your own offers
+
+1. On a stub, choose **Read offer letter**.
+2. Paste the letter, or drop or choose its file (PDF, Word .docx, or .txt). The text is pulled out in your browser, and the file itself is never uploaded.
+3. Choose **Read offer letter**. The reader fills in what the letter states and marks each of those fields "from letter". Anything the letter leaves out is underlined in red, with a note saying what to type in. It never guesses.
+4. Check the fields, fill in the gaps, and choose **Save offer**. Then do the same on the other stub.
+5. Fill in **About you**, then turn on **Use recommended elections** to see what to elect.
+
+Tips:
+
+- Many letters leave out the health plan details (premium, deductible, coinsurance, out-of-pocket maximum) and put them in a separate benefits summary. Paste that summary into the same box, under the letter.
+- Scanned PDFs have no text to read, so paste the text or type the offer in. The same goes for password-protected PDFs and old Word `.doc` files.
+- You can also skip the reader and choose **Fill in offer** (or **Edit offer**) to type everything yourself.
 
 ### The six samples
 
@@ -68,7 +82,8 @@ The full rules are in [`harness/FINANCE_SPEC.md`](harness/FINANCE_SPEC.md), and 
 - **Engine:** `src/lib/engine/` is pure TypeScript with no React. It covers taxes, health plans, retirement, life insurance, recommended elections, and the checklist ids. `runCase()` in `src/lib/engine/index.ts` runs a whole comparison. Components only format what the engine returns.
 - **Test oracle:** `harness/reference/engine.py` implements the spec and generated `harness/fixtures/expected.json`. The TypeScript engine must match every field of all 6 cases (12 offers) to within $1, and a `lecture-checks` test reproduces numbers printed on the slides.
 - **State:** one reducer in `src/state/` holds the profile, both offers, the election mode, and the chosen sample.
-- **AI:** `src/lib/ai/` has an `AIClient` interface, with a mock client and an HTTP client. `supabase/functions/` holds two edge functions, `decode-offer` and `explain-stub`.
+- **AI:** `src/lib/ai/` has an `AIClient` interface, with a mock client and an HTTP client. `supabase/functions/` holds two Lovable Cloud edge functions, `decode-offer` (reads a letter) and `explain-stub` (writes the summary). They call `anthropic/claude-sonnet-5` through the Lovable AI Gateway (`@lovable.dev/ai-gateway`). The model only copies values from letters and words numbers the engine already computed, and every answer is checked against a schema twice, in the function and in the browser.
+- **Letter files:** `src/lib/letterFile.ts` turns PDF (pdf.js) and Word .docx (mammoth) files into text in the browser. Both libraries load only when a file is dropped, so they stay out of the page bundle.
 
 ## Run it locally
 
@@ -79,7 +94,7 @@ npm install
 npm run dev
 ```
 
-Then open the address Vite prints.
+Then open the address Vite prints. Without Cloud env vars, the AI features run on the mock (see below). To use the real reader locally, copy `.env.example` to `.env.local` and fill in the project's `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` from Lovable (**Cloud → Settings**). Neither is a secret.
 
 ### Test and check
 
@@ -104,7 +119,7 @@ All the money math runs in the engine, in the browser, on every path. Only the t
 
 The browser picks the client in `src/lib/ai/index.ts`. It uses the HTTP client when `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` (or `VITE_SUPABASE_ANON_KEY`) are in the build, and the mock otherwise. See `.env.example` for the names, which are placeholders only.
 
-The images are optional too. Without them, the site draws an SVG favicon and the guilloché background in code. [`IMAGE_PROMPTS.md`](IMAGE_PROMPTS.md) has a prompt for each image slot. To add one, drop the file into `public/` and rebuild.
+The site uses no image files. It draws an SVG favicon and the guilloché background in code. [`IMAGE_PROMPTS.md`](IMAGE_PROMPTS.md) has prompts in case you ever want a share card or app icon. Drop the file into `public/` and rebuild.
 
 ## Connect the AI
 
@@ -114,28 +129,31 @@ It's already connected. Both edge functions call the Lovable AI Gateway with `LO
 - how to confirm it works
 - troubleshooting, including running out of credits
 
-The key is read only inside the edge functions and never reaches the browser. Don't put it in the repo or in `.env` files.
+The key is read only inside the edge functions and never reaches the browser. Don't put it in the repo or in `.env` files. Each letter read and each summary uses a little of the workspace's credits. When they run out, both features say so, and the rest of the site keeps working.
 
 ## Simplifications
 
 These are also listed on `/method`:
 
 - Head of household isn't supported. The lectures don't give its standard deduction.
-- State tax is a flat rate on wages, without exemptions or credits. There's no local tax.
+- State tax is a flat rate on wages, without exemptions or credits. There's no local tax. Illinois and the nine states without a wage income tax (TX, FL, WA, NV, TN, SD, WY, AK, NH) are built in. For any other state, choose "Another state (flat rate)" and type its rate.
 - The HSA catch-up and the imputed income on group life coverage are ignored.
 - Retirement savings are taxed at an assumed 15% rate later.
 
 ## Repository map
 
-| Path                      | What's there                                                              |
-| ------------------------- | ------------------------------------------------------------------------- |
-| `src/lib/engine/`         | The finance engine and its tests                                          |
-| `src/lib/ai/`             | AI client interface, mock, HTTP client, and validation                    |
-| `src/components/decoder/` | Header, About you, stubs, editor, letter reader, memo, summary, checklist |
-| `src/components/why/`     | The four "Why these elections" panels and their SVG charts                |
-| `src/components/stub/`    | Pay-stub primitives: stub shell, perforation, amounts, stamp, guilloché   |
-| `src/components/method/`  | The Method page                                                           |
-| `src/data/`               | Sample cases and letters, copied byte for byte from `harness/fixtures/`   |
-| `supabase/functions/`     | The `decode-offer` and `explain-stub` edge functions                      |
-| `scripts/`                | Screenshot, accessibility, and responsive checks                          |
-| `harness/`                | The spec, design rules, fixtures, and the overnight build log             |
+| Path                                  | What's there                                                                  |
+| ------------------------------------- | ----------------------------------------------------------------------------- |
+| `src/lib/engine/`                     | The finance engine and its tests                                              |
+| `src/lib/ai/`                         | AI client interface, mock, HTTP client, and validation                        |
+| `src/lib/letterFile.ts`               | PDF, Word, and .txt letter files to text, in the browser                      |
+| `src/components/decoder/`             | Header, About you, stubs, editor, letter reader, memo, summary, checklist     |
+| `src/components/why/`                 | The four "Why these elections" panels and their SVG charts                    |
+| `src/components/stub/`                | Pay-stub primitives: stub shell, perforation, amounts, stamp, guilloché       |
+| `src/components/method/`              | The Method page                                                               |
+| `src/data/`                           | Sample cases and letters, copied byte for byte from `harness/fixtures/`       |
+| `supabase/functions/`                 | The `decode-offer` and `explain-stub` edge functions (Lovable AI Gateway)     |
+| `src/integrations/`, `src/generated/` | Lovable Cloud and gateway code that Lovable generates. Don't edit it by hand. |
+| `docs/`                               | `AI_SETUP_LOVABLE.md`: how the AI is connected, checks, and troubleshooting   |
+| `scripts/`                            | Screenshot, accessibility, and responsive checks                              |
+| `harness/`                            | The spec, design rules, fixtures, and the overnight build log                 |
