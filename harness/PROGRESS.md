@@ -493,3 +493,16 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 40 files/452 tests, build). responsive: 0 problems in all 52 view/width runs. a11y: serious 0, critical 0, keyboard problems 0.
 Screens checked: yes. shots had 0 failures and no overflow warnings. Close-ups: the health chart at 375 (y labels now inside), the match chart at 768, the Harbor Capital stub at 375 with recommended on (struck and new amounts fit, right edge clean), and the stacked perforation at 375 (notches clear, no text touching). No other issues found.
 Next: deflake the LetterReader "reads a pasted sample letter" focus test.
+
+## 2026-11-21T10:52:00Z | iteration 40
+Task: Deflake `src/components/decoder/LetterReader.test.tsx` "reads a pasted sample letter into the review state".
+Result: done
+What changed: In `OfferEditor.tsx`, the review state's focus on its opening sentence ("Check the N fields marked…") now runs in `useLayoutEffect` instead of `useEffect`. The test is unchanged, and its synchronous `toHaveFocus` check stays as written.
+Cause: the reader's result arrives asynchronously, outside `act`. React committed the form, and `findByLabelText("Yearly salary")` could resolve before the scheduler flushed the passive effect that moves focus, so under load the check sometimes ran first. A layout effect runs in the same synchronous commit as the DOM change, before any MutationObserver callback or polling tick, so the form is never on screen without focus. For users, this also removes a frame where the form showed before focus jumped.
+Decisions:
+- I fixed the component rather than wrapping the check in `waitFor`. A `waitFor` would hide the gap instead of closing it, and the backlog offered either fix.
+- The editor's other effect (focus on the first invalid field after a failed save) and the stub's return-focus effect stay passive. Both are triggered by clicks, which Testing Library wraps in `act`, so their effects always flush before the next assertion.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 40 files/452 tests, build). The full suite then passed 5 more times in a row with 0 failures.
+Stress: with 3 full suites running at once, LetterReader passed every time. Two other heavy render tests (a11yLabels "labels every control…" and OfferStub "shows every default amount…", ~1.8s each alone) hit vitest's 5000ms timeout. That is load, not a race. I added a backlog task to give them a per-test timeout.
+Screens checked: no. Focus now lands one paint earlier, with no visual change. a11y's keyboard walk of the letter review state covers this focus path.
+Next: the per-test timeout task, then README.md.

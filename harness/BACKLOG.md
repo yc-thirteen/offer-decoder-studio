@@ -54,10 +54,12 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [x] `IMAGE_PROMPTS.md` at the repo root, with one prompt per slot in DESIGN.md (exact sizes, exact hex colors, the pay-stub/security-paper style, and no text in images except the share card's title). Wire each slot with a fallback.
 - [x] Accessibility pass: zero serious axe violations, keyboard order, a visible focus ring, and labels on every input.
 - [x] Responsive pass at 375 and 768: no horizontal scroll, and nothing overlapping the notches or the perforation.
-- [ ] Deflake `src/components/decoder/LetterReader.test.tsx` "reads a pasted sample letter into the review state": under full-suite load the review sentence sometimes lacks focus at the sync `toHaveFocus` check (seen once in 5 runs). Wait for focus with `waitFor`/`findBy`, or move focus synchronously in `OfferEditor`.
+- [x] Deflake `src/components/decoder/LetterReader.test.tsx` "reads a pasted sample letter into the review state": under full-suite load the review sentence sometimes lacks focus at the sync `toHaveFocus` check (seen once in 5 runs). Wait for focus with `waitFor`/`findBy`, or move focus synchronously in `OfferEditor`.
 - [ ] `README.md`: what it is, the lecture-to-feature mapping, how to run and test it, what is mocked, and how to connect AI.
 
 - [ ] Say plainly in About you that head of household isn't supported (FINANCE_SPEC: "The UI must say so plainly"). Today only the Method page says it. Add a 13px ink-soft note under the Filing select in `src/components/decoder/AboutYou.tsx` linking to `/method#simplifications`.
+
+- [ ] Give the two heaviest render tests headroom: `src/test/a11yLabels.test.tsx` "labels every control with the editor, the letter reader, and the life panel open" and `src/components/decoder/OfferStub.test.tsx` "shows every default amount from expected.json on both stubs" take ~1.8s alone and hit vitest's 5000ms default when 3+ suites run at once. Pass a per-test timeout (e.g. 15000) to those two `it` calls; don't change what they assert.
 
 ## Critique rounds
 (The harness adds tasks here; see Self-improvement in HARNESS.md.)

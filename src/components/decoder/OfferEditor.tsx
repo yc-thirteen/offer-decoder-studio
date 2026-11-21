@@ -12,6 +12,7 @@ import {
   useContext,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -334,8 +335,10 @@ export function OfferEditor({
   const review = initialMarks !== undefined;
   const counts = markCounts(initialMarks ?? NO_MARKS);
 
-  useEffect(() => {
-    // Straight from the reader: start at the review sentence, not back at the top of the page.
+  // Straight from the reader: start at the review sentence, not back at the top of the page.
+  // A layout effect, so focus moves in the same commit that shows the form. The reader's result
+  // lands asynchronously, and a passive effect could run a beat after the form is on screen.
+  useLayoutEffect(() => {
     if (review) introRef.current?.focus();
   }, [review]);
 
