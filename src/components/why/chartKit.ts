@@ -54,3 +54,19 @@ export function tickMoney(v: number): string {
   const text = `$${Math.abs(n).toLocaleString("en-US")}`;
   return n < 0 ? `−${text}` : text;
 }
+
+/** [left, top, right, bottom] in px. */
+export type Box = [number, number, number, number];
+
+export function overlaps(a: Box, b: Box): boolean {
+  return a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+}
+
+/** Rough width of one 13px, 600-weight character, for text boxes in chart layout. */
+export const CHAR_PX = 8;
+
+/** The box of a one-line 13px label whose baseline is at y. */
+export function textBox(text: string, x: number, y: number, anchor: "start" | "end"): Box {
+  const w = text.length * CHAR_PX;
+  return anchor === "start" ? [x, y - 13, x + w, y + 3] : [x - w, y - 13, x, y + 3];
+}

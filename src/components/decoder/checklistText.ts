@@ -133,6 +133,9 @@ export function checklistSentence(
       if (parts.length === 0) {
         return `Buy ${formatMoney(life.totalRecommendedCoverage)} of term life coverage on your own. Term, not whole life.`;
       }
+      if (isZero(life.recommendedSupplemental) && isZero(life.recommendedIndividualPolicy)) {
+        return `Keep the free ${formatMoney(life.basicCoverage)} of term life coverage through work and skip buying more. Term, not whole life.`;
+      }
       if (!isZero(life.recommendedIndividualPolicy)) {
         parts.push(
           `buy ${formatMoney(life.recommendedIndividualPolicy)} on your own only if needed`,

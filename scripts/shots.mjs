@@ -15,8 +15,10 @@ import { ROOT, buildAndServe } from "./lib/serve.mjs";
 
 const OUT = path.join(ROOT, "harness/shots/latest");
 const WIDTHS = [375, 768, 1280];
-const FIRST_CASE = JSON.parse(readFileSync(path.join(ROOT, "harness/fixtures/cases.json"), "utf8"))
-  .cases[0];
+const CASES = JSON.parse(
+  readFileSync(path.join(ROOT, "harness/fixtures/cases.json"), "utf8"),
+).cases;
+const FIRST_CASE = CASES[0];
 
 /** Clicks the first visible match, or logs a skip. Returns true if clicked. */
 async function clickIfPresent(page, locator, what) {
@@ -41,6 +43,11 @@ async function turnOnRecommended(page) {
 }
 
 async function loadFirstSample(page) {
+  await loadSample(page, FIRST_CASE.id);
+}
+
+async function loadSample(page, id) {
+  const sample = CASES.find((c) => c.id === id) ?? FIRST_CASE;
   const picker = page
     .getByLabel(/load a sample/i)
     .or(page.getByRole("combobox", { name: /sample/i }));
@@ -49,10 +56,10 @@ async function loadFirstSample(page) {
   const tag = await el.evaluate((n) => n.tagName.toLowerCase());
   if (tag === "select") {
     const values = await el.locator("option").evaluateAll((os) => os.map((o) => o.value));
-    await el.selectOption(values.includes(FIRST_CASE.id) ? FIRST_CASE.id : { index: 0 });
+    await el.selectOption(values.includes(sample.id) ? sample.id : { index: 0 });
   } else {
     await el.click();
-    const opt = page.getByRole("option", { name: new RegExp(FIRST_CASE.title.slice(0, 20), "i") });
+    const opt = page.getByRole("option", { name: new RegExp(sample.title.slice(0, 20), "i") });
     const target = (await opt.count()) > 0 ? opt.first() : page.getByRole("option").first();
     await target.click();
   }
@@ -116,6 +123,9 @@ const VIEWS = [
         .click();
     },
   },
+  // Not in HARNESS.md's list: a sample where someone depends on your income, so the life
+  // insurance panel shows (it is hidden for the first sample).
+  { name: "home-life", path: "/", run: (page) => loadSample(page, "one-income-family") },
   { name: "method", path: "/method" },
   // Not in HARNESS.md's list: the component sheet, so stub parts can be checked visually.
   { name: "dev-components", path: "/dev/components" },

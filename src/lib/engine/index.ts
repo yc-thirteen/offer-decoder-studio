@@ -25,7 +25,13 @@ export {
   recommendedPlan,
   worstCaseCost,
 } from "./health";
-export { DEFAULT_LIFE_PARAMS, humanCapital, lifeInsurance, type LifeParams } from "./life";
+export {
+  DEFAULT_LIFE_PARAMS,
+  humanCapital,
+  insuredFraction,
+  lifeInsurance,
+  type LifeParams,
+} from "./life";
 export { isReady, recommend } from "./recommend";
 export {
   employee401kDollars,

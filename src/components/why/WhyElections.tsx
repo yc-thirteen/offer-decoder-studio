@@ -3,6 +3,7 @@
  * conclusion, then the chart that shows it. Panels are added here as they are built.
  */
 import { HealthCostsPanel } from "./HealthCostsPanel";
+import { LifeInsurancePanel } from "./LifeInsurancePanel";
 import { MatchVestingPanel } from "./MatchVestingPanel";
 
 export function WhyElections() {
@@ -14,6 +15,7 @@ export function WhyElections() {
       <div className="flex flex-col gap-6">
         <HealthCostsPanel />
         <MatchVestingPanel />
+        <LifeInsurancePanel />
       </div>
     </section>
   );
