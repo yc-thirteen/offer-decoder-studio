@@ -417,3 +417,20 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 37 files/426 tests, build). a11y: serious 0, critical 0 on /, /method, and /dev/components at 375 and 1280.
 Screens checked: yes, method at 375, 768, and 1280, and the home header at 375 and 1280. Fixed in this iteration: missing paragraph spacing, missing list markers, left-aligned bracket amounts (now right-aligned), and the bracket table spilling past the sheet at 375.
 Next: the 404 page, page title and meta description, and the SVG favicon fallback.
+
+## 2026-11-21T13:45:00Z | iteration 36
+Task: A 404 page in the site's voice, the page title and meta description, and the SVG favicon fallback.
+Result: done
+What changed: New `src/components/site/SiteNotice.tsx` with `NotFoundNotice` and `LoadErrorNotice`. Each is a single bordered --stub sheet on the guilloché paper: the brand header with a 2px rule, a 28/800 h1, a directive sentence, and an ink primary button plus a stub secondary button. These replace the template's rounded shadcn 404 and error screens in `__root.tsx`.
+- The 404 page names the missing path and links to the decoder and /method. The error page has "Try again" (router.invalidate + reset) and "Go to the decoder".
+- New `src/lib/siteMeta.ts` holds the title and description. The root and `/` use them in place of the "Offer Decoder" placeholders, and the template's "Lovable" author and twitter:site tags are gone. Added theme-color and og:site_name.
+- New `public/favicon.svg`, a notched stub with ink rules and one carbon line in token colors only, is now the only linked icon.
+- shots and a11y gain a /no-such-page view. 7 new tests: the notices, their copy, metadata, the favicon colors, and the not-found route match.
+Decisions:
+- `public/favicon.ico` is the Lovable template's icon, so it is no longer linked. I left the file in place for the images task to replace with the user's generated icon (IMAGE_PROMPTS task: link it, plus icon-512, once they exist).
+- The notices set document.title in an effect, because the root head() can't tell a 404 from a real page. SSR still returns HTTP 404.
+- Links are plain `<a>`, so the error page works even when the router is broken.
+- The headline is 28/800, because 40/800 is reserved for the Method page.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 38 files/433 tests, build). a11y: serious 0, critical 0 on all four routes at 375 and 1280.
+Screens checked: yes. not-found at 375 and 1280, plus the favicon rendered at 256px. I fixed one issue: the path broke mid-word at 375 (break-all), so it now uses overflow-wrap:anywhere.
+Next: `IMAGE_PROMPTS.md` and the image-slot fallbacks.

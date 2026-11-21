@@ -159,6 +159,7 @@ const VIEWS = [
   // insurance panel shows (it is hidden for the first sample).
   { name: "home-life", path: "/", run: (page) => loadSample(page, "one-income-family") },
   { name: "method", path: "/method" },
+  { name: "not-found", path: "/no-such-page" },
   // Not in HARNESS.md's list: the component sheet, so stub parts can be checked visually.
   { name: "dev-components", path: "/dev/components" },
   { name: "dev-components-recommended", path: "/dev/components", run: turnOnRecommended },

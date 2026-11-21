@@ -9,14 +9,15 @@ import {
 } from "@/components/decoder";
 import { GuillocheBackground } from "@/components/stub";
 import { WhyElections } from "@/components/why";
+import { HOME_TITLE, SITE_DESCRIPTION } from "@/lib/siteMeta";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Offer Decoder" },
-      { name: "description", content: "Offer Decoder" },
-      { property: "og:title", content: "Offer Decoder" },
-      { property: "og:description", content: "Offer Decoder" },
+      { title: HOME_TITLE },
+      { name: "description", content: SITE_DESCRIPTION },
+      { property: "og:title", content: HOME_TITLE },
+      { property: "og:description", content: SITE_DESCRIPTION },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

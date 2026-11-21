@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <title>Offer Decoder</title>
+  <rect width="32" height="32" fill="#E4ECE1"/>
+  <path d="M4 2.5H12.5A3.5 3.5 0 0 0 19.5 2.5H28V29.5H19.5A3.5 3.5 0 0 0 12.5 29.5H4Z" fill="#F6F8F4" stroke="#1E3A2B" stroke-width="2"/>
+  <path d="M8 11H24M8 15.5H24" stroke="#1E3A2B" stroke-width="2"/>
+  <path d="M8 20H24" stroke="#2B4C9B" stroke-width="2"/>
+  <path d="M8 24.5H24" stroke="#1E3A2B" stroke-width="3"/>
+</svg>

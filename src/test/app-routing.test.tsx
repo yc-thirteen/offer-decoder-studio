@@ -20,4 +20,10 @@ describe("App routing", () => {
 
     expect(router.matchRoutes("/method").at(-1)?.routeId).toBe("/method");
   });
+
+  it("leaves an unknown address to the root's not-found page", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+
+    expect(router.matchRoutes("/no-such-page").at(-1)?.routeId).toBe(rootRouteId);
+  });
 });

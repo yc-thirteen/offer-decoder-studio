@@ -9,7 +9,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { ROOT, buildAndServe } from "./lib/serve.mjs";
 
-const ROUTES = ["/", "/method", "/dev/components"];
+const ROUTES = ["/", "/method", "/dev/components", "/no-such-page"];
 const WIDTHS = [375, 1280];
 const REPORT = path.join(ROOT, "harness/shots/a11y.json");
 
