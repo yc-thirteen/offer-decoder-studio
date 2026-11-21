@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import { Route as RootRoute } from "@/routes/__root";
 import { Route as IndexRoute } from "@/routes/index";
 import { HOME_TITLE, SITE_DESCRIPTION } from "@/lib/siteMeta";
+import { iconLinks } from "@/lib/siteImages";
 import { LOAD_ERROR_TITLE, LoadErrorNotice, NOT_FOUND_TITLE, NotFoundNotice } from "./SiteNotice";
 
 const TOKENS = ["#E4ECE1", "#F6F8F4", "#1E3A2B", "#4F6B5B", "#2B4C9B", "#B3261E"];
@@ -68,16 +69,19 @@ describe("page metadata", () => {
       const description = meta.find((m) => m.name === "description")?.content;
       expect(description).toBe(SITE_DESCRIPTION);
       expect(meta.find((m) => m.property === "og:description")?.content).toBe(SITE_DESCRIPTION);
-      expect(JSON.stringify(meta)).not.toMatch(/lovable/i);
+      // The template's Lovable author and twitter:site tags are gone. (A share image URL may
+      // live on a lovable.app address, so image tags are left out of this check.)
+      const nonImage = meta.filter((m) => !/image/.test(m.property ?? m.name ?? ""));
+      expect(JSON.stringify(nonImage)).not.toMatch(/lovable/i);
     }
     const title = headOf(IndexRoute).meta?.find((m) => "title" in m)?.title;
     expect(title).toBe(HOME_TITLE);
     expect(SITE_DESCRIPTION.length).toBeLessThanOrEqual(160);
   });
 
-  it("links the SVG favicon, drawn only in the design tokens", () => {
+  it("links the icons from siteImages, with the SVG favicon drawn only in the design tokens", () => {
     const links = headOf(RootRoute).links ?? [];
-    expect(links.filter((l) => l.rel === "icon").map((l) => l.href)).toEqual(["/favicon.svg"]);
+    expect(links.filter((l) => /icon/.test(l.rel ?? ""))).toEqual(iconLinks());
     const svg = readFileSync(path.resolve(__dirname, "../../../public/favicon.svg"), "utf8");
     expect(svg).toMatch(/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
     const colors = svg.match(/#[0-9a-f]{3,8}\b/gi) ?? [];

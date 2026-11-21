@@ -434,3 +434,23 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 38 files/433 tests, build). a11y: serious 0, critical 0 on all four routes at 375 and 1280.
 Screens checked: yes. not-found at 375 and 1280, plus the favicon rendered at 256px. I fixed one issue: the path broke mid-word at 375 (break-all), so it now uses overflow-wrap:anywhere.
 Next: `IMAGE_PROMPTS.md` and the image-slot fallbacks.
+
+## 2026-11-21T14:50:00Z | iteration 37
+Task: `IMAGE_PROMPTS.md` at the repo root, with one prompt per slot in DESIGN.md (exact sizes, exact hex colors, the pay-stub/security-paper style, and no text in images except the share card's title). Wire each slot with a fallback.
+Result: done
+What changed: New `IMAGE_PROMPTS.md` covers:
+- a slot table with each fallback
+- the six-token palette
+- ready-to-paste prompts for the share card (1200×630, only the title "Offer Decoder"), the app icon (512×512), and the tileable paper texture (1024×1024)
+- how to make favicon.ico from icon-512 (a converter, or a `magick` command)
+- after-adding steps, including the optional VITE_SITE_URL
+New `src/lib/siteImages.ts`: a build-time `import.meta.glob` finds which slot files exist in public/, and `shareImageMeta()`, `iconLinks()`, and `paperTextureUrl()` wire each slot or fall back. The root head uses iconLinks(). `/` and `/method` use shareImageMeta() in place of their fixed twitter:card. GuillocheBackground tiles the texture under the waves when it exists (and takes a `textureUrl` prop for tests). Removed the template `public/favicon.ico`. Added VITE_SITE_URL to `.env.example`. 15 new tests in `siteImages.test.ts` cover detection against the disk, every fallback and every present state, the route heads, and the prompt doc (slots, sizes, token-only colors, text only in the share card). Updated SiteNotice.test's icon check to follow iconLinks().
+Decisions:
+- Detection is a glob, not a hand-flipped flag, so the user only drops files in. A production build with a dummy og-image.png confirmed the glob compiles to `Object.keys({"/public/og-image.png":0})`: no asset copy and no runtime import. The dummy was removed.
+- Deleted the template favicon.ico. Once glob-detected, it would have been linked as the site's icon (Lovable's mark). A test now fails if a favicon.ico ever appears without icon-512.png.
+- The generated icons replace the SVG rather than sit beside it, because DESIGN calls the SVG the fallback.
+- og:image stays off the root route, following iteration 36's rule, so 404 pages don't inherit a preview image.
+- The texture renders at 60% over --paper to keep any off-token fiber tones faint. Stubs are opaque --stub, so it never sits behind stub text.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 39 files/448 tests, build). a11y: serious 0, critical 0.
+Screens checked: yes, empty at 375. The guilloché renders as before, and there is no visible change without image files (none exist yet).
+Next: accessibility pass.

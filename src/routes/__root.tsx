@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { DecoderProvider } from "../state/DecoderContext";
 import { LoadErrorNotice, NotFoundNotice } from "../components/site/SiteNotice";
 import { SITE_DESCRIPTION, SITE_NAME } from "../lib/siteMeta";
+import { iconLinks } from "../lib/siteImages";
 
 function NotFoundComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -66,9 +67,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      // The SVG favicon drawn in code (harness/DESIGN.md "Images"). public/favicon.ico is
-      // still the template's icon, so it isn't linked until the generated one replaces it.
-      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml", sizes: "any" },
+      // The generated icons when they exist in public/, else the SVG favicon drawn in code
+      // (harness/DESIGN.md "Images"; see src/lib/siteImages.ts and IMAGE_PROMPTS.md).
+      ...iconLinks(),
     ],
   }),
   shellComponent: RootShell,

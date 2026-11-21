@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { shareImageMeta } from "@/lib/siteImages";
 import { MethodPage } from "@/components/method/MethodPage";
 import { GuillocheBackground } from "@/components/stub";
 
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/method")({
         content: "The rules, the 2026 numbers, and the simplifications behind Offer Decoder.",
       },
       { property: "og:type", content: "article" },
-      { name: "twitter:card", content: "summary" },
+      ...shareImageMeta(),
     ],
   }),
   component: Method,

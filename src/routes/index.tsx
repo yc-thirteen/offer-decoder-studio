@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { shareImageMeta } from "@/lib/siteImages";
 import {
   AboutYou,
   Checklist,
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: HOME_TITLE },
       { property: "og:description", content: SITE_DESCRIPTION },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      ...shareImageMeta(),
     ],
   }),
   component: Index,
