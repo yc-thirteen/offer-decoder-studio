@@ -606,3 +606,14 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/475 tests, build). a11y: serious 0, critical 0, keyboard problems 0.
 Screens checked: yes. `npm run shots` (0 failed), plus 2x element crops of every chart with a gap (chicago-vs-austin, university-staff, new-grad-roth ×2, high-earner-family) at 375, 768, and 1280. At 375 the label sits on two or three lines between the markers above the flat line, or left of the dot, and no line crosses it. At 768 and 1280 it's on one line past the default marker, as before. Found an older issue: at 375 new-grad-roth offer 2's 8% marker line runs through the lower title "Default 5%" (added as a backlog task).
 Next: the MatchChart marker-title crossing task from iteration 47.
+
+## 2026-11-21T13:50:00Z | iteration 48
+Task: Rubric 6. In `MatchChart.tsx`, keep a marker line out of the other marker's two-row title (new-grad-roth offer 2 at 375), and test it at 300/420/560/700px.
+Result: done
+What changed: `titleAt` now takes an optional forced side. The old `crossesLowerTitle` check is gone. When titles need two rows, `MatchChart` now tries each marker on the upper row with the lower title on its usual side, then again with the lower title flipped to the other side of its marker. A flipped title only counts if it stays inside [x0, W - 4]. It takes the first layout where the upper marker's line stays 8px clear of the lower title. The order keeps every layout that was already clean unchanged. For new-grad-roth offer 2 at 375, "Default 5%" is now end-anchored left of its marker, under "Recommended 8%". `MatchVestingPanel.test.tsx` adds a rendered sweep of every sample at 300/420/560/700px, checking that no marker line's vertical span passes through another marker's title box (±4px). It fails on the old component ("new-grad-roth at 300px: recommended line at 242.8 crosses the default title").
+Decisions:
+- If no layout clears, the chart keeps the first one, which is the old behavior. No sample hits that case, and the test would catch one if it did.
+- `npm run verify` lint also scans `harness/shots/crops/crop.mjs`, an ignored scratch script from iteration 47 that wasn't prettier-formatted. I ran `eslint --fix` on it and pointed it at every match chart. It isn't committed.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/479 tests, build). a11y: serious 0, critical 0, keyboard problems 0.
+Screens checked: yes. `npm run shots` (0 failed), plus 2x element crops of every match chart for chicago-vs-austin, university-staff, new-grad-roth, and high-earner-family at 375, 768, and 1280. At 375 new-grad-roth offer 2 reads "Default 5%" to the left of its line, with the 8% line clear of it. university-staff Midway and new-grad-roth offer 1 are unchanged and clean. 768 and 1280 are unchanged. Issues: none.
+Next: the backlog is empty again, so next comes critique round 2.

@@ -379,3 +379,70 @@ describe("the left-on-the-table label", () => {
     });
   }
 });
+
+describe("the marker titles", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  function stubWidth(width: number) {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(private cb: (e: { contentRect: { width: number } }[]) => void) {}
+        observe() {
+          this.cb([{ contentRect: { width } }]);
+        }
+        disconnect() {}
+      },
+    );
+  }
+
+  for (const width of [300, 420, 560, 700]) {
+    it(`keep every marker line out of the other marker's title for every sample at ${width}px`, () => {
+      stubWidth(width);
+      let pairs = 0;
+      for (const sample of SAMPLE_CASES) {
+        const { unmount, container } = render(
+          <DecoderProvider initialSampleId={sample.id}>
+            <MatchVestingPanel />
+          </DecoderProvider>,
+        );
+        for (const svg of container.querySelectorAll("svg")) {
+          const markers = [...svg.querySelectorAll("[data-marker]")].map((g) => {
+            const line = g.querySelector("line")!;
+            const text = g.querySelector("text")!;
+            const tx = Number(text.getAttribute("x"));
+            const ty = Number(text.getAttribute("y"));
+            const w = text.textContent!.length * 8;
+            const left = text.getAttribute("text-anchor") === "end" ? tx - w : tx;
+            const title: Box = [left, ty - 13, left + w, ty + 3];
+            return {
+              kind: g.getAttribute("data-marker"),
+              x: Number(line.getAttribute("x1")),
+              top: Number(line.getAttribute("y1")),
+              bottom: Number(line.getAttribute("y2")),
+              title,
+            };
+          });
+          if (markers.length < 2) continue;
+          pairs++;
+          for (const a of markers) {
+            for (const b of markers) {
+              if (a === b) continue;
+              const crosses =
+                a.x >= b.title[0] - 4 &&
+                a.x <= b.title[2] + 4 &&
+                a.top < b.title[3] &&
+                a.bottom > b.title[1];
+              expect(
+                crosses,
+                `${sample.id} at ${width}px: ${a.kind} line at ${a.x} crosses the ${b.kind} title [${b.title.join(", ")}]`,
+              ).toBe(false);
+            }
+          }
+        }
+        unmount();
+      }
+      expect(pairs).toBeGreaterThan(0);
+    });
+  }
+});

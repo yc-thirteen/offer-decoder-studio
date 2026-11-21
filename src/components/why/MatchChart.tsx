@@ -61,11 +61,13 @@ export function MatchChart({ data, title }: { data: MatchChartData; title: strin
   const x = scale(0, data.xMax, x0, x1);
 
   // Marker titles sit above the plot, beside their marker; two rows when they would collide.
-  const titleAt = (pct: number, label: string, rowY: number): Placed => {
+  // A title goes right of its marker when it fits, else left; `side` forces one or the other.
+  const titleAt = (pct: number, label: string, rowY: number, side?: "start" | "end"): Placed => {
     const xm = x(pct);
     // Titles are 600 weight, a little wider than CHAR_PX, so keep 4px of slack at the edge.
     const fitsRight = xm + 4 + label.length * CHAR_PX <= W - 4;
-    return place(label, fitsRight ? xm + 4 : xm - 4, rowY, fitsRight ? "start" : "end", "");
+    const anchor = side ?? (fitsRight ? "start" : "end");
+    return place(label, anchor === "start" ? xm + 4 : xm - 4, rowY, anchor, "");
   };
   const oneRow = data.markers.map((mk) => titleAt(mk.pct, mk.label, 0));
   const twoRows = oneRow.length === 2 && overlaps(pad(oneRow[0]!.box, 8), oneRow[1]!.box);
@@ -88,16 +90,35 @@ export function MatchChart({ data, title }: { data: MatchChartData; title: strin
 
     const yHi = yTicks[yTicks.length - 1] ?? data.yMax;
     const y = scale(0, yHi, y0, y1);
-    // In two rows, the upper title belongs to the marker whose line won't cross the lower title.
-    const crossesLowerTitle = (i: number) => {
-      const other = data.markers[1 - i]!;
-      const lower = titleAt(other.pct, other.label, y1 - 12);
-      const xm = x(data.markers[i]!.pct);
-      return xm > lower.box[0] - 8 && xm < lower.box[2] + 8;
-    };
-    const upper = twoRows ? (crossesLowerTitle(0) ? 1 : 0) : -1;
+    // In two rows, the upper marker's line runs down through the lower row, so it must miss
+    // the lower title. Try each marker on top with the lower title on its usual side, then on
+    // the other side of its marker (when that stays inside the chart). The lower marker's line
+    // starts under its own title, so it never reaches the upper one.
+    const rows = (() => {
+      if (!twoRows) return { upper: -1, lower: null as Placed | null };
+      const tries: { upper: number; lower: Placed }[] = [];
+      for (const flip of [false, true]) {
+        for (const up of [0, 1]) {
+          const mk = data.markers[1 - up]!;
+          const usual = titleAt(mk.pct, mk.label, y1 - 12);
+          const side = flip ? (usual.anchor === "start" ? "end" : "start") : undefined;
+          const lower = titleAt(mk.pct, mk.label, y1 - 12, side);
+          if (flip && (lower.box[0] < x0 || lower.box[2] > W - 4)) continue;
+          tries.push({ upper: up, lower });
+        }
+      }
+      const clear = tries.find(({ upper: up, lower }) => {
+        const xm = x(data.markers[up]!.pct);
+        return xm <= lower.box[0] - 8 || xm >= lower.box[2] + 8;
+      });
+      return clear ?? tries[0]!;
+    })();
     const titles = data.markers.map((mk, i) =>
-      titleAt(mk.pct, mk.label, i === upper ? y1 - 28 : y1 - 12),
+      i === rows.upper
+        ? titleAt(mk.pct, mk.label, y1 - 28)
+        : twoRows
+          ? rows.lower!
+          : titleAt(mk.pct, mk.label, y1 - 12),
     );
 
     const dots = data.markers.map((mk) => ({ mk, cx: x(mk.pct), cy: y(mk.match) }));
