@@ -536,3 +536,14 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/459 tests, build). a11y: serious 0, critical 0, keyboard problems 0. responsive: 0 problems.
 Screens checked: yes. Close-ups of About you at 1280, at 768, and with the disclosure open at 375. The note sits under Filing, wraps cleanly, and overlaps nothing. At 1280 it adds about 40px to the first row, and the row was already wrapping to two lines before. In the browser: clicking the link goes to /method#simplifications and scrolls to the section (it's last on the page, so it stops at the page bottom), and Back keeps a changed Filing value. No issues found.
 Next: per-test timeouts for the two heaviest render tests.
+
+## 2026-11-21T11:20:00Z | iteration 43
+Task: Give the two heaviest render tests headroom with a per-test timeout, without changing what they assert.
+Result: done
+What changed: `src/test/a11yLabels.test.tsx` "labels every control with the editor, the letter reader, and the life panel open" and `src/components/decoder/OfferStub.test.tsx` "shows every default amount from expected.json on both stubs" now pass `{ timeout: HEAVY_RENDER_TIMEOUT_MS }` (15000ms), with a short comment explaining why. The assertions are unchanged; Prettier only re-indented the bodies.
+Decisions:
+- I used Vitest 4's options-object form `it(name, { timeout }, fn)`, not the trailing number argument. It reads the same and is the form Vitest 4 recommends.
+- The timeout is per test, not a global `testTimeout`, so a real slowdown anywhere else still fails fast.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/459 tests, build). Stress: 3 full suites run at once all passed, 459/459 each.
+Screens checked: no. This is a test-only change.
+Next: the backlog is empty, so next comes critique round 1 (fresh shots, a11y, and rubric scores).

@@ -59,7 +59,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 
 - [x] Say plainly in About you that head of household isn't supported (FINANCE_SPEC: "The UI must say so plainly"). Today only the Method page says it. Add a 13px ink-soft note under the Filing select in `src/components/decoder/AboutYou.tsx` linking to `/method#simplifications`.
 
-- [ ] Give the two heaviest render tests headroom: `src/test/a11yLabels.test.tsx` "labels every control with the editor, the letter reader, and the life panel open" and `src/components/decoder/OfferStub.test.tsx` "shows every default amount from expected.json on both stubs" take ~1.8s alone and hit vitest's 5000ms default when 3+ suites run at once. Pass a per-test timeout (e.g. 15000) to those two `it` calls; don't change what they assert.
+- [x] Give the two heaviest render tests headroom: `src/test/a11yLabels.test.tsx` "labels every control with the editor, the letter reader, and the life panel open" and `src/components/decoder/OfferStub.test.tsx` "shows every default amount from expected.json on both stubs" take ~1.8s alone and hit vitest's 5000ms default when 3+ suites run at once. Pass a per-test timeout (e.g. 15000) to those two `it` calls; don't change what they assert.
 
 ## Critique rounds
 (The harness adds tasks here; see Self-improvement in HARNESS.md.)

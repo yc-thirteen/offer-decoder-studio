@@ -51,24 +51,32 @@ const ROWS: [RegExp, keyof CalcResult, number?][] = [
   [/bottom line/, "bottomLine"],
 ];
 
+// One of the two heaviest render tests (~1.8s alone). With several suites running at once
+// it can exceed vitest's 5000ms default, so it gets more headroom. Its assertions are unchanged.
+const HEAVY_RENDER_TIMEOUT_MS = 15_000;
+
 describe("OfferStubs bound to the engine (chicago-vs-austin)", () => {
-  it("shows every default amount from expected.json on both stubs", () => {
-    const { stub } = setup();
-    for (const [offer, name] of [
-      [north, /Northfield Health/],
-      [lake, /Lakeshore Systems/],
-    ] as const) {
-      const s = stub(name);
-      for (const [label, key, sign = 1] of ROWS) {
-        const v = offer.default[key] as number;
-        if (key === "stateIncomeTax" && v === 0) continue; // checked by label below
-        expect(rowAmount(s, label), `${offer.offerId} ${key}`).toBe(formatMoney(sign * v));
+  it(
+    "shows every default amount from expected.json on both stubs",
+    { timeout: HEAVY_RENDER_TIMEOUT_MS },
+    () => {
+      const { stub } = setup();
+      for (const [offer, name] of [
+        [north, /Northfield Health/],
+        [lake, /Lakeshore Systems/],
+      ] as const) {
+        const s = stub(name);
+        for (const [label, key, sign = 1] of ROWS) {
+          const v = offer.default[key] as number;
+          if (key === "stateIncomeTax" && v === 0) continue; // checked by label below
+          expect(rowAmount(s, label), `${offer.offerId} ${key}`).toBe(formatMoney(sign * v));
+        }
       }
-    }
-    expect(rowAmount(stub(/Northfield/), /^Net pay/)).toBe("$101,647");
-    expect(rowAmount(stub(/Northfield/), /bottom line/)).toBe("$106,585");
-    expect(rowAmount(stub(/Lakeshore/), /bottom line/)).toBe("$109,790");
-  });
+      expect(rowAmount(stub(/Northfield/), /^Net pay/)).toBe("$101,647");
+      expect(rowAmount(stub(/Northfield/), /bottom line/)).toBe("$106,585");
+      expect(rowAmount(stub(/Lakeshore/), /bottom line/)).toBe("$109,790");
+    },
+  );
 
   it("labels, notes, places, and stamps with default elections", () => {
     const { stub } = setup();

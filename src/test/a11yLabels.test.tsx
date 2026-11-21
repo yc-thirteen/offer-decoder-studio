@@ -54,21 +54,32 @@ function checkPage(root: HTMLElement) {
   expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
 }
 
+// One of the two heaviest render tests (~1.8s alone). With several suites running at once
+// it can exceed vitest's 5000ms default, so it gets more headroom. Its assertions are unchanged.
+const HEAVY_RENDER_TIMEOUT_MS = 15_000;
+
 describe("decoder accessibility", () => {
-  it("labels every control with the editor, the letter reader, and the life panel open", () => {
-    const { container } = renderDecoder("one-income-family");
-    const [first, second] = screen
-      .getAllByRole("region", { name: /./ })
-      .filter((r) => within(r).queryByRole("button", { name: "Edit offer" }));
-    fireEvent.click(within(first!).getByRole("button", { name: "Edit offer" }));
-    fireEvent.change(within(first!).getByLabelText("Yearly salary"), { target: { value: "" } });
-    fireEvent.click(within(first!).getByRole("button", { name: "Save offer" }));
-    expect(within(first!).getByLabelText("Yearly salary")).toHaveAttribute("aria-invalid", "true");
-    fireEvent.click(within(second!).getByRole("button", { name: "Read offer letter" }));
-    expect(within(second!).getByRole("textbox")).toBeTruthy();
-    expect(screen.getAllByRole("slider").length).toBeGreaterThan(0);
-    checkPage(container);
-  });
+  it(
+    "labels every control with the editor, the letter reader, and the life panel open",
+    { timeout: HEAVY_RENDER_TIMEOUT_MS },
+    () => {
+      const { container } = renderDecoder("one-income-family");
+      const [first, second] = screen
+        .getAllByRole("region", { name: /./ })
+        .filter((r) => within(r).queryByRole("button", { name: "Edit offer" }));
+      fireEvent.click(within(first!).getByRole("button", { name: "Edit offer" }));
+      fireEvent.change(within(first!).getByLabelText("Yearly salary"), { target: { value: "" } });
+      fireEvent.click(within(first!).getByRole("button", { name: "Save offer" }));
+      expect(within(first!).getByLabelText("Yearly salary")).toHaveAttribute(
+        "aria-invalid",
+        "true",
+      );
+      fireEvent.click(within(second!).getByRole("button", { name: "Read offer letter" }));
+      expect(within(second!).getByRole("textbox")).toBeTruthy();
+      expect(screen.getAllByRole("slider").length).toBeGreaterThan(0);
+      checkPage(container);
+    },
+  );
 
   it("labels every control on the empty page", () => {
     const { container } = renderDecoder(null);
