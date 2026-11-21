@@ -60,3 +60,13 @@ What changed: New `src/lib/engine/types.ts`: field names mirror cases.json/expec
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 4 files/13 tests, build)
 Screens checked: no (no UI change)
 Next: `tax.ts` plus the `lecture-checks` test.
+
+## 2026-11-21T04:45:00Z | iteration 7
+Task: `tax.ts` (income tax, marginal rate, payroll taxes, state) plus the `lecture-checks` test using `harness/fixtures/lecture-checks.json`.
+Result: done
+What changed: New `src/lib/engine/tax.ts`: incomeTax, marginalRate (an edge belongs to the lower bracket, as in engine.py), taxableIncome, federalTaxOnJob (marginal method vs spouse wages), federalMarginalRate, socialSecurityTax, medicareTax (surtax only on what this job adds over the threshold), stateRate/stateIncomeTax. All unrounded; rounding is left to calculate.ts. Decision: OTHER with no customStateRate yet uses 0, not a crash (engine.py would fail; the UI validates the field).
+- `lecture-checks.test.ts` (describe "lecture-checks") covers the 4 tax checks from the fixture. The human-capital and life-fraction checks are `it.todo` because life.ts doesn't exist yet. The life.ts backlog task now says to replace them, so the tax task stays small.
+- `tax.test.ts`: bracket, edge, marginal-method, SS cap, Medicare surtax, and state unit tests, plus every tax line (federal, marginal rate, SS, Medicare, state) for all 12 offers × default/recommended against expected.json, within $1.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 6 files/51 tests + 2 todo, build)
+Screens checked: no (no UI change)
+Next: `health.ts` (out-of-pocket, plan cost, breakpoints, dominated plans, worst case, recommended plan) with unit tests.
