@@ -43,3 +43,11 @@ What changed: Dev deps @playwright/test and @axe-core/playwright (both allowed);
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 2 tests, build)
 Screens checked: yes; home is still an empty <main> (expected), /method is the stock 404 (expected until Phase 6). All steps for unbuilt controls logged as skipped.
 Next: Copy harness/fixtures/cases.json and letters into src/data/ with a byte-identical test.
+
+## 2026-11-21T04:39:40Z | iteration 5
+Task: Copy harness/fixtures/cases.json to src/data/sampleCases.json, the letters to src/data/letters/, and add a byte-identical test.
+Result: done
+What changed: New `src/data/sampleCases.json` and `src/data/letters/` (cascade.txt, lakeshore.txt, northfield.txt, and expected-extractions.json — copied too since the Phase 5 mock-reader tests will need it). New `src/data/fixtureCopies.test.ts` compares bytes (Buffer.equals) for cases.json and every file in harness/fixtures/letters, and asserts the two letter directories list the same files, so a new fixture letter without a copy fails. Decision: kept the default jsdom environment (a `// @vitest-environment node` directive breaks the shared setup file, which touches `window`); node:fs works under jsdom.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 3 files/8 tests, build)
+Screens checked: no (no UI change)
+Next: Phase 1 — engine types.ts and constants.ts from FINANCE_SPEC.md.

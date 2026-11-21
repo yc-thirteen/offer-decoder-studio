@@ -1,0 +1,240 @@
+{
+  "note": "Sample scenarios. Employers are fictional. All dollar amounts annual unless noted. Health plan numbers are for the person's coverage tier. coinsurance = the employee's share after the deductible.",
+  "cases": [
+    {
+      "id": "chicago-vs-austin",
+      "title": "Same job, two cities: the default trap",
+      "teaches": ["dominated health plan", "50% match up to 6%", "cliff vesting", "state income tax vs none", "defaults set low"],
+      "profile": {
+        "filingStatus": "single", "otherHouseholdWages": 0, "coverage": "self",
+        "expectedMedicalSpend": 2000, "hasEmergencyFund": true, "hasHighInterestDebt": false,
+        "hasDependents": false, "age": 27, "currentSavings": 25000
+      },
+      "offers": [
+        {
+          "id": "northfield", "employer": "Northfield Health", "city": "Chicago", "state": "IL",
+          "salary": 150000, "payPeriods": 26,
+          "retirement": {
+            "match": [{"rate": 0.5, "upToPct": 6}], "defaultEmployeePct": 3,
+            "vesting": {"type": "cliff", "years": 3}, "rothAvailable": true
+          },
+          "healthPlans": [
+            {"id": "ppo", "name": "PPO 500", "hsaEligible": false, "premium": 2400, "deductible": 500, "coinsurance": 0.2, "oopMax": 3000, "employerHsa": 0},
+            {"id": "hdhp", "name": "HSA Plan 3000", "hsaEligible": true, "premium": 600, "deductible": 3000, "coinsurance": 0.2, "oopMax": 5000, "employerHsa": 1000}
+          ],
+          "defaultPlanId": "ppo",
+          "life": {"basicMultiple": 1, "supplementalMaxMultiple": 5}
+        },
+        {
+          "id": "lakeshore", "employer": "Lakeshore Systems", "city": "Austin", "state": "TX",
+          "salary": 140000, "payPeriods": 26,
+          "retirement": {
+            "match": [{"rate": 1.0, "upToPct": 4}], "defaultEmployeePct": 4,
+            "vesting": {"type": "immediate"}, "rothAvailable": true
+          },
+          "healthPlans": [
+            {"id": "ppo", "name": "PPO 1000", "hsaEligible": false, "premium": 1800, "deductible": 1000, "coinsurance": 0.2, "oopMax": 4000, "employerHsa": 0}
+          ],
+          "defaultPlanId": "ppo",
+          "life": {"basicMultiple": 1, "supplementalMaxMultiple": 4}
+        }
+      ]
+    },
+    {
+      "id": "new-grad-roth",
+      "title": "New grad with credit card debt",
+      "teaches": ["Roth when in a low bracket", "match first, then pay off high-interest debt", "no auto-enrollment means zero match", "safe-harbor tiered match", "graded vesting", "free HSA plan"],
+      "profile": {
+        "filingStatus": "single", "otherHouseholdWages": 0, "coverage": "self",
+        "expectedMedicalSpend": 500, "hasEmergencyFund": false, "hasHighInterestDebt": true,
+        "hasDependents": false, "age": 22, "currentSavings": 1500
+      },
+      "offers": [
+        {
+          "id": "cascade", "employer": "Cascade Robotics", "city": "Seattle", "state": "WA",
+          "salary": 58000, "payPeriods": 26,
+          "retirement": {
+            "match": [{"rate": 1.0, "upToPct": 3}, {"rate": 0.5, "upToPct": 5}], "defaultEmployeePct": 0,
+            "vesting": {"type": "immediate"}, "rothAvailable": true
+          },
+          "healthPlans": [
+            {"id": "hdhp", "name": "HSA Plan 1700", "hsaEligible": true, "premium": 0, "deductible": 1700, "coinsurance": 0.1, "oopMax": 4000, "employerHsa": 500}
+          ],
+          "defaultPlanId": "hdhp",
+          "life": {"basicMultiple": 1, "supplementalMaxMultiple": 3}
+        },
+        {
+          "id": "prairie", "employer": "Prairie Analytics", "city": "Chicago", "state": "IL",
+          "salary": 62000, "payPeriods": 24,
+          "retirement": {
+            "match": [{"rate": 0.5, "upToPct": 8}], "defaultEmployeePct": 5,
+            "vesting": {"type": "graded", "schedule": [{"year": 1, "pct": 20}, {"year": 2, "pct": 40}, {"year": 3, "pct": 60}, {"year": 4, "pct": 80}, {"year": 5, "pct": 100}]},
+            "rothAvailable": true
+          },
+          "healthPlans": [
+            {"id": "ppo", "name": "PPO 750", "hsaEligible": false, "premium": 1500, "deductible": 750, "coinsurance": 0.2, "oopMax": 3500, "employerHsa": 0},
+            {"id": "hdhp", "name": "HSA Plan 3200", "hsaEligible": true, "premium": 300, "deductible": 3200, "coinsurance": 0.2, "oopMax": 6000, "employerHsa": 0}
+          ],
+          "defaultPlanId": "ppo",
+          "life": {"basicMultiple": 1, "supplementalMaxMultiple": 3}
+        }
+      ]
+    },
+    {
+      "id": "high-earner-family",
+      "title": "Married, two kids, high income",
+      "teaches": ["Social Security wage cap", "Additional Medicare tax with spouse income", "401(k) limit binds", "family HSA limit", "life insurance through work vs on your own"],
+      "profile": {
+        "filingStatus": "mfj", "otherHouseholdWages": 120000, "coverage": "family",
+        "expectedMedicalSpend": 6000, "hasEmergencyFund": true, "hasHighInterestDebt": false,
+        "hasDependents": true, "age": 34, "currentSavings": 150000
+      },
+      "offers": [
+        {
+          "id": "harbor", "employer": "Harbor Capital", "city": "Miami", "state": "FL",
+          "salary": 260000, "payPeriods": 24,
+          "retirement": {
+            "match": [{"rate": 1.0, "upToPct": 5}], "defaultEmployeePct": 6,
+            "vesting": {"type": "immediate"}, "rothAvailable": true
+          },
+          "healthPlans": [
+            {"id": "ppo", "name": "Family PPO", "hsaEligible": false, "premium": 6000, "deductible": 1000, "coinsurance": 0.2, "oopMax": 6000, "employerHsa": 0},
+            {"id": "hdhp", "name": "Family HSA Plan", "hsaEligible": true, "premium": 3000, "deductible": 3400, "coinsurance": 0.2, "oopMax": 7000, "employerHsa": 1500}
+          ],
+          "defaultPlanId": "ppo",
+          "life": {"basicMultiple": 2, "supplementalMaxMultiple": 6}
+        },
+        {
+          "id": "evergreen", "employer": "Evergreen Cloud", "city": "Seattle", "state": "WA",
+          "salary": 245000, "payPeriods": 26,
+          "retirement": {
+            "match": [{"rate": 0.5, "upToPct": 8}], "defaultEmployeePct": 4,
+            "vesting": {"type": "cliff", "years": 2}, "rothAvailable": true
+          },
+          "healthPlans": [
+            {"id": "hdhp", "name": "Family HSA Plan", "hsaEligible": true, "premium": 2400, "deductible": 3400, "coinsurance": 0.1, "oopMax": 6800, "employerHsa": 2000}
+          ],
+          "defaultPlanId": "hdhp",
+          "life": {"basicMultiple": 1, "supplementalMaxMultiple": 5}
+        }
+      ]
+    },
+    {
+      "id": "university-staff",
+      "title": "Two Chicago offers: the university staff default",
+      "teaches": ["defaults set low on purpose (Lecture 7B slide 44)", "unusual match formula", "same city, so taxes are equal"],
+      "profile": {
+        "filingStatus": "single", "otherHouseholdWages": 0, "coverage": "self",
+        "expectedMedicalSpend": 1500, "hasEmergencyFund": true, "hasHighInterestDebt": false,
+        "hasDependents": false, "age": 29, "currentSavings": 18000
+      },
+      "offers": [
+        {
+          "id": "midway", "employer": "Midway University (staff plan)", "city": "Chicago", "state": "IL",
+          "salary": 95000, "payPeriods": 24,
+          "retirement": {
+            "match": [{"rate": 1.3333333333333333, "upToPct": 3}, {"rate": 2.0, "upToPct": 5}], "defaultEmployeePct": 3,
+            "vesting": {"type": "immediate"}, "rothAvailable": true
+          },
+          "healthPlans": [
+            {"id": "ppo", "name": "Staff PPO", "hsaEligible": false, "premium": 1800, "deductible": 750, "coinsurance": 0.2, "oopMax": 3500, "employerHsa": 0}
+          ],
+          "defaultPlanId": "ppo",
+          "life": {"basicMultiple": 1, "supplementalMaxMultiple": 3}
+        },
+        {
+          "id": "lakeview", "employer": "Lakeview Hospital", "city": "Chicago", "state": "IL",
+          "salary": 98000, "payPeriods": 26,
+          "retirement": {
+            "match": [{"rate": 0.5, "upToPct": 6}], "defaultEmployeePct": 6,
+            "vesting": {"type": "cliff", "years": 3}, "rothAvailable": false
+          },
+          "healthPlans": [
+            {"id": "ppo", "name": "Hospital PPO", "hsaEligible": false, "premium": 2100, "deductible": 1000, "coinsurance": 0.2, "oopMax": 4000, "employerHsa": 0}
+          ],
+          "defaultPlanId": "ppo",
+          "life": {"basicMultiple": 2, "supplementalMaxMultiple": 4}
+        }
+      ]
+    },
+    {
+      "id": "plan-crossover",
+      "title": "When the low-deductible plan is not dominated",
+      "teaches": ["plan choice depends on expected spending", "chronic condition, high expected spending", "custom state rate"],
+      "profile": {
+        "filingStatus": "single", "otherHouseholdWages": 0, "coverage": "self",
+        "expectedMedicalSpend": 12000, "hasEmergencyFund": true, "hasHighInterestDebt": false,
+        "hasDependents": false, "age": 41, "currentSavings": 90000
+      },
+      "offers": [
+        {
+          "id": "remote", "employer": "Brightline Software (remote)", "city": "Remote", "state": "OTHER", "customStateRate": 0.05,
+          "salary": 120000, "payPeriods": 26,
+          "retirement": {
+            "match": [{"rate": 1.0, "upToPct": 3}], "defaultEmployeePct": 3,
+            "vesting": {"type": "immediate"}, "rothAvailable": true
+          },
+          "healthPlans": [
+            {"id": "ppo", "name": "PPO 250", "hsaEligible": false, "premium": 3600, "deductible": 250, "coinsurance": 0.1, "oopMax": 2000, "employerHsa": 0},
+            {"id": "hdhp", "name": "HSA Plan 3500", "hsaEligible": true, "premium": 900, "deductible": 3500, "coinsurance": 0.3, "oopMax": 7000, "employerHsa": 500}
+          ],
+          "defaultPlanId": "hdhp",
+          "life": {"basicMultiple": 1, "supplementalMaxMultiple": 3}
+        },
+        {
+          "id": "nashville", "employer": "Music Row Media", "city": "Nashville", "state": "TN",
+          "salary": 112000, "payPeriods": 26,
+          "retirement": {
+            "match": [{"rate": 1.0, "upToPct": 6}], "defaultEmployeePct": 3,
+            "vesting": {"type": "graded", "schedule": [{"year": 2, "pct": 50}, {"year": 3, "pct": 100}]},
+            "rothAvailable": true
+          },
+          "healthPlans": [
+            {"id": "hdhp", "name": "HSA Plan 2500", "hsaEligible": true, "premium": 1200, "deductible": 2500, "coinsurance": 0.2, "oopMax": 6000, "employerHsa": 750}
+          ],
+          "defaultPlanId": "hdhp",
+          "life": {"basicMultiple": 1, "supplementalMaxMultiple": 3}
+        }
+      ]
+    },
+    {
+      "id": "one-income-family",
+      "title": "One income, spouse at home, one kid: how much life insurance",
+      "teaches": ["life insurance sizing formula", "employer vs individual markup", "free basic coverage is not enough"],
+      "profile": {
+        "filingStatus": "mfj", "otherHouseholdWages": 0, "coverage": "family",
+        "expectedMedicalSpend": 3000, "hasEmergencyFund": true, "hasHighInterestDebt": false,
+        "hasDependents": true, "age": 31, "currentSavings": 40000
+      },
+      "offers": [
+        {
+          "id": "summit", "employer": "Summit Logistics", "city": "Dallas", "state": "TX",
+          "salary": 88000, "payPeriods": 26,
+          "retirement": {
+            "match": [{"rate": 1.0, "upToPct": 4}], "defaultEmployeePct": 4,
+            "vesting": {"type": "immediate"}, "rothAvailable": true
+          },
+          "healthPlans": [
+            {"id": "hdhp", "name": "Family HSA Plan", "hsaEligible": true, "premium": 2600, "deductible": 3400, "coinsurance": 0.2, "oopMax": 7500, "employerHsa": 1000},
+            {"id": "ppo", "name": "Family PPO", "hsaEligible": false, "premium": 5200, "deductible": 1000, "coinsurance": 0.2, "oopMax": 5000, "employerHsa": 0}
+          ],
+          "defaultPlanId": "ppo",
+          "life": {"basicMultiple": 1, "supplementalMaxMultiple": 5}
+        },
+        {
+          "id": "riverbend", "employer": "Riverbend Credit Union", "city": "Las Vegas", "state": "NV",
+          "salary": 84000, "payPeriods": 26,
+          "retirement": {
+            "match": [{"rate": 0.5, "upToPct": 6}], "defaultEmployeePct": 6,
+            "vesting": {"type": "immediate"}, "rothAvailable": true
+          },
+          "healthPlans": [
+            {"id": "ppo", "name": "Family PPO", "hsaEligible": false, "premium": 4200, "deductible": 1500, "coinsurance": 0.2, "oopMax": 6000, "employerHsa": 0}
+          ],
+          "defaultPlanId": "ppo",
+          "life": {"basicMultiple": 0, "supplementalMaxMultiple": 0}
+        }
+      ]
+    }
+  ]
+}
