@@ -49,13 +49,15 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [x] `docs/AI_SETUP_LOVABLE.md`: the exact steps and a copy-paste prompt for Lovable to enable Cloud, deploy the two existing functions unchanged, and add the `ANTHROPIC_API_KEY` secret, plus how to confirm it's working.
 
 ## Phase 6: content and finish
-- [ ] `/method` page per DESIGN.md (the rules, the constants table with slide references, and the simplifications list).
+- [x] `/method` page per DESIGN.md (the rules, the constants table with slide references, and the simplifications list).
 - [ ] A 404 page in the site's voice, the page title and meta description, and the SVG favicon fallback.
 - [ ] `IMAGE_PROMPTS.md` at the repo root, with one prompt per slot in DESIGN.md (exact sizes, exact hex colors, the pay-stub/security-paper style, and no text in images except the share card's title). Wire each slot with a fallback.
 - [ ] Accessibility pass: zero serious axe violations, keyboard order, a visible focus ring, and labels on every input.
 - [ ] Responsive pass at 375 and 768: no horizontal scroll, and nothing overlapping the notches or the perforation.
 - [ ] Deflake `src/components/decoder/LetterReader.test.tsx` "reads a pasted sample letter into the review state": under full-suite load the review sentence sometimes lacks focus at the sync `toHaveFocus` check (seen once in 5 runs). Wait for focus with `waitFor`/`findBy`, or move focus synchronously in `OfferEditor`.
 - [ ] `README.md`: what it is, the lecture-to-feature mapping, how to run and test it, what is mocked, and how to connect AI.
+
+- [ ] Say plainly in About you that head of household isn't supported (FINANCE_SPEC: "The UI must say so plainly"). Today only the Method page says it. Add a 13px ink-soft note under the Filing select in `src/components/decoder/AboutYou.tsx` linking to `/method#simplifications`.
 
 ## Critique rounds
 (The harness adds tasks here; see Self-improvement in HARNESS.md.)

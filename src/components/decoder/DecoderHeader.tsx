@@ -3,7 +3,7 @@
  * brand left, "Pay period: your first year" right, a 2px ink rule beneath, then the
  * sample picker, the Annual/Per paycheck toggle, and the recommended switch.
  */
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import { SAMPLE_CASES, type PeriodMode } from "@/state/decoderState";
 import { useDecoder } from "@/state/DecoderContext";
 
@@ -12,12 +12,16 @@ const PERIODS: { mode: PeriodMode; label: string }[] = [
   { mode: "perPaycheck", label: "Per paycheck" },
 ];
 
-export function DecoderHeader() {
+/** `nav` is the route's link to the Method page (a router Link, so the route passes it). */
+export function DecoderHeader({ nav }: { nav?: ReactNode }) {
   return (
     <header className="border-b-2 border-ink pb-2">
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
         <p className="m-0 text-xl font-extrabold">Offer Decoder</p>
-        <p className="m-0 text-sm text-ink-soft">Pay period: your first year</p>
+        <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+          <p className="m-0 text-sm text-ink-soft">Pay period: your first year</p>
+          {nav}
+        </div>
       </div>
     </header>
   );

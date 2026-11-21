@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   AboutYou,
   Checklist,
@@ -9,7 +9,6 @@ import {
 } from "@/components/decoder";
 import { GuillocheBackground } from "@/components/stub";
 import { WhyElections } from "@/components/why";
-import { DecoderProvider } from "@/state/DecoderContext";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,10 +26,19 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <DecoderProvider>
+    <>
       <GuillocheBackground />
       <div className="mx-auto min-h-screen max-w-page px-4 py-6 md:px-6">
-        <DecoderHeader />
+        <DecoderHeader
+          nav={
+            <Link
+              to="/method"
+              className="text-sm text-ink underline underline-offset-3 hover:decoration-2"
+            >
+              How the numbers work
+            </Link>
+          }
+        />
         <main>
           <h1 className="sr-only">Compare two job offers after taxes and benefits</h1>
           <DecoderControls />
@@ -41,6 +49,6 @@ function Index() {
           <WhyElections />
         </main>
       </div>
-    </DecoderProvider>
+    </>
   );
 }

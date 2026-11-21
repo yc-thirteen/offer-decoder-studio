@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { DecoderProvider } from "../state/DecoderContext";
 
 function NotFoundComponent() {
   return (
@@ -130,8 +131,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      {/* The decoder's state lives above the routes, so a visit to /method and back keeps
+          the offers and profile you typed. */}
+      <DecoderProvider>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+      </DecoderProvider>
     </QueryClientProvider>
   );
 }
