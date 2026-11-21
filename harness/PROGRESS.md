@@ -506,3 +506,22 @@ Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 40 files/452 tes
 Stress: with 3 full suites running at once, LetterReader passed every time. Two other heavy render tests (a11yLabels "labels every control…" and OfferStub "shows every default amount…", ~1.8s each alone) hit vitest's 5000ms timeout. That is load, not a race. I added a backlog task to give them a per-test timeout.
 Screens checked: no. Focus now lands one paint earlier, with no visual change. a11y's keyboard walk of the letter review state covers this focus path.
 Next: the per-test timeout task, then README.md.
+
+## 2026-11-21T10:45:20Z | iteration 41
+Task: `README.md`: what it is, the lecture-to-feature mapping, how to run and test it, what is mocked, and how to connect AI.
+Result: done
+What changed: Replaced the Lovable template README.md. It now has:
+- what the product does and what's on `/` and `/method`
+- the six samples, each with what it shows (fact-checked against expected.json: the two flips are chicago-vs-austin and university-staff, and high-earner-family hits the 401(k) limit)
+- a lecture-to-feature table, with each 4B/7A/7B rule and slide mapped to the stub line, panel, or checklist id that uses it
+- how it's built, how to run it, and the verify/test/shots/a11y/responsive commands
+- what is mocked, connecting the AI (points to docs/AI_SETUP_LOVABLE.md), the simplifications, and a repository map
+
+New `src/test/readme.test.ts` keeps it honest, the way aiSetupDoc.test.ts does for the AI doc. Every repo path and relative link it names must exist (gitignored harness/shots/ is skipped), and every `npm run` script it names must be in package.json. It must name the env vars, the secret, MODEL, and all six sample titles exactly, and hold no real-looking key.
+Decisions:
+- I kept the Lovable project link. AGENTS.md says the repo syncs to Lovable, so the link is useful to the human.
+- The README says Lovable uses bun and npm works locally, but not to commit package-lock.json. This matches iteration 1's decision.
+- I didn't claim that About you mentions head of household. That's still an open backlog task, so the README lists it only as a simplification.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/457 tests, build).
+Screens checked: no. This is docs only, with no UI change.
+Next: the head-of-household note in About you.

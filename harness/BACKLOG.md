@@ -55,7 +55,7 @@ Do tasks top to bottom. `[ ]` todo, `[x]` done, `[!]` blocked (with reason). One
 - [x] Accessibility pass: zero serious axe violations, keyboard order, a visible focus ring, and labels on every input.
 - [x] Responsive pass at 375 and 768: no horizontal scroll, and nothing overlapping the notches or the perforation.
 - [x] Deflake `src/components/decoder/LetterReader.test.tsx` "reads a pasted sample letter into the review state": under full-suite load the review sentence sometimes lacks focus at the sync `toHaveFocus` check (seen once in 5 runs). Wait for focus with `waitFor`/`findBy`, or move focus synchronously in `OfferEditor`.
-- [ ] `README.md`: what it is, the lecture-to-feature mapping, how to run and test it, what is mocked, and how to connect AI.
+- [x] `README.md`: what it is, the lecture-to-feature mapping, how to run and test it, what is mocked, and how to connect AI.
 
 - [ ] Say plainly in About you that head of household isn't supported (FINANCE_SPEC: "The UI must say so plainly"). Today only the Method page says it. Add a 13px ink-soft note under the Filing select in `src/components/decoder/AboutYou.tsx` linking to `/method#simplifications`.
 
