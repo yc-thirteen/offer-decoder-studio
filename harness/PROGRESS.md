@@ -32,3 +32,14 @@ What changed: Vitest 4/jsdom/Testing Library/jest-dom were already installed and
 Verify: pass (exit 0; 2 test files / 2 tests; lint 0 errors, 6 pre-existing shadcn fast-refresh warnings; build ok)
 Screens checked: no (no UI change)
 Next: Add Playwright (chromium only), scripts/shots.mjs + shots script, scripts/a11y.mjs + a11y script.
+
+## 2026-11-21T04:37:44Z | iteration 4
+Task: Add Playwright (chromium only), scripts/shots.mjs + shots script, scripts/a11y.mjs + a11y script.
+Result: done
+What changed: Dev deps @playwright/test and @axe-core/playwright (both allowed); chromium installed locally via `npx playwright install chromium` (cache, not repo). bun.lock not refreshed (no bun here; Lovable refreshes it, same as iteration 1).
+- Decision: `vite preview` cannot serve this build (TanStack's preview plugin wants dist/server/server.js, but Nitro emits a Cloudflare worker in .output/ → every request 500). So `scripts/lib/serve.mjs` builds with `NITRO_PRESET=node-server` (honored outside the Lovable sandbox; Vite config untouched) and runs `node .output/server/index.mjs` on a free port. `npm run build`/verify still make the Cloudflare build. Both scripts accept `--no-build` to reuse the last preview build.
+- `npm run shots`: wipes harness/shots/latest/ and saves home-defaults, home-recommended, home-checklist, method, empty at 375/768/1280 (full page). Controls are located by DESIGN.md copy ("Use recommended elections" switch/checkbox, "Load a sample" picker → first case, checklist tab, "Clear offers"); missing controls log "skipped" instead of failing. Also warns on horizontal overflow and page errors.
+- `npm run a11y`: axe (wcag2a/aa, 21a/aa) on / and /method at 375 and 1280; prints serious/critical counts, writes harness/shots/a11y.json, exits 1 if any. Currently 0/0.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 2 tests, build)
+Screens checked: yes; home is still an empty <main> (expected), /method is the stock 404 (expected until Phase 6). All steps for unbuilt controls logged as skipped.
+Next: Copy harness/fixtures/cases.json and letters into src/data/ with a byte-identical test.
