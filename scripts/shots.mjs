@@ -81,6 +81,17 @@ const VIEWS = [
       await openChecklist(page);
     },
   },
+  // Not in HARNESS.md's list: About you opened behind its mobile disclosure (skipped at md and up).
+  {
+    name: "home-about-open",
+    path: "/",
+    run: (page) =>
+      clickIfPresent(
+        page,
+        page.getByRole("button", { name: /change your details/i }),
+        "Change your details button",
+      ),
+  },
   { name: "method", path: "/method" },
   // Not in HARNESS.md's list: the component sheet, so stub parts can be checked visually.
   { name: "dev-components", path: "/dev/components" },

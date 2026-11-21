@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DecoderControls, DecoderHeader } from "@/components/decoder";
+import { AboutYou, DecoderControls, DecoderHeader } from "@/components/decoder";
 import { GuillocheBackground } from "@/components/stub";
 import { DecoderProvider } from "@/state/DecoderContext";
 
@@ -26,6 +26,7 @@ function Index() {
         <main>
           <h1 className="sr-only">Compare two job offers after taxes and benefits</h1>
           <DecoderControls />
+          <AboutYou />
         </main>
       </div>
     </DecoderProvider>
