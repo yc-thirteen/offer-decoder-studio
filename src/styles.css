@@ -190,9 +190,11 @@
     -webkit-text-size-adjust: 100%;
   }
 
+  /* The paper color lives on html (it paints the canvas); body stays transparent so the
+     fixed guilloché layer at a negative z-index shows through. */
   body {
     margin: 0;
-    background-color: var(--paper);
+    background-color: transparent;
     color: var(--ink);
     font-family: var(--font-sans);
     font-size: 17px;

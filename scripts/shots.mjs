@@ -82,6 +82,9 @@ const VIEWS = [
     },
   },
   { name: "method", path: "/method" },
+  // Not in HARNESS.md's list: the component sheet, so stub parts can be checked visually.
+  { name: "dev-components", path: "/dev/components" },
+  { name: "dev-components-recommended", path: "/dev/components", run: turnOnRecommended },
   {
     name: "empty",
     path: "/",

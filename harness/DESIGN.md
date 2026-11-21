@@ -252,3 +252,4 @@ A critique round passes when every item scores 2.
 The harness writes `IMAGE_PROMPTS.md` at the repo root, with one ready-to-paste prompt per slot that names these exact colors.
 
 ## Harness notes (append below; don't edit above)
+- 2026-11-21 (iteration 14): The 12px notches are drawn by `<Perforation />` at both ends of its 24px stub-colored strip, so they stay centered where the perforation meets the stubs: top and bottom when side by side, left and right when stacked. `StubShell` is the square, bordered stub. Rules inside a stub's `<dl>` use `LineItem`'s `rule` prop (an `<hr>` in a `<dl>` fails axe). The paper color is on `html` only, so the fixed guilloché layer shows through a transparent body.
