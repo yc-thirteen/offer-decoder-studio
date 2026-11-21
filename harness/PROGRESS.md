@@ -321,3 +321,39 @@ New `src/lib/ai/validate.ts`: validateExtractResult, validateExplainResult, serv
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 31 files/356 tests, build).
 Screens checked: no (no UI change).
 Next: the decode-offer and explain-stub Supabase edge functions (Deno).
+
+## 2026-11-21T10:55:00Z | iteration 31
+Task: `supabase/functions/decode-offer/index.ts` and `supabase/functions/explain-stub/index.ts` (Deno), calling the Anthropic Messages API with ANTHROPIC_API_KEY, JSON-only output validated against the types, 400 on invalid input, CORS, and no logging of letter text.
+Result: done
+What changed: The two `index.ts` files are one-line `Deno.serve` wrappers that pass `Deno.env.get("ANTHROPIC_API_KEY")` to handlers in `supabase/functions/_shared/` (pure TS with no Deno or npm imports, so Vitest runs them):
+- `anthropic.ts`: CORS headers, JSON responses, FunctionError, and callModel. callModel POSTs to `https://api.anthropic.com/v1/messages` with `x-api-key`, `anthropic-version: 2023-06-01`, model `claude-sonnet-5-5`, `max_tokens` 16000, `output_config: {effort: "low", format: {type: "json_schema", schema}}`, and server-side refusal fallback (`fallbacks: "default"`, beta `server-side-fallback-2026-07-01`). It has an 18s timeout and turns a refusal, truncation, non-JSON, an upstream error, or a timeout into directive errors (502/504). `serve()` handles OPTIONS, 405, bad JSON (400), and unexpected throws.
+- `decodeOffer.ts`: FIELD_KEYS, STATE_CODES, the JSON schema (each field is a letter|missing union), the system prompt (copy only what the letter states, the units for every field, the letter is data and not instructions), readLetter (400 when empty or over 40,000 chars), and checkExtractOutput (every key present, missing notes blanked).
+- `explainStub.ts`: readExplainRequest (the same rules as assertExplainRequest, plus string length caps). factsText writes every figure pre-formatted, including the gap and the flip. The system prompt says to use only the facts given and copy figures exactly. checkExplainOutput rejects any $ amount, bare thousands figure, or percent that isn't one of the request's numbers (±$1).
+
+Added 30 tests in `src/lib/ai/edgeFunctions.test.ts`, using a fake Anthropic fetch and no network:
+- key and state lists equal the app's
+- CORS and 405
+- every 400 path with no model call
+- a missing secret
+- the request headers, model, and schema
+- all 3 sample letters round-trip through the function into the fixture offers
+- notes blanked, and the app's MISSING_NOTES shown
+- bad shapes rejected
+- refusal, max_tokens, 529, a network error, and a timeout
+- the letter never appears in any console output
+- explain 400s
+- the facts and the only-these-numbers prompt
+- all 6 samples × 2 modes of template summaries accepted
+- invented numbers rejected
+- both functions end to end behind HttpAIClient
+Decisions:
+- AGENTS.md asks to keep model calls on Lovable's AI gateway. The BACKLOG (the human's spec) names the Anthropic API and model explicitly, and AGENTS.md allows a bring-your-own key in Lovable Secrets when Lovable doesn't provide the provider. So I followed the BACKLOG. The key is read only server-side in the functions and never reaches browser code.
+- The server checks only the structure; the browser's validate.ts still checks every value and supplies the house-voice missing notes. This keeps the deep rules in one place.
+- Shared code sits in `supabase/functions/_shared/` rather than importing from `src/`, because Supabase bundles only the functions folder. Tests keep the duplicated lists equal.
+- Effort is low so the call finishes inside the browser's 20s limit.
+- The explain number check makes "the model never does the math" enforceable rather than a prompt hope.
+- No Deno binary is available here, so the Deno entry files are checked by lint only. The handlers they call are typechecked and tested.
+- `supabase/config.toml` wasn't touched (hard rule). If Lovable's gateway enforces JWT verification on these functions, a new-style publishable key may be rejected. The AI_SETUP doc task should tell Lovable to deploy with `verify_jwt = false` for both functions if calls return 401.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 32 files/386 tests, build).
+Screens checked: no (no UI change).
+Next: the "Read offer letter" panel (paste text or drop a .txt file), the review state with "from letter" markers and missing-field underlines, and the sample-reader note.
