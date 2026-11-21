@@ -570,3 +570,15 @@ Decisions:
 Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/459 tests, build).
 Screens checked: yes. Looked at home defaults/recommended/life at 1280, recommended and empty at 375, letter review at 768, method at 375, plus full-resolution crops of the health and match charts. Issues: the two chart label collisions above.
 Next: the MatchChart label task from critique round 1.
+
+## 2026-11-21T12:10:00Z | iteration 45
+Task: Rubric 6. In `MatchChart.tsx`, keep the "Employer match per year" label clear of the marker lines, and test it.
+Result: done
+What changed: The new `src/components/why/matchLabel.ts` has `placeLineLabel(markerXs, x0, x1)`. It puts the label in the plot's top band (which the match line never reaches, since the y axis runs to at least 1.4 times the whole match), in the first gap that holds it, at least 4px from every marker line. It tries left of every marker first, then just past each marker, and one line before two ("Employer match" / "per year"). If no gap holds it, it returns null and `MatchChart` gives the label a 16px row of its own above the marker titles, where no marker line reaches. The label renders as tspans with `data-line-label`. In `MatchVestingPanel.test.tsx`, a pure test covers the placement cases, and a rendered test covers every chart of every sample at 300, 420, 560, and 700px (ResizeObserver stubbed). The label must contain no marker x, or else sit above where every marker line starts.
+Decisions:
+- I added the own-row fallback because at 300px Lakeshore (markers at 4% and 11%) leaves a gap of about 103px, and even "Employer match" needs about 112px. A third, shorter line break would run into the flat line at 70% height.
+- The helpers are in their own module, so react-refresh's only-export-components lint adds no new warning.
+Verify: pass (typecheck, lint 0 errors/6 pre-existing warnings, 41 files/464 tests, build). a11y: serious 0, critical 0, keyboard problems 0.
+Screens checked: yes. `npm run shots` (0 failed), plus element crops of every match chart for chicago-vs-austin, university-staff, and new-grad-roth at 1280, 768, and 375. At 1280 and 768 the label sits just past the default marker on one line, or on two lines at the left (university-staff Lakeshore). At 375 it's on two lines between the markers, or in its own row above the titles. No marker crosses it anywhere. Found an older issue: at 375 the red "left on the table" label crosses the recommended marker line (added as a backlog task).
+Next: the HealthCostChart dot-label task from critique round 1.
+

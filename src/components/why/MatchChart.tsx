@@ -8,6 +8,14 @@
 import { formatMoney } from "@/components/stub";
 import { niceTicks, scale, tickMoney, yAxisLeft } from "./chartKit";
 import type { MarkerKind, MatchChartData } from "./matchData";
+import {
+  CHAR_PX,
+  LINE_LABEL,
+  labelBox,
+  placeLineLabel,
+  type Box,
+  type LineLabel,
+} from "./matchLabel";
 import { useElementWidth } from "./useElementWidth";
 
 const COLOR: Record<MarkerKind, string> = {
@@ -15,12 +23,6 @@ const COLOR: Record<MarkerKind, string> = {
   recommended: "var(--carbon)",
   both: "var(--carbon)",
 };
-
-/** Rough width of one 13px, 600-weight character. */
-const CHAR_PX = 8;
-
-/** [left, top, right, bottom] in px. */
-type Box = [number, number, number, number];
 
 function overlaps(a: Box, b: Box): boolean {
   return a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
@@ -66,8 +68,14 @@ export function MatchChart({ data, title }: { data: MatchChartData; title: strin
   };
   const oneRow = data.markers.map((mk) => titleAt(mk.pct, mk.label, 0));
   const twoRows = oneRow.length === 2 && overlaps(pad(oneRow[0]!.box, 8), oneRow[1]!.box);
-  const top = twoRows ? 46 : 30;
-  const H = (W < 480 ? 230 : 260) + (twoRows ? 16 : 0);
+  const inPlotLabel = placeLineLabel(
+    data.markers.map((mk) => x(mk.pct)),
+    x0,
+    x1,
+  );
+  const headRow = inPlotLabel ? 0 : 16;
+  const top = (twoRows ? 46 : 30) + headRow;
+  const H = (W < 480 ? 230 : 260) + (twoRows ? 16 : 0) + headRow;
   const y0 = H - 44;
   const y1 = top;
 
@@ -92,7 +100,16 @@ export function MatchChart({ data, title }: { data: MatchChartData; title: strin
   );
 
   const dots = data.markers.map((mk) => ({ mk, cx: x(mk.pct), cy: y(mk.match) }));
-  const lineLabel = place("Employer match per year", x0 + 8, y1 + 14, "start", "var(--ink)");
+  // In the plot's top band, or else in its own row above the highest marker title.
+  const lineLabelAt = (lx: number, ly: number, rows: string[]): LineLabel => ({
+    x: lx,
+    y: ly,
+    rows,
+    box: labelBox(lx, ly, rows),
+  });
+  const lineLabel = inPlotLabel
+    ? lineLabelAt(inPlotLabel.x, y1 + 14, inPlotLabel.rows)
+    : lineLabelAt(x0, Math.min(...titles.map((t) => t.y)) - 16, [LINE_LABEL]);
   const inPlot = (b: Box) => b[0] >= x0 + 2 && b[2] <= x1;
   const yFull = y(data.fullMatch);
 
@@ -233,6 +250,7 @@ export function MatchChart({ data, title }: { data: MatchChartData; title: strin
           <circle key={`bend-${p}`} cx={x(p)} cy={y(m)} r={2.5} fill="var(--ink)" />
         ))}
         <text
+          data-line-label=""
           x={lineLabel.x}
           y={lineLabel.y}
           textAnchor="start"
@@ -240,7 +258,12 @@ export function MatchChart({ data, title }: { data: MatchChartData; title: strin
           fontWeight={600}
           {...HALO}
         >
-          {lineLabel.text}
+          {lineLabel.rows.map((row, i) => (
+            <tspan key={row} x={lineLabel.x} dy={i === 0 ? 0 : 16}>
+              {/* The space keeps the text content reading as one phrase. */}
+              {i < lineLabel.rows.length - 1 ? `${row} ` : row}
+            </tspan>
+          ))}
         </text>
 
         {/* Money left on the table */}

@@ -1,9 +1,10 @@
 import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { employee401kDollars, employerMatch } from "@/lib/engine";
 import { SAMPLE_CASES, deriveView, initialDecoderState } from "@/state/decoderState";
 import { DecoderProvider } from "@/state/DecoderContext";
 import { matchChartData, pctWindow, vestingSentence } from "./matchData";
+import { MARKER_CLEARANCE, placeLineLabel } from "./matchLabel";
 import { MatchVestingPanel } from "./MatchVestingPanel";
 
 function dataFor(sampleId: string, slot: 0 | 1) {
@@ -162,4 +163,76 @@ describe("MatchVestingPanel", () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole("img")).toBeNull();
   });
+});
+
+describe("the match line's label", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  /** Make every chart measure `width` px, as a ResizeObserver would in a browser. */
+  function stubWidth(width: number) {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(private cb: (e: { contentRect: { width: number } }[]) => void) {}
+        observe() {
+          this.cb([{ contentRect: { width } }]);
+        }
+        disconnect() {}
+      },
+    );
+  }
+
+  it("starts past a marker that would cross it, and breaks in two when one line won't fit", () => {
+    // Clear of markers: the top left, as before.
+    expect(placeLineLabel([400, 500], 62, 548)).toEqual({ x: 70, rows: [LINE] });
+    // A default marker under the label (chicago-vs-austin): start just past it.
+    expect(placeLineLabel([120, 450], 62, 548)).toEqual({ x: 126, rows: [LINE] });
+    // No gap holds one line: two lines in the first gap that holds them.
+    expect(placeLineLabel([150, 290], 50, 300)).toEqual({
+      x: 156,
+      rows: ["Employer match", "per year"],
+    });
+    // No gap holds even two lines: the chart gives it a row of its own.
+    expect(placeLineLabel([126, 240], 62, 288)).toBeNull();
+  });
+
+  const LINE = "Employer match per year";
+
+  for (const width of [300, 420, 560, 700]) {
+    it(`keeps every marker line out of its box for every sample at ${width}px`, () => {
+      stubWidth(width);
+      for (const sample of SAMPLE_CASES) {
+        const { unmount, container } = render(
+          <DecoderProvider initialSampleId={sample.id}>
+            <MatchVestingPanel />
+          </DecoderProvider>,
+        );
+        const charts = [...container.querySelectorAll("svg")].filter((svg) =>
+          svg.querySelector("[data-match-line]"),
+        );
+        expect(charts.length).toBeGreaterThan(0);
+        for (const svg of charts) {
+          const label = svg.querySelector("[data-line-label]")!;
+          const rows = [...label.querySelectorAll("tspan")].map((t) => t.textContent!.trim());
+          expect(rows.join(" ")).toBe(LINE);
+          const left = Number(label.getAttribute("x"));
+          const right = left + Math.max(...rows.map((r) => r.length)) * 8;
+          const markers = [...svg.querySelectorAll("[data-marker] line")];
+          // In its own row above the plot, it sits above where every marker line starts.
+          const bottom = Number(label.getAttribute("y")) + 3 + 16 * (rows.length - 1);
+          const tops = markers.map((l) => Number(l.getAttribute("y1")));
+          if (bottom < Math.min(...tops)) continue;
+          const markerXs = markers.map((l) => Number(l.getAttribute("x1")));
+          for (const xm of markerXs) {
+            const inside = xm >= left - MARKER_CLEARANCE && xm <= right + MARKER_CLEARANCE;
+            expect(
+              inside,
+              `${sample.id} at ${width}px: marker at ${xm} in [${left}, ${right}]`,
+            ).toBe(false);
+          }
+        }
+        unmount();
+      }
+    });
+  }
 });
