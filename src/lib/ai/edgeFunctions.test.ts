@@ -34,6 +34,7 @@ import { buildExplainRequest, explainTemplate } from "./explainTemplate";
 import { MISSING_NOTES, allMissing, fieldsToOffer, parseLetter } from "./letterParser";
 import { EXTRACT_FIELD_KEYS, type ExplainMode, type ExplainRequest } from "./types";
 import { validateExtractResult } from "./validate";
+import { buildOfferDocumentText, DOCUMENT_KIND } from "../offerDocuments";
 
 type CaseJson = { id: string; profile: Profile; offers: Offer[] };
 const cases = (sampleCases as unknown as { cases: CaseJson[] }).cases;
@@ -155,6 +156,53 @@ describe("gateway failures", () => {
 });
 
 describe("decode-offer", () => {
+  it("passes both document contents and trusted coverage context through the unchanged HTTP contract", async () => {
+    const source = (name: string) =>
+      readFileSync(path.resolve(__dirname, "../../data/documents", name), "utf8");
+    const offerLetter = source("northfield-offer.txt");
+    const benefitsGuide = source("northfield-benefits.txt");
+    const expected = parseLetter(`${offerLetter}\n\n${benefitsGuide}`);
+    const fetch = fakeAnthropic(() => modelReply(JSON.stringify({ fields: expected })));
+    const client = new HttpAIClient(
+      { supabaseUrl: "https://ref.supabase.co", publishableKey: "test-public" },
+      {
+        fetch: async (input, init) =>
+          handleDecodeOffer(new Request(String(input), init), { apiKey: KEY, fetch }),
+      },
+    );
+    const result = await client.extractOffer({
+      text: buildOfferDocumentText({ offerLetter, benefitsGuide, coverage: "family" }),
+    });
+    expect(result.fields).toEqual(expected);
+    const payload = vi.mocked(generateMessage).mock.calls.at(-1)![0];
+    expect(payload.system).toContain("Requested coverage tier: family");
+    expect(payload.system).toContain("Never mix tiers");
+    expect(payload.system).toContain("contradict each other");
+    expect(payload.system).toContain("monthly premium is multiplied by 12");
+    const content = payload.messages[0]!.content as string;
+    const documents = JSON.parse(content.slice(content.indexOf("\n") + 1));
+    expect(documents).toEqual({
+      offerLetter: offerLetter.trim(),
+      benefitsGuide: benefitsGuide.trim(),
+    });
+  });
+
+  it("rejects an empty document envelope before calling the gateway", async () => {
+    const fetch = fakeAnthropic(() => modelReply("{}"));
+    const res = await handleDecodeOffer(
+      post("decode-offer", {
+        text: JSON.stringify({
+          kind: DOCUMENT_KIND,
+          coverage: "self",
+          offerLetter: " ",
+          benefitsGuide: "",
+        }),
+      }),
+      { apiKey: KEY, fetch },
+    );
+    expect(res.status).toBe(400);
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it("answers CORS preflight and rejects other methods", async () => {
     const pre = await handleDecodeOffer(
       new Request("https://x/functions/v1/decode-offer", { method: "OPTIONS" }),

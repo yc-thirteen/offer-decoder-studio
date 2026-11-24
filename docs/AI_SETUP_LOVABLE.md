@@ -1,6 +1,6 @@
 # The AI features and Lovable AI
 
-Offer Decoder has two AI features, **Upload offer letter** and the **Plain-English summary**. Both run through two Lovable Cloud (Supabase) edge functions:
+Offer Decoder has two AI features, **Upload documents** and the **Plain-English summary**. Both run through two Lovable Cloud (Supabase) edge functions:
 
 - `supabase/functions/decode-offer` reads a letter into the stub's fields.
 - `supabase/functions/explain-stub` writes the summary from the engine's numbers.
@@ -14,7 +14,7 @@ The browser switches from the mock client to these functions on its own when `VI
 
 ## How it's set up
 
-The setup is already done, and there are no human steps. For reference:
+The original hosted project has Cloud and AI configured. A local checkout still needs the public frontend environment values, and branch changes to edge functions require deployment. The existing setup is:
 
 - Lovable Cloud and Lovable AI are on for the project.
 - Lovable creates and manages `LOVABLE_API_KEY`. The functions read it with `Deno.env.get("LOVABLE_API_KEY")` and pass it to the SDK. It never reaches the browser, and it shouldn't go in the repo or in `.env` files.
@@ -27,13 +27,13 @@ To change the model or the gateway setup, ask Lovable in the project chat. Keep 
 
 ### In the app
 
-1. Open the published site and choose **Upload offer letter** on either stub.
+1. Open the published site and choose **Upload documents** on either stub.
 2. The panel should no longer say "Sample reader: works on the three sample letters until the AI is connected." If that note is still there, the build is still on the mock. See Troubleshooting below.
-3. Paste the test letter below, or drop a PDF or Word copy of a real offer, and choose **Upload offer letter**. After a few seconds:
+3. Paste the test letter below into **Offer letter**, and optionally add a separate guide in **Benefits guide — optional**. Choose **Fill from documents**. After a few seconds:
    - The stub fills in.
-   - Each field the letter stated shows a "from letter" marker.
+   - Each field the letter stated shows a "from documents" marker.
    - Anything it didn't state is underlined in red, with a note telling you what to type in.
-4. Save the offer, then load a second offer (a sample works).
+4. Save the offer. Its yearly result and fixed plain-English summary appear immediately. Then load a second offer (a sample works) to test the AI comparison writer.
 5. Under the memo line, the **Plain-English summary** now shows a **Write plain-English summary** button instead of writing itself. The sample-writer note is gone.
 6. Choose the button. A three- or four-sentence summary appears, and every number in it matches the stubs.
 
@@ -59,7 +59,7 @@ Sincerely,
 People Team
 ```
 
-If the reader leaves a field or two missing, that's correct behavior. It copies only what the letter states and never guesses. Many real offer letters leave the health plan details out and put them in a separate benefits summary. Paste that summary into the same box, under the letter.
+If the reader leaves a field or two missing, that's correct behavior. It copies only what the letter states and never guesses. Many real offer letters leave the health plan details out and put them in a separate benefits summary. Add that summary in the separate benefits-guide input. The reader combines the two documents; a missing or ambiguous value still needs review.
 
 ### From a terminal (optional)
 
@@ -96,10 +96,27 @@ An empty `text` returns HTTP 400 with `{"error": "The letter is empty. Paste its
 
 ## What is and isn't mocked
 
-| Feature                                    | Without the Cloud env vars (mock)                                                                                    | With Lovable AI connected                                                                                                  |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Upload offer letter                        | Reads only the three sample letters. For any other text, it says it reads only the samples and never invents values. | Reads any pasted letter, or a dropped .txt, PDF, or Word file. It copies only stated values and marks the rest missing.    |
-| Plain-English summary                      | Writes itself from a fixed template, built only from engine numbers                                                  | Writes on request with `anthropic/claude-sonnet-5`, from the same engine numbers. Any figure not on the stubs is rejected. |
-| All pay, tax, benefits, and checklist math | The engine in `src/lib/engine/`, always                                                                              | Unchanged. The model never does the math.                                                                                  |
+| Feature                                    | Without the Cloud env vars (mock)                                                                         | With Lovable AI connected                                                                                                             |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Upload documents                           | Reads the three sample letters and the split Northfield document pair. Other employers need manual entry. | Reads offer and benefits text from pasted content, .txt, PDF, or Word files. It copies only stated values and marks the rest missing. |
+| One-offer plain-English summary            | A fixed template words the engine's numbers immediately.                                                  | The same fixed template; no model call.                                                                                               |
+| Two-offer plain-English summary            | Writes itself from a fixed template, built only from engine numbers                                       | Writes on request with `anthropic/claude-sonnet-5`, from the same engine numbers. Any figure not on the stubs is rejected.            |
+| All pay, tax, benefits, and checklist math | The engine in `src/lib/engine/`, always                                                                   | Unchanged. The model never does the math.                                                                                             |
 
-PDF and Word files are turned into text in the browser (`src/lib/letterFile.ts`), on both paths. The file itself is never uploaded, only its text, and only after you choose **Upload offer letter**.
+PDF and Word files are turned into text in the browser (`src/lib/letterFile.ts`), on both paths. Original files are not uploaded by the app. Their text is sent for processing only after **Fill from documents**. Uploaded drafts and entered offers live in memory and disappear on refresh. The app does not persist the files or text; cloud processing follows the configured service’s handling of requests.
+
+## Document intake version 1
+
+The browser still posts `{ "text": "..." }` to `decode-offer`. For two-document intake, the text contains a JSON envelope with `kind: "offer-decoder-documents-v1"`, `coverage: "self"` or `"family"`, `offerLetter`, and `benefitsGuide`. Plain-letter requests from earlier clients remain supported. The shared parser is in `supabase/functions/_shared/offerDocuments.ts`; it contains no browser or runtime dependencies.
+
+The edge function puts validated coverage context in the system instructions and sends the two source texts as untrusted data. It asks for matching coverage tiers, known premium frequencies, complementary facts across documents, and manual review of contradictions. The extracted-fields response and its legacy `source: "letter"` enum are unchanged; the UI calls these values **from documents**. Missing plan fields still use the existing complete-plan contract. This is not OCR, and no silent fallback fills absent values with typical benefits.
+
+The 40,000-character limit applies to the complete serialized text envelope. For long guides, paste the medical and retirement sections that apply. Switching profile coverage during extraction cancels the request; review every plan’s costs for the selected tier before saving. The offline sample reader cannot establish real-document extraction quality.
+
+## Check the feature branch against the deployed function
+
+Changes on `codex/offer-intake-v1` do not update the connected `main` deployment automatically. To test the new server instructions, deploy the updated `decode-offer` shared files to a suitable project using the existing managed Lovable gateway and secret. The explanatory wording update also touches the `explain-stub` shared handler. Preserve no-login access, existing endpoint contracts, and the managed secret; no database changes are required.
+
+Use a fictional offer stating salary and pay frequency, plus a separate fictional guide stating monthly employee premiums, both self/family tiers, match, vesting, and HSA terms. Test both coverage choices; verify every extracted annual premium and tier against the source before saving. Repeat with a conflicting salary and an unspecified premium frequency: unresolved fields should be left for manual review. Local tests use a mocked gateway and do not prove the model will extract these cases correctly in a deployed environment.
+
+With no frontend cloud environment configured, the local app explicitly remains in sample-reader mode. Configure the public project URL and publishable key in the ignored `.env.local` to connect to a deployed function. Never put `LOVABLE_API_KEY` in that file or browser code.

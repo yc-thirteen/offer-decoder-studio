@@ -98,7 +98,7 @@ export function MethodPage() {
         <Section id="bottom-line">
           <p>
             Net pay alone favors the offer that saves the least for you. So each stub ends with one
-            number that counts everything that is yours by the end of the year:
+            estimate that combines take-home cash with retirement and HSA savings:
           </p>
           <Formula>
             Your yearly bottom line = net pay + savings in your name after future tax − expected
@@ -106,9 +106,13 @@ export function MethodPage() {
           </Formula>
           <p>
             Savings in your name after future tax is your traditional 401(k) plus the employer
-            match, times {keep} (the {ret} tax you pay when you take it out in retirement), plus
-            your Roth 401(k), your HSA contributions, and the employer&apos;s HSA deposit. Roth and
-            HSA dollars aren&apos;t taxed again when you spend them as the rules allow.
+            match, times {keep} (using an assumed {ret} tax rate at withdrawal), plus your Roth
+            401(k), your HSA contributions, and the employer&apos;s HSA deposit. Roth and HSA
+            dollars aren&apos;t taxed again when you spend them as the rules allow.
+          </p>
+          <p>
+            This total is not cash available to spend. It includes savings and assumes you keep the
+            full employer match; leaving before vesting can reduce its value.
           </p>
           <p>
             Expected medical bills are what you pay out of pocket under the chosen plan at the

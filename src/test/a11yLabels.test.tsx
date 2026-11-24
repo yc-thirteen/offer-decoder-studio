@@ -74,8 +74,8 @@ describe("decoder accessibility", () => {
         "aria-invalid",
         "true",
       );
-      fireEvent.click(within(second!).getByRole("button", { name: "Upload offer letter" }));
-      expect(within(second!).getByRole("textbox")).toBeTruthy();
+      fireEvent.click(within(second!).getByRole("button", { name: "Upload documents" }));
+      expect(within(second!).getByRole("textbox", { name: /^Offer letter text/ })).toBeTruthy();
       expect(screen.getAllByRole("slider").length).toBeGreaterThan(0);
       checkPage(container);
     },

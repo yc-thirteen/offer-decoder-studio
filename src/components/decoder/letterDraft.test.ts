@@ -66,7 +66,7 @@ describe("draftFromLetter", () => {
     expect(d.state).toBe("");
     expect(d.rothAvailable).toBeNull();
     expect(d.vestingType).toBe("");
-    expect(review.marks.missing["salary"]).toBe("No salary in this letter. Type it here.");
+    expect(review.marks.missing["salary"]).toBe("No salary in these documents. Type it here.");
     expect(review.marks.missing["vestingType"]).toBe(MISSING_NOTES.vesting);
     expect(review.marks.fromLetter.has("salary")).toBe(false);
     expect(review.marks.fromLetter.has("employer")).toBe(true);

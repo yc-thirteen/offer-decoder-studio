@@ -22,10 +22,11 @@ export function memoText(view: DecoderView, mode: ElectionsMode): string {
   const [a, b] = view.stubs;
   if (a.error || b.error) return "Fix the offer marked in red to see which one is worth more.";
   if (!a.result && !b.result) {
-    return "Load a sample or fill in two offers to see which one is worth more.";
+    return "Load a sample or enter one offer to see its yearly result. Add a second offer to compare.";
   }
   if (!a.result || !b.result || !view.winners) {
-    return "Fill in a second offer to see which one is worth more.";
+    const stub = a.result ? a : b;
+    return `${memoName(stub.offer?.employer, stub.slot)} has an estimated yearly bottom line of ${formatMoney(stub.result![mode].bottomLine)}, including savings. Add a second offer if you'd like to compare.`;
   }
 
   let names = [memoName(a.offer?.employer, 0), memoName(b.offer?.employer, 1)];

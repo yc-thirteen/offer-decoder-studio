@@ -117,8 +117,8 @@ export function explainTemplate(req: ExplainRequest): string {
 
   sentences.push(
     gap === 0
-      ? `${lead}, the two offers come out even at about ${explainMoney(w.bottomLine)} a year after taxes, benefits, and expected medical bills.`
-      : `${lead}, ${W} leaves you ${explainMoney(w.bottomLine)} a year after taxes, benefits, and expected medical bills, ${explainMoney(gap)} more than ${L}.`,
+      ? `${lead}, the two offers come out even at about ${explainMoney(w.bottomLine)} a year in estimated value, including savings, after taxes and expected medical bills.`
+      : `${lead}, ${W} has an estimated yearly bottom line of ${explainMoney(w.bottomLine)} a year, including savings after assumed future tax and expected medical bills, ${explainMoney(gap)} more than ${L}.`,
   );
 
   const parts = [`you take home ${explainMoney(w.netPay)} in net pay`];

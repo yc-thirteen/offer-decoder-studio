@@ -86,8 +86,8 @@ export async function editWithErrors(page) {
 export function openLetterReader(page) {
   return clickIfPresent(
     page,
-    page.getByRole("button", { name: /^upload offer letter$/i }),
-    "Upload offer letter button",
+    page.getByRole("button", { name: /^upload documents$/i }),
+    "Upload documents button",
   );
 }
 
@@ -95,10 +95,7 @@ export function openLetterReader(page) {
 export async function letterReview(page) {
   if (!(await openLetterReader(page))) return;
   await page.getByRole("button", { name: "Lakeshore Systems" }).first().click();
-  await page
-    .getByRole("button", { name: /^upload offer letter$/i })
-    .first()
-    .click();
+  await page.getByRole("button", { name: "Fill from documents", exact: true }).click();
   await page.getByLabel("Yearly salary").first().waitFor();
 }
 

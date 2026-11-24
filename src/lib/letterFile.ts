@@ -3,17 +3,17 @@
  * Reads .txt directly, PDFs with pdf.js, and Word .docx files with mammoth. Both
  * libraries load only when such a file arrives, so they stay out of the page bundle
  * and out of server rendering. Everything runs in the browser; the file is never
- * uploaded. Only the text reaches the reader, after the user chooses "Upload offer letter".
+ * uploaded. Only the text reaches the reader, after the user chooses "Fill from documents".
  */
 
 export type LetterFileKind = "txt" | "pdf" | "docx";
 
 export const FILE_COPY = {
   unsupported:
-    "Only .txt, PDF, and Word (.docx) files can be read. Open the letter, copy its text, and paste it here.",
-  unreadable: "That file couldn't be opened. Paste the letter's text instead.",
+    "Only .txt, PDF, and Word (.docx) files can be read. Open the document, copy its text, and paste it here.",
+  unreadable: "That file couldn't be opened. Paste the document's text instead.",
   noText:
-    "This file has no text to copy, so it may be a scanned image. Paste the letter's text instead, or fill in the offer by hand.",
+    "This file has no text to copy, so it may be a scanned image. Paste the document's text instead, or fill in the offer by hand.",
   locked: "This PDF is password-protected. Open it, copy its text, and paste it here.",
 } as const;
 
@@ -114,7 +114,7 @@ export function tidyLetterText(text: string): string {
     .trim();
 }
 
-/** The letter's text, or a LetterFileError with a message to show. */
+/** The document's text, or a LetterFileError with a message to show. */
 export async function readLetterFile(
   file: File,
   readers: LetterFileReaders = DEFAULT_READERS,

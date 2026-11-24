@@ -27,19 +27,21 @@ The project was built with [Lovable](https://lovable.dev/projects/1924fbbb-4710-
     - marginal vs average tax
 - **`/method`:** every rule in plain language, the 2026 constants with the lecture slide each came from, and what the site simplifies or leaves out.
 
-### Compare your own offers
+### Enter one offer or compare two
 
-1. On a stub, choose **Upload offer letter**.
-2. Paste the letter, or drop or choose its file (PDF, Word .docx, or .txt). The text is pulled out in your browser, and the file itself is never uploaded.
-3. Choose **Upload offer letter**. The reader fills in what the letter states and marks each of those fields "from letter". Anything the letter leaves out is underlined in red, with a note saying what to type in. It never guesses.
-4. Check the fields, fill in the gaps, and choose **Save offer**. Then do the same on the other stub.
-5. Fill in **About you**, then turn on **Use recommended elections** to see what to elect.
+1. In **About you**, choose employee-only or family coverage. Health-plan amounts must match this tier.
+2. On a stub, choose **Upload documents**. Add the offer letter and, optionally, a separate benefits guide. Each input accepts pasted text, PDF, Word (.docx), or .txt. Replacing one document preserves the other.
+3. Choose **Fill from documents**. Files are read in your browser; only their extracted text is sent to the reader on this action. The combined request, including its document envelope, must fit within 40,000 characters. For a long guide, paste only the relevant benefits sections. There is no silent truncation.
+4. Check the fields marked **from documents**, fill in missing details, and choose **Save offer**. Health costs are annual amounts for the selected coverage. Ambiguous or conflicting values need manual review; missing values are not treated as zero. The first version requires complete supported health-plan fields, so an incomplete table may need manual entry.
+5. Read the result for this offer. A second offer is optional; add it to compare. **Fill in offer** and **Edit offer** always allow manual entry, even without the AI connection.
 
-Tips:
+The result distinguishes **Net pay** (take-home cash), **Savings in your name, after future tax** (retirement/HSA savings), expected medical bills, and **Your yearly bottom line**. The last amount is an estimate: net pay + savings after assumed future tax - expected medical bills. It includes savings, uses the existing 15% future tax assumption on traditional retirement dollars, and assumes the employer match shown is retained. It is not cash available to spend. Per-paycheck totals average these annual values; they are not paycheck deposits.
 
-- Many letters leave out the health plan details (premium, deductible, coinsurance, out-of-pocket maximum) and put them in a separate benefits summary. Paste that summary into the same box, under the letter.
-- Scanned PDFs have no text to read, so paste the text or type the offer in. The same goes for password-protected PDFs and old Word `.doc` files.
-- You can also skip the reader and choose **Fill in offer** (or **Edit offer**) to type everything yourself.
+One offer gets a fixed, immediate plain-English summary from engine numbers, with no AI call. Two offers retain the existing optional AI comparison summary. The financial engine and its sample oracle are unchanged in this milestone; budget planning and recommendation refinements are later work.
+
+Try **Try two sample documents** in the upload panel for a fictional Northfield letter and separate benefits guide. The offline sample reader handles this pair and the existing three letters. These samples quote employee-only benefits; family costs are left for manual entry. Arbitrary documents require the configured Lovable Cloud reader. Scanned or password-protected PDFs and old Word .doc files need pasted text or manual entry.
+
+Offers and document drafts are held in memory; refreshing the page clears them. Original document files are not stored by this app. Text sent for extraction is processed by the configured cloud service.
 
 ### The six samples
 
@@ -83,7 +85,8 @@ The full rules are in [`harness/FINANCE_SPEC.md`](harness/FINANCE_SPEC.md), and 
 - **Engine:** `src/lib/engine/` is pure TypeScript with no React. It covers taxes, health plans, retirement, life insurance, recommended elections, and the checklist ids. `runCase()` in `src/lib/engine/index.ts` runs a whole comparison. Components only format what the engine returns.
 - **Test oracle:** `harness/reference/engine.py` implements the spec and generated `harness/fixtures/expected.json`. The TypeScript engine must match every field of all 6 cases (12 offers) to within $1, and a `lecture-checks` test reproduces numbers printed on the slides.
 - **State:** one reducer in `src/state/` holds the profile, both offers, the election mode, and the chosen sample.
-- **AI:** `src/lib/ai/` has an `AIClient` interface, with a mock client and an HTTP client. `supabase/functions/` holds two Lovable Cloud edge functions, `decode-offer` (reads a letter) and `explain-stub` (writes the summary). They call `anthropic/claude-sonnet-5` through the Lovable AI Gateway (`@lovable.dev/ai-gateway`). The model only copies values from letters and words numbers the engine already computed, and every answer is checked against a schema twice, in the function and in the browser.
+- **AI:** `src/lib/ai/` has an `AIClient` interface, with a mock client and an HTTP client. `supabase/functions/` holds two Lovable Cloud edge functions, `decode-offer` (reads documents) and `explain-stub` (writes a comparison summary). They call `anthropic/claude-sonnet-5` through the Lovable AI Gateway (`@lovable.dev/ai-gateway`). The model only copies values from documents and words numbers the engine already computed, and every answer is checked against a schema twice, in the function and in the browser.
+- **Document intake:** `src/lib/offerDocuments.ts` re-exports a shared, versioned document envelope from `supabase/functions/_shared/offerDocuments.ts`. The endpoint keeps its `{text}` contract and accepts old plain-letter requests. Coverage metadata is parsed separately from the untrusted source text.
 - **Letter files:** `src/lib/letterFile.ts` turns PDF (pdf.js) and Word .docx (mammoth) files into text in the browser. Both libraries load only when a file is dropped, so they stay out of the page bundle.
 
 ## Run it locally
@@ -113,10 +116,11 @@ Then open the address Vite prints. Without Cloud env vars, the AI features run o
 
 All the money math runs in the engine, in the browser, on every path. Only the two AI features have a mock.
 
-| Feature                   | Without Lovable Cloud (mock)                                                                                                                                              | With Lovable AI connected (the published site)                                                                                                                                                          |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Upload offer letter**   | A deterministic sample reader reads the three sample letters (`src/data/letters/`) exactly. On any other text it says it reads only the samples. It never invents values. | Reads any pasted letter, or a dropped .txt, PDF, or Word file, with `anthropic/claude-sonnet-5` through the Lovable AI Gateway. It copies only the values the letter states and marks the rest missing. |
-| **Plain-English summary** | A fixed template words the engine's numbers.                                                                                                                              | The model writes it from the same numbers. Any figure that isn't on the stubs is rejected.                                                                                                              |
+| Feature               | Without Lovable Cloud (mock)                                                                                                                                                   | With Lovable AI connected (the published site)                                                                                                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Upload documents**  | A deterministic sample reader handles the three sample letters (`src/data/letters/`) and the split Northfield pair (`src/data/documents/`). Other employers need manual entry. | Reads offer and benefits text from pasted content, .txt, PDF, or Word files, with `anthropic/claude-sonnet-5` through the Lovable AI Gateway. It copies only the values the documents state and marks the rest missing. |
+| **One-offer summary** | A fixed template words the engine's numbers immediately.                                                                                                                       | The same fixed template; no model call.                                                                                                                                                                                 |
+| **Two-offer summary** | A fixed template words the engine's numbers.                                                                                                                                   | The model writes it from the same numbers. Any figure that isn't on the stubs is rejected.                                                                                                                              |
 
 The browser picks the client in `src/lib/ai/index.ts`. It uses the HTTP client when `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` (or `VITE_SUPABASE_ANON_KEY`) are in the build, and the mock otherwise. See `.env.example` for the names, which are placeholders only.
 
@@ -124,7 +128,7 @@ The site uses no image files. It draws an SVG favicon and the guilloché backgro
 
 ## Connect the AI
 
-It's already connected. Both edge functions call the Lovable AI Gateway with `LOVABLE_API_KEY`, which Lovable creates and manages, and usage comes out of the workspace's Lovable AI credits. There's no separate AI key to add. [`docs/AI_SETUP_LOVABLE.md`](docs/AI_SETUP_LOVABLE.md) covers:
+The original hosted project uses the Lovable AI Gateway. Local development needs the public cloud environment values, and the updated function code must be deployed before verifying its new extraction instructions. Both edge functions call the gateway with `LOVABLE_API_KEY`, which Lovable creates and manages, and usage comes out of the workspace's Lovable AI credits. There's no separate AI key to add. [`docs/AI_SETUP_LOVABLE.md`](docs/AI_SETUP_LOVABLE.md) covers:
 
 - how the functions and gateway are set up
 - how to confirm it works
@@ -143,18 +147,18 @@ These are also listed on `/method`:
 
 ## Repository map
 
-| Path                                  | What's there                                                                  |
-| ------------------------------------- | ----------------------------------------------------------------------------- |
-| `src/lib/engine/`                     | The finance engine and its tests                                              |
-| `src/lib/ai/`                         | AI client interface, mock, HTTP client, and validation                        |
-| `src/lib/letterFile.ts`               | PDF, Word, and .txt letter files to text, in the browser                      |
-| `src/components/decoder/`             | Header, About you, stubs, editor, letter reader, memo, summary, checklist     |
-| `src/components/why/`                 | The four "Why these elections" panels and their SVG charts                    |
-| `src/components/stub/`                | Pay-stub primitives: stub shell, perforation, amounts, stamp, guilloché       |
-| `src/components/method/`              | The Method page                                                               |
-| `src/data/`                           | Sample cases and letters, copied byte for byte from `harness/fixtures/`       |
-| `supabase/functions/`                 | The `decode-offer` and `explain-stub` edge functions (Lovable AI Gateway)     |
-| `src/integrations/`, `src/generated/` | Lovable Cloud and gateway code that Lovable generates. Don't edit it by hand. |
-| `docs/`                               | `AI_SETUP_LOVABLE.md`: how the AI is connected, checks, and troubleshooting   |
-| `scripts/`                            | Screenshot, accessibility, and responsive checks                              |
-| `harness/`                            | The spec, design rules, fixtures, and the overnight build log                 |
+| Path                                  | What's there                                                                           |
+| ------------------------------------- | -------------------------------------------------------------------------------------- |
+| `src/lib/engine/`                     | The finance engine and its tests                                                       |
+| `src/lib/ai/`                         | AI client interface, mock, HTTP client, and validation                                 |
+| `src/lib/letterFile.ts`               | PDF, Word, and .txt letter files to text, in the browser                               |
+| `src/components/decoder/`             | Header, About you, stubs, editor, letter reader, memo, summary, checklist              |
+| `src/components/why/`                 | The four "Why these elections" panels and their SVG charts                             |
+| `src/components/stub/`                | Pay-stub primitives: stub shell, perforation, amounts, stamp, guilloché                |
+| `src/components/method/`              | The Method page                                                                        |
+| `src/data/`                           | Original sample cases and letters from `harness/fixtures/`, plus a split document demo |
+| `supabase/functions/`                 | The `decode-offer` and `explain-stub` edge functions (Lovable AI Gateway)              |
+| `src/integrations/`, `src/generated/` | Lovable Cloud and gateway code that Lovable generates. Don't edit it by hand.          |
+| `docs/`                               | `AI_SETUP_LOVABLE.md`: how the AI is connected, checks, and troubleshooting            |
+| `scripts/`                            | Screenshot, accessibility, and responsive checks                                       |
+| `harness/`                            | The spec, design rules, fixtures, and the overnight build log                          |

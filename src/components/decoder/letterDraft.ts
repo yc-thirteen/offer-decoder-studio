@@ -1,7 +1,7 @@
 /**
- * Upload offer letter, the pure part: an ExtractResult becomes an editable OfferDraft plus
+ * Upload documents, the pure part: an ExtractResult becomes an editable OfferDraft plus
  * marks for the review state (harness/DESIGN.md "AI elements"). Fields the letter stated
- * carry a "from letter" mark until you edit them or save; fields it didn't state stay blank
+ * carry a "from documents" mark until you edit them or save; fields it didn't state stay blank
  * (never guessed) and carry the reader's note on what is missing. Mark keys are the same
  * draft field keys the editor's validation errors use ("salary", "plan.<id>.premium", …),
  * plus the section keys "tiers" and "plans".
