@@ -1,12 +1,18 @@
 /**
  * The two pay stubs, bound to engine output (harness/DESIGN.md "Stub line items").
  * Every amount is the engine's number divided by the view's divisor (1 annual, pay periods
- * per paycheck); nothing here does finance. With "Use recommended elections" on, each
+ * per paycheck); nothing here does finance. With a suggested or custom plan selected, each
  * amount that changes is struck and the recommended amount written beside it in carbon.
  */
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Amount, LineItem, Perforation, Stamp, StubShell } from "@/components/stub";
-import type { CalcResult, Offer, OfferResult } from "@/lib/engine";
+import {
+  fullMatchDollars,
+  type CalcResult,
+  type CoverageTier,
+  type Offer,
+  type OfferResult,
+} from "@/lib/engine";
 import type { StubView } from "@/state/decoderState";
 import { useDecoder } from "@/state/DecoderContext";
 import {
@@ -49,7 +55,7 @@ function StubHeader({
 }: {
   view: StubView;
   headingId: string;
-  /** "Upload offer letter" and "Edit offer" (or "Fill in offer"), with "Offer saved" after a save. */
+  /** "Upload documents" and "Edit offer" (or "Fill in offer"), with "Offer saved" after a save. */
   action?: ReactNode;
 }) {
   const position = `Offer ${view.slot + 1} of 2`;
@@ -78,8 +84,8 @@ function FilledStub({
 }) {
   const { offer, divisor } = view;
   const d = result.default;
-  const r = result.recommended;
-  const now = corrected ? r : d;
+  const r = corrected ? (view.calc ?? result.recommended) : result.recommended;
+  const now = view.calc ?? (corrected ? r : d);
   const perPaycheck = divisor !== 1;
 
   const amount = (key: NumericKey, sign = 1) => (
@@ -94,7 +100,7 @@ function FilledStub({
 
   const plan = offer.healthPlans.find((p) => p.id === now.planId);
   const planDominated = result.dominatedPlanIds.includes(now.planId);
-  const matchUnclaimed = now.employeePct < result.matchCapPct;
+  const matchUnclaimed = now.employerMatch + 0.5 < fullMatchDollars(offer);
   const showHsa = d.employeeHsa > 0 || r.employeeHsa > 0;
   const showHsaDeposit = d.employerHsa > 0 || r.employerHsa > 0;
   const showMatch = d.employerMatch > 0 || r.employerMatch > 0 || result.matchCapPct > 0;
@@ -142,7 +148,13 @@ function FilledStub({
           amount={amount("stateIncomeTax")}
           note={stateTaxNote(offer) ?? undefined}
         />
-        <LineItem variant="total" rule="heavy" label="Net pay" amount={amount("netPay")} />
+        <LineItem
+          variant="total"
+          rule="heavy"
+          label="Net pay"
+          amount={amount("netPay")}
+          note="Take-home cash after the taxes and payroll deductions above. Medical bills come out of this cash."
+        />
       </dl>
 
       <h3 className="mb-1 mt-6 text-base font-semibold">Employer adds (not in your pay)</h3>
@@ -156,11 +168,14 @@ function FilledStub({
           />
         )}
         {showHsaDeposit && <LineItem label="HSA deposit" amount={amount("employerHsa")} />}
+      </dl>
+      <h3 className="mb-1 mt-6 text-base font-semibold">Cash plus savings</h3>
+      <dl className="m-0">
         <LineItem
           rule="light"
           label="Savings in your name, after future tax"
           amount={amount("savingsAfterFutureTax")}
-          note="Your 401(k) and HSA money plus the employer's, less 15% tax at withdrawal on traditional dollars."
+          note="Your contributions plus the employer's; these are savings, not take-home cash. Traditional retirement dollars use an assumed 15% future tax rate."
         />
         <LineItem label="Expected medical bills" amount={amount("expectedOutOfPocket", -1)} />
         <LineItem
@@ -170,6 +185,14 @@ function FilledStub({
           amount={amount("bottomLine")}
         />
       </dl>
+      <p className="m-0 mt-3 text-sm text-ink-soft">
+        Estimated bottom line = take-home cash + savings after assumed future tax − expected medical
+        bills. This includes savings and assumes you keep the full employer match; leaving before
+        vesting can reduce it.
+        {perPaycheck
+          ? " Medical costs and savings are averaged across paychecks; this total is not your paycheck deposit."
+          : " This total is not cash available to spend."}
+      </p>
     </>
   );
 }
@@ -187,7 +210,9 @@ function EmptyStub({ perPaycheck }: { perPaycheck: boolean }) {
   const blank = <BlankAmount />;
   return (
     <>
-      <p className="m-0 mb-3">Load a sample or upload an offer letter to fill this stub.</p>
+      <p className="m-0 mb-3">
+        Upload documents, fill in an offer, or load a sample to get started.
+      </p>
       <div className="text-ink-soft" data-testid="empty-stub-lines">
         <dl className="m-0">
           <LineItem label="Gross pay" amount={blank} />
@@ -224,12 +249,14 @@ export function OfferStub({
   view,
   corrected,
   perPaycheck = false,
+  coverage = "self",
   onSave,
 }: {
   view: StubView;
   corrected: boolean;
   /** Only used by the empty stub's bottom-line label; a filled stub reads its divisor. */
   perPaycheck?: boolean;
+  coverage?: CoverageTier;
   onSave: (offer: Offer) => void;
 }) {
   const headingId = `offer-stub-${view.slot + 1}`;
@@ -270,7 +297,7 @@ export function OfferStub({
             aria-describedby={headingId}
             className={button}
           >
-            Upload offer letter
+            Upload documents
           </button>
           <button
             ref={buttons.edit}
@@ -296,12 +323,14 @@ export function OfferStub({
       {open?.kind === "read" ? (
         <LetterReader
           slot={view.slot}
+          coverage={coverage}
           onRead={(review) => setPanel({ for: offer, kind: "edit", origin: "read", review })}
           onCancel={leave}
         />
       ) : open ? (
         <OfferEditor
           initial={open.review?.draft ?? (offer ? draftFromOffer(offer) : blankDraft(view.slot))}
+          coverage={coverage}
           marks={open.review?.marks}
           onSave={(next) => {
             onSave(next);
@@ -310,7 +339,7 @@ export function OfferStub({
           }}
           onCancel={leave}
         />
-      ) : offer && result ? (
+      ) : offer && result && view.calc ? (
         <FilledStub view={{ ...view, offer }} result={result} corrected={corrected} />
       ) : error ? (
         <p className="m-0 text-correction">{error}</p>
@@ -327,13 +356,14 @@ export function OfferStub({
  */
 export function OfferStubs() {
   const { state, view, dispatch } = useDecoder();
-  const corrected = state.electionsMode === "recommended";
+  const corrected = state.electionsMode !== "default";
   const perPaycheck = state.periodMode === "perPaycheck";
   const save = (slot: 0 | 1) => (offer: Offer) => dispatch({ type: "setOffer", slot, offer });
   return (
     <div className="mt-8 flex flex-col items-stretch lg:flex-row" data-testid="offer-stubs">
       <OfferStub
         view={view.stubs[0]}
+        coverage={state.profile.coverage}
         corrected={corrected}
         perPaycheck={perPaycheck}
         onSave={save(0)}
@@ -342,6 +372,7 @@ export function OfferStubs() {
       <Perforation orientation="vertical" className="hidden lg:flex" />
       <OfferStub
         view={view.stubs[1]}
+        coverage={state.profile.coverage}
         corrected={corrected}
         perPaycheck={perPaycheck}
         onSave={save(1)}

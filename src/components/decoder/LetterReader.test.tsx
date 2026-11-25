@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   AIError,
@@ -12,8 +12,9 @@ import {
 } from "@/lib/ai";
 import { UNKNOWN_LETTER_NOTE } from "@/lib/ai/letterParser";
 import { FILE_COPY, LETTER_FILE_ACCEPT } from "@/lib/letterFile";
+import { readOfferDocuments } from "@/lib/offerDocuments";
 import { AIClientProvider } from "@/state/AIClientContext";
-import { DecoderProvider } from "@/state/DecoderContext";
+import { DecoderProvider, useDecoder } from "@/state/DecoderContext";
 import { DecoderControls } from "./DecoderHeader";
 import { MAX_LETTER_CHARS, READER_COPY } from "./LetterReader";
 import { OfferStubs } from "./OfferStub";
@@ -52,17 +53,27 @@ function setup(client: AIClient = new MockAIClient(), sampleId: string | null = 
     <AIClientProvider client={client}>
       <DecoderProvider initialSampleId={sampleId}>
         <DecoderControls />
+        <CoverageControl />
         <OfferStubs />
       </DecoderProvider>
     </AIClientProvider>,
   );
 }
 
+function CoverageControl() {
+  const { dispatch } = useDecoder();
+  return (
+    <button onClick={() => dispatch({ type: "setProfile", patch: { coverage: "family" } })}>
+      Switch to family
+    </button>
+  );
+}
+
 const stub = (n: 1 | 2) => screen.getAllByRole("region")[n - 1]!;
 const type = (el: HTMLElement, value: string) => fireEvent.change(el, { target: { value } });
-const letterBox = (s: HTMLElement) => within(s).getByLabelText(/^Letter text/);
+const letterBox = (s: HTMLElement) => within(s).getByLabelText(/^Offer letter text/);
 const submit = (s: HTMLElement) =>
-  fireEvent.click(within(s).getAllByRole("button", { name: "Upload offer letter" }).at(-1)!);
+  fireEvent.click(within(s).getByRole("button", { name: "Fill from documents" }));
 
 function rowAmount(region: HTMLElement, label: RegExp): string {
   const dt = within(region)
@@ -92,15 +103,85 @@ function partialClient(...missing: (keyof ExtractedFields)[]): AIClient {
   };
 }
 
-describe("Upload offer letter", () => {
+describe("Upload documents", () => {
+  it("combines the sample letter and guide into one editable offer", async () => {
+    const client = new MockAIClient();
+    const extract = vi.spyOn(client, "extractOffer");
+    setup(client);
+    const s = stub(1);
+    fireEvent.click(within(s).getByRole("button", { name: "Upload documents" }));
+    fireEvent.click(within(s).getByRole("button", { name: "Try two sample documents" }));
+    const guide = within(s).getByLabelText(/^Benefits guide.*text/);
+    expect((guide as HTMLTextAreaElement).value).toContain("PPO 500");
+    expect((letterBox(s) as HTMLTextAreaElement).value).not.toContain("PPO 500");
+    submit(s);
+    const salary = await within(s).findByLabelText("Yearly salary");
+    expect(salary).toHaveValue("150,000");
+    expect(within(s).getAllByLabelText("Your premium per year")[0]).toHaveValue("2,400");
+    const documents = readOfferDocuments(extract.mock.calls[0]![0].text)!;
+    expect(documents.coverage).toBe("self");
+    expect(documents.benefitsGuide).toContain("HSA Plan 3000");
+    fireEvent.click(within(s).getByRole("button", { name: "Save offer" }));
+    expect(rowAmount(s, /^Gross pay/)).toBe("$150,000");
+    expect(rowAmount(s, /yearly bottom line/)).toBe("$106,585");
+  });
+
+  it("keeps the offer when a benefits file fails, and replaces or removes either document independently", async () => {
+    setup();
+    const s = stub(1);
+    fireEvent.click(within(s).getByRole("button", { name: "Upload documents" }));
+    type(letterBox(s), "Offer salary stays here");
+    const input = within(s).getByLabelText(/^Benefits guide.*file \(/);
+    fireEvent.change(input, { target: { files: [new File(["bad"], "benefits.doc")] } });
+    expect(await within(s).findByRole("alert")).toHaveTextContent(FILE_COPY.unsupported);
+    expect(letterBox(s)).toHaveValue("Offer salary stays here");
+    fireEvent.change(input, {
+      target: { files: [new File(["First guide"], "benefits.txt", { type: "text/plain" })] },
+    });
+    const guide = await within(s).findByDisplayValue("First guide");
+    fireEvent.change(input, {
+      target: { files: [new File(["Revised guide"], "revised.txt", { type: "text/plain" })] },
+    });
+    await within(s).findByDisplayValue("Revised guide");
+    fireEvent.click(within(s).getByRole("button", { name: "Remove benefits guide" }));
+    expect(guide).toHaveValue("");
+    expect(letterBox(s)).toHaveValue("Offer salary stays here");
+  });
+
+  it("cancels an in-flight extraction if the profile coverage changes", async () => {
+    let finish!: (value: { fields: ExtractedFields }) => void;
+    let signal: AbortSignal | undefined;
+    const client: AIClient = {
+      kind: "http",
+      explainStub: vi.fn(),
+      extractOffer: (_req, s) => {
+        signal = s;
+        return new Promise((resolve) => {
+          finish = resolve;
+        });
+      },
+    };
+    setup(client);
+    const s = stub(1);
+    fireEvent.click(within(s).getByRole("button", { name: "Upload documents" }));
+    type(letterBox(s), "Offer text");
+    submit(s);
+    expect(within(s).getByRole("button", { name: "Fill from documents" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Switch to family" }));
+    expect(signal?.aborted).toBe(true);
+    await act(async () => finish({ fields: parseLetter(letterText("northfield.txt")) }));
+    expect(within(s).queryByLabelText("Yearly salary")).toBeNull();
+    expect(within(s).getByRole("button", { name: "Fill from documents" })).toBeEnabled();
+    expect(within(s).getByText("family", { selector: "strong" })).toBeVisible();
+  });
   it("opens an inbox-tray panel with the sample-reader note and focuses the letter box", () => {
     setup();
     const s = stub(2);
-    fireEvent.click(within(s).getByRole("button", { name: "Upload offer letter" }));
-    expect(within(s).getByRole("heading", { name: "Upload offer letter" })).toBeInTheDocument();
+    fireEvent.click(within(s).getByRole("button", { name: "Upload documents" }));
+    expect(within(s).getByRole("heading", { name: "Upload offer documents" })).toBeInTheDocument();
     expect(within(s).getByText(READER_COPY.sampleNote)).toBeInTheDocument();
     expect(letterBox(s)).toHaveFocus();
-    expect(within(s).getByLabelText("Or choose a file (.txt, PDF, or Word)")).toHaveAttribute(
+    expect(within(s).getByLabelText("Offer letter file (.txt, PDF, or Word)")).toHaveAttribute(
       "accept",
       LETTER_FILE_ACCEPT,
     );
@@ -111,14 +192,14 @@ describe("Upload offer letter", () => {
   it("hides the sample-reader note once a real client is connected", () => {
     setup(partialClient());
     const s = stub(1);
-    fireEvent.click(within(s).getByRole("button", { name: "Upload offer letter" }));
+    fireEvent.click(within(s).getByRole("button", { name: "Upload documents" }));
     expect(within(s).queryByText(READER_COPY.sampleNote)).toBeNull();
   });
 
   it("reads a pasted sample letter into the review state, then saves it to the stub", async () => {
     setup();
     const s = stub(1);
-    fireEvent.click(within(s).getByRole("button", { name: "Upload offer letter" }));
+    fireEvent.click(within(s).getByRole("button", { name: "Upload documents" }));
     type(letterBox(s), letterText("lakeshore.txt"));
     submit(s);
 
@@ -128,34 +209,34 @@ describe("Upload offer letter", () => {
       "Lakeshore Systems",
     );
     expect(
-      within(s).getByText(/^Check the \d+ fields marked "from letter", then save/),
+      within(s).getByText(/^Check the \d+ fields marked "from documents", then save/),
     ).toHaveFocus();
-    const markers = within(s).getAllByText("from letter");
+    const markers = within(s).getAllByText("from documents");
     expect(markers.length).toBeGreaterThan(10);
     // The salary's own marker is part of its description.
     const markId = (salary.getAttribute("aria-describedby") ?? "")
       .split(" ")
       .find((id) => id.endsWith("-mark"));
-    expect(markId && document.getElementById(markId)).toHaveTextContent("from letter");
+    expect(markId && document.getElementById(markId)).toHaveTextContent("from documents");
 
     // Editing a field confirms it: its marker goes.
     const before = markers.length;
     type(salary, "141,000");
-    expect(within(s).getAllByText("from letter")).toHaveLength(before - 1);
+    expect(within(s).getAllByText("from documents")).toHaveLength(before - 1);
     type(salary, "140,000");
 
     fireEvent.click(within(s).getByRole("button", { name: "Save offer" }));
     expect(within(s).getByRole("heading", { name: "Lakeshore Systems" })).toBeInTheDocument();
     expect(rowAmount(s, /^Gross pay/)).toBe("$140,000");
     expect(within(s).getByRole("status", { name: "" })).toHaveTextContent("Offer saved");
-    expect(within(s).queryByText("from letter")).toBeNull();
-    expect(within(s).getByRole("button", { name: "Upload offer letter" })).toHaveFocus();
+    expect(within(s).queryByText("from documents")).toBeNull();
+    expect(within(s).getByRole("button", { name: "Upload documents" })).toHaveFocus();
   });
 
   it("fills the box from a sample letter button and reads it", async () => {
     setup();
     const s = stub(2);
-    fireEvent.click(within(s).getByRole("button", { name: "Upload offer letter" }));
+    fireEvent.click(within(s).getByRole("button", { name: "Upload documents" }));
     fireEvent.click(within(s).getByRole("button", { name: "Cascade Robotics" }));
     expect((letterBox(s) as HTMLTextAreaElement).value).toBe(letterText("cascade.txt"));
     submit(s);
@@ -167,8 +248,8 @@ describe("Upload offer letter", () => {
   it("reads a dropped or chosen .txt, PDF, or Word file into the box, and refuses other files", async () => {
     setup();
     const s = stub(1);
-    fireEvent.click(within(s).getByRole("button", { name: "Upload offer letter" }));
-    const input = within(s).getByLabelText("Or choose a file (.txt, PDF, or Word)");
+    fireEvent.click(within(s).getByRole("button", { name: "Upload documents" }));
+    const input = within(s).getByLabelText("Offer letter file (.txt, PDF, or Word)");
     const text = letterText("northfield.txt");
     fireEvent.change(input, {
       target: { files: [new File([text], "offer.txt", { type: "text/plain" })] },
@@ -199,7 +280,7 @@ describe("Upload offer letter", () => {
   it("says what went wrong and opens no form for empty, too-long, or unknown text", async () => {
     setup();
     const s = stub(1);
-    fireEvent.click(within(s).getByRole("button", { name: "Upload offer letter" }));
+    fireEvent.click(within(s).getByRole("button", { name: "Upload documents" }));
     submit(s);
     expect(within(s).getByRole("alert")).toHaveTextContent(READER_COPY.empty);
 
@@ -211,7 +292,9 @@ describe("Upload offer letter", () => {
     submit(s);
     expect(await within(s).findByText(UNKNOWN_LETTER_NOTE)).toBeInTheDocument();
     expect(within(s).queryByLabelText("Yearly salary")).toBeNull();
-    expect(letterBox(s)).toHaveAttribute("aria-invalid", "true");
+    expect(letterBox(s)).toHaveValue(
+      "Dear Sam, we are pleased to offer you a job at Acme for $90,000.",
+    );
   });
 
   it("shows the client's directive error when the reader fails", async () => {
@@ -223,7 +306,7 @@ describe("Upload offer letter", () => {
     };
     setup(failing);
     const s = stub(1);
-    fireEvent.click(within(s).getByRole("button", { name: "Upload offer letter" }));
+    fireEvent.click(within(s).getByRole("button", { name: "Upload documents" }));
     type(letterBox(s), "Some letter");
     submit(s);
     expect(await within(s).findByRole("alert")).toHaveTextContent(
@@ -234,18 +317,18 @@ describe("Upload offer letter", () => {
   it("underlines missing fields with the reader's note and won't save until they're typed", async () => {
     setup(partialClient("salary", "rothAvailable"));
     const s = stub(1);
-    fireEvent.click(within(s).getByRole("button", { name: "Upload offer letter" }));
+    fireEvent.click(within(s).getByRole("button", { name: "Upload documents" }));
     type(letterBox(s), "Northfield Health letter");
     submit(s);
 
     const salary = (await within(s).findByLabelText("Yearly salary")) as HTMLInputElement;
     expect(salary.value).toBe("");
-    const note = within(s).getByText("No salary in this letter. Type it here.");
+    const note = within(s).getByText("No salary in these documents. Type it here.");
     expect(note).toHaveClass("text-correction");
     expect(salary.getAttribute("aria-describedby")).toContain(note.id);
     expect(salary.parentElement).toHaveClass("border-correction", "border-b-2");
     expect(
-      within(s).getByText(/fill in what the letter left out, underlined in red/),
+      within(s).getByText(/fill in what the documents left out, underlined in red/),
     ).toBeVisible();
     const roth = within(s).getByLabelText("Roth 401(k) offered") as HTMLSelectElement;
     expect(roth.value).toBe("");
@@ -257,7 +340,7 @@ describe("Upload offer letter", () => {
 
     type(salary, "150,000");
     fireEvent.change(roth, { target: { value: "yes" } });
-    expect(within(s).queryByText("No salary in this letter. Type it here.")).toBeNull();
+    expect(within(s).queryByText("No salary in these documents. Type it here.")).toBeNull();
     fireEvent.click(within(s).getByRole("button", { name: "Save offer" }));
     expect(rowAmount(s, /^Gross pay/)).toBe("$150,000");
   });
@@ -265,10 +348,24 @@ describe("Upload offer letter", () => {
   it("cancel leaves the stub as it was and returns focus to the button", () => {
     setup(new MockAIClient(), "chicago-vs-austin");
     const s = stub(1);
-    const open = within(s).getByRole("button", { name: "Upload offer letter" });
+    const open = within(s).getByRole("button", { name: "Upload documents" });
     fireEvent.click(open);
     fireEvent.click(within(s).getByRole("button", { name: "Cancel" }));
     expect(rowAmount(s, /^Gross pay/)).toBe("$150,000");
-    expect(within(s).getByRole("button", { name: "Upload offer letter" })).toHaveFocus();
+    expect(within(s).getByRole("button", { name: "Upload documents" })).toHaveFocus();
   });
+});
+
+it("accepts a realistic long guide with an HTTP reader and makes demo mode explicit", async () => {
+  const client = partialClient();
+  const extract = vi.spyOn(client, "extractOffer");
+  setup(client);
+  const s = stub(1);
+  fireEvent.click(within(s).getByRole("button", { name: "Upload documents" }));
+  type(letterBox(s), "Fictional offer text. ".repeat(1000));
+  type(within(s).getByLabelText(/^Benefits guide.*text/), "Fictional benefits text. ".repeat(4000));
+  expect(within(s).getByText("Cloud AI reader configured")).toBeTruthy();
+  submit(s);
+  await within(s).findByLabelText("Yearly salary");
+  expect(extract.mock.calls[0]![0].text.length).toBeGreaterThan(40000);
 });

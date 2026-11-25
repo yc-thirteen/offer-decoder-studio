@@ -34,6 +34,7 @@ import { buildExplainRequest, explainTemplate } from "./explainTemplate";
 import { MISSING_NOTES, allMissing, fieldsToOffer, parseLetter } from "./letterParser";
 import { EXTRACT_FIELD_KEYS, type ExplainMode, type ExplainRequest } from "./types";
 import { validateExtractResult } from "./validate";
+import { buildOfferDocumentText, DOCUMENT_KIND } from "../offerDocuments";
 
 type CaseJson = { id: string; profile: Profile; offers: Offer[] };
 const cases = (sampleCases as unknown as { cases: CaseJson[] }).cases;
@@ -155,6 +156,53 @@ describe("gateway failures", () => {
 });
 
 describe("decode-offer", () => {
+  it("passes both document contents and trusted coverage context through the unchanged HTTP contract", async () => {
+    const source = (name: string) =>
+      readFileSync(path.resolve(__dirname, "../../data/documents", name), "utf8");
+    const offerLetter = source("northfield-offer.txt");
+    const benefitsGuide = source("northfield-benefits.txt");
+    const expected = parseLetter(`${offerLetter}\n\n${benefitsGuide}`);
+    const fetch = fakeAnthropic(() => modelReply(JSON.stringify({ fields: expected })));
+    const client = new HttpAIClient(
+      { supabaseUrl: "https://ref.supabase.co", publishableKey: "test-public" },
+      {
+        fetch: async (input, init) =>
+          handleDecodeOffer(new Request(String(input), init), { apiKey: KEY, fetch }),
+      },
+    );
+    const result = await client.extractOffer({
+      text: buildOfferDocumentText({ offerLetter, benefitsGuide, coverage: "family" }),
+    });
+    expect(result.fields).toEqual(expected);
+    const payload = vi.mocked(generateMessage).mock.calls.at(-1)![0];
+    expect(payload.system).toContain("Requested coverage tier: family");
+    expect(payload.system).toContain("Never mix tiers");
+    expect(payload.system).toContain("contradict each other");
+    expect(payload.system).toContain("monthly premium is multiplied by 12");
+    const content = payload.messages[0]!.content as string;
+    const documents = JSON.parse(content.slice(content.indexOf("\n") + 1));
+    expect(documents).toEqual({
+      offerLetter: offerLetter.trim(),
+      benefitsGuide: benefitsGuide.trim(),
+    });
+  });
+
+  it("rejects an empty document envelope before calling the gateway", async () => {
+    const fetch = fakeAnthropic(() => modelReply("{}"));
+    const res = await handleDecodeOffer(
+      post("decode-offer", {
+        text: JSON.stringify({
+          kind: DOCUMENT_KIND,
+          coverage: "self",
+          offerLetter: " ",
+          benefitsGuide: "",
+        }),
+      }),
+      { apiKey: KEY, fetch },
+    );
+    expect(res.status).toBe(400);
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it("answers CORS preflight and rejects other methods", async () => {
     const pre = await handleDecodeOffer(
       new Request("https://x/functions/v1/decode-offer", { method: "OPTIONS" }),
@@ -437,5 +485,207 @@ describe("explain-stub", () => {
       },
     );
     expect((await client.explainStub(req)).summary).toBe(explainTemplate(req));
+  });
+});
+
+describe("long-document extraction through the gateway contract", () => {
+  it("reads every section, carries known pay frequency, and reconciles the guide's final page", async () => {
+    vi.mocked(generateMessage).mockClear();
+    const missing = () => allMissing("");
+    const seen: string[] = [];
+    const frequencies: unknown[] = [];
+    const letter =
+      Array.from(
+        { length: 8 },
+        (_, i) => `OFFER PAGE ${i + 1}\n${"Employment policy. ".repeat(180)}\n`,
+      ).join("\n") + "SALARY_AT_END PAY_FREQUENCY_AT_END";
+    const guide =
+      Array.from(
+        { length: 38 },
+        (_, i) => `BENEFITS PAGE ${i + 1}\n${"Fictional benefits policy. ".repeat(140)}\n`,
+      ).join("\n") + "HEALTH_PLAN_AT_END";
+    vi.mocked(generateMessage).mockImplementation(async (payload) => {
+      const data = JSON.parse(String(payload.messages[0]!.content));
+      const fields = missing();
+      let extra = {};
+      if (data.sourceText) {
+        seen.push(data.sourceText);
+        expect(data.sourceText.length).toBeLessThanOrEqual(20000);
+        if (data.sourceText.includes("SALARY_AT_END"))
+          fields.salary = { source: "letter", value: 150000 };
+        if (data.sourceText.includes("PAY_FREQUENCY_AT_END"))
+          fields.payPeriods = { source: "letter", value: 26 };
+        if (data.document === "benefits guide") frequencies.push(data.payPeriodsFromOffer);
+        if (data.sourceText.includes("HEALTH_PLAN_AT_END")) {
+          fields.healthPlans = {
+            source: "letter",
+            value: [
+              {
+                id: "ppo",
+                name: "Family PPO",
+                hsaEligible: false,
+                premium: 2400,
+                deductible: 1000,
+                coinsurance: 0.2,
+                oopMax: 5000,
+                employerHsa: 0,
+              },
+            ],
+          } as never;
+          fields.defaultPlanId = { source: "letter", value: "ppo" };
+        }
+        extra = { conflicts: [] };
+      } else {
+        expect(data.candidates.salary).toEqual([150000]);
+        expect(data.candidates.payPeriods).toEqual([26]);
+        expect(data.candidates.healthPlans[0][0].name).toBe("Family PPO");
+        for (const key of FIELD_KEYS)
+          if (data.candidates[key]?.length)
+            (fields as Record<string, unknown>)[key] = {
+              source: "letter",
+              value: data.candidates[key][0],
+            };
+      }
+      return {
+        stop_reason: "tool_use",
+        content: [{ type: "tool_use", name: "answer", id: "test", input: { fields, ...extra } }],
+      } as never;
+    });
+    const response = await handleDecodeOffer(
+      post("decode-offer", {
+        text: buildOfferDocumentText({
+          offerLetter: letter,
+          benefitsGuide: guide,
+          coverage: "family",
+        }),
+      }),
+      { apiKey: KEY },
+    );
+    expect(response.status, JSON.stringify(await response.clone().json())).toBe(200);
+    const result = validateExtractResult(await response.json())!;
+    expect(result.fields.salary).toEqual({ source: "letter", value: 150000 });
+    expect(result.fields.healthPlans.source).toBe("letter");
+    expect(result.fields.defaultPlanId).toEqual({ source: "letter", value: "ppo" });
+    expect(seen.join("\n")).toContain("HEALTH_PLAN_AT_END");
+    expect(frequencies.length).toBeGreaterThan(1);
+    expect(frequencies.every((f) => f === 26)).toBe(true);
+    expect(
+      vi.mocked(generateMessage).mock.calls.every(([p]) => String(p.system).includes("family")),
+    ).toBe(true);
+  });
+
+  it("forces conflicting scalar values to missing even when reconciliation selects a number", async () => {
+    const makeFields = (salary?: number) =>
+      Object.fromEntries(
+        FIELD_KEYS.map((k) => [
+          k,
+          k === "salary" && salary !== undefined
+            ? { source: "letter", value: salary }
+            : { source: "missing", value: null, note: "" },
+        ]),
+      );
+    vi.mocked(generateMessage).mockImplementation(async (payload) => {
+      const data = JSON.parse(String(payload.messages[0]!.content));
+      const section = typeof data.sourceText === "string";
+      const salary = section
+        ? data.sourceText.includes("SECOND_SALARY")
+          ? 140000
+          : data.sourceText.includes("FIRST_SALARY")
+            ? 150000
+            : undefined
+        : 150000;
+      return {
+        stop_reason: "tool_use",
+        content: [
+          {
+            type: "tool_use",
+            name: "answer",
+            input: { fields: makeFields(salary), ...(section ? { conflicts: [] } : {}) },
+          },
+        ],
+      } as never;
+    });
+    const text = buildOfferDocumentText({
+      offerLetter: "FIRST_SALARY\n" + "Text ".repeat(9000) + "\nSECOND_SALARY",
+      benefitsGuide: "",
+      coverage: "self",
+    });
+    const response = await handleDecodeOffer(post("decode-offer", { text }), { apiKey: KEY });
+    expect(response.status, JSON.stringify(await response.clone().json())).toBe(200);
+    const result = validateExtractResult(await response.json())!;
+    expect(result.fields.salary.source).toBe("missing");
+    if (result.fields.salary.source === "missing")
+      expect(result.fields.salary.note).toContain("Conflicting values");
+  });
+});
+
+describe("long-document reconciliation guardrails", () => {
+  it.each(["invented salary", "conflicting plan terms"])(
+    "requires manual review for %s",
+    async (scenario) => {
+      const plan = (premium: number) => ({
+        id: "ppo",
+        name: "Shared PPO",
+        hsaEligible: false,
+        premium,
+        deductible: 500,
+        coinsurance: 0.2,
+        oopMax: 3000,
+        employerHsa: 0,
+      });
+      vi.mocked(generateMessage).mockImplementation(async (payload) => {
+        const data = JSON.parse(String(payload.messages[0]!.content));
+        const fields = allMissing("");
+        const section = typeof data.sourceText === "string";
+        const source = section ? data.sourceText : "LOW_PLAN";
+        if (!section || source.includes("LOW_PLAN") || source.includes("HIGH_PLAN")) {
+          fields.salary = {
+            source: "letter",
+            value: !section && scenario === "invented salary" ? 9999999 : 150000,
+          };
+          fields.healthPlans = {
+            source: "letter",
+            value: [plan(source.includes("HIGH_PLAN") ? 3600 : 2400)],
+          };
+          fields.defaultPlanId = { source: "letter", value: "ppo" };
+        }
+        return {
+          stop_reason: "tool_use",
+          content: [
+            {
+              type: "tool_use",
+              name: "answer",
+              input: { fields, ...(section ? { conflicts: [] } : {}) },
+            },
+          ],
+        } as never;
+      });
+      const text = buildOfferDocumentText({
+        offerLetter: "",
+        benefitsGuide:
+          "LOW_PLAN\n" +
+          "Policy text. ".repeat(5000) +
+          (scenario === "conflicting plan terms" ? "\nHIGH_PLAN" : ""),
+        coverage: "self",
+      });
+      const response = await handleDecodeOffer(post("decode-offer", { text }), { apiKey: KEY });
+      expect(response.status, JSON.stringify(await response.clone().json())).toBe(200);
+      const result = validateExtractResult(await response.json())!;
+      if (scenario === "invented salary") expect(result.fields.salary.source).toBe("missing");
+      else {
+        expect(result.fields.healthPlans.source).toBe("missing");
+        expect(result.fields.defaultPlanId.source).toBe("missing");
+      }
+    },
+  );
+
+  it("rejects an excessive section count before starting any gateway calls", async () => {
+    vi.mocked(generateMessage).mockClear();
+    const response = await handleDecodeOffer(
+      post("decode-offer", { text: "\u0001".repeat(100000) }),
+      { apiKey: KEY },
+    );
+    expect(response.status).toBe(400);
+    expect(vi.mocked(generateMessage)).not.toHaveBeenCalled();
   });
 });

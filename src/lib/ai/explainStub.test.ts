@@ -66,7 +66,7 @@ describe("MockAIClient.explainStub", () => {
     const { summary } = await client.explainStub(requestFor("chicago-vs-austin", "default"));
     const s = sentences(summary);
     expect(s[0]).toBe(
-      "With the defaults, Lakeshore Systems leaves you $109,790 a year after taxes, benefits, and expected medical bills, $3,205 more than Northfield Health.",
+      "With the defaults, Lakeshore Systems has an estimated yearly bottom line of $109,790 a year, including savings after assumed future tax and expected medical bills, $3,205 more than Northfield Health.",
     );
     expect(s[3]).toBe(
       "Elect correctly and Northfield Health comes out ahead instead, so follow the checklist before you choose.",
@@ -78,7 +78,7 @@ describe("MockAIClient.explainStub", () => {
     const { summary } = await client.explainStub(req);
     const s = sentences(summary);
     expect(s[0]).toMatch(
-      /^With the recommended elections, Northfield Health leaves you \$[\d,]+ a year/,
+      /^With the recommended elections, Northfield Health has an estimated yearly bottom line of \$[\d,]+/,
     );
     expect(s[0]).toContain("$1,894 more than Lakeshore Systems");
     expect(s[3]).toBe(

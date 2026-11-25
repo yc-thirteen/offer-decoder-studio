@@ -96,7 +96,7 @@ describe("MockAIClient.extractOffer never invents values", () => {
     expect(fields.salary).toEqual({
       source: "missing",
       value: null,
-      note: "No salary in this letter. Type it here.",
+      note: "No salary in these documents. Type it here.",
     });
     expect(fields.payPeriods).toEqual({
       source: "missing",

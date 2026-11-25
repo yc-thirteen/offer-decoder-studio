@@ -14,6 +14,7 @@ import {
   DecoderControls,
   DecoderHeader,
   MemoLine,
+  MonthlyPlan,
   OfferStubs,
 } from "@/components/decoder";
 import { WhyElections } from "@/components/why";
@@ -28,6 +29,7 @@ function renderDecoder(sampleId: string | null) {
         <AboutYou />
         <OfferStubs />
         <MemoLine />
+        <MonthlyPlan />
         <Checklist />
         <WhyElections />
       </main>
@@ -74,8 +76,8 @@ describe("decoder accessibility", () => {
         "aria-invalid",
         "true",
       );
-      fireEvent.click(within(second!).getByRole("button", { name: "Upload offer letter" }));
-      expect(within(second!).getByRole("textbox")).toBeTruthy();
+      fireEvent.click(within(second!).getByRole("button", { name: "Upload documents" }));
+      expect(within(second!).getByRole("textbox", { name: /^Offer letter text/ })).toBeTruthy();
       expect(screen.getAllByRole("slider").length).toBeGreaterThan(0);
       checkPage(container);
     },

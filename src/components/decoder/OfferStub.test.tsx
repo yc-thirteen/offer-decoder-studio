@@ -22,7 +22,7 @@ function setup(initialSampleId: string | null = "chicago-vs-austin") {
   );
   return {
     stub: (name: RegExp) => screen.getByRole("region", { name }),
-    switchOn: () => fireEvent.click(screen.getByRole("switch", { name: /recommended/i })),
+    switchOn: () => fireEvent.click(screen.getByRole("radio", { name: "Suggested plan" })),
   };
 }
 
@@ -143,7 +143,7 @@ describe("OfferStubs bound to the engine (chicago-vs-austin)", () => {
   it("empty stubs give direction", () => {
     setup(null);
     expect(
-      screen.getAllByText("Load a sample or upload an offer letter to fill this stub."),
+      screen.getAllByText("Upload documents, fill in an offer, or load a sample to get started."),
     ).toHaveLength(2);
     expect(screen.getByRole("region", { name: "Offer 1 of 2" })).toBeTruthy();
   });
@@ -185,7 +185,7 @@ describe("OfferStubs bound to the engine (chicago-vs-austin)", () => {
     ]);
     expect(edits[0]).toHaveAccessibleDescription("Northfield Health");
     expect(
-      screen.getAllByRole("button", { name: "Upload offer letter" })[1],
+      screen.getAllByRole("button", { name: "Upload documents" })[1],
     ).toHaveAccessibleDescription("Lakeshore Systems");
     fireEvent.click(screen.getByRole("button", { name: "Clear offers" }));
     expect(screen.getAllByRole("button", { name: "Fill in offer" })[0]).toHaveAccessibleDescription(
@@ -198,7 +198,7 @@ describe("OfferStubs bound to the engine (chicago-vs-austin)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Clear offers" }));
     expect(screen.queryByRole("region", { name: /Northfield Health/ })).toBeNull();
     expect(
-      screen.getAllByText("Load a sample or upload an offer letter to fill this stub."),
+      screen.getAllByText("Upload documents, fill in an offer, or load a sample to get started."),
     ).toHaveLength(2);
     expect(screen.getAllByTestId("empty-stub-lines")).toHaveLength(2);
     // Clearing again is harmless, and the picker still remembers the sample.

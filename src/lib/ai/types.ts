@@ -13,10 +13,10 @@ import type {
   Vesting,
 } from "@/lib/engine";
 
-/* ---------- Upload offer letter ---------- */
+/* ---------- Upload documents ---------- */
 
 export interface ExtractRequest {
-  /** Letter text, pasted or read from a .txt, PDF, or Word file. Never logged. */
+  /** Plain letter text or a versioned offer/benefits envelope in a string. Never logged. */
   text: string;
 }
 
@@ -25,7 +25,7 @@ export type FieldSource = "letter" | "missing";
 
 /**
  * One extracted field. A missing field has no value and says what is missing in
- * directive words ("No salary in this letter. Type it here."), never a guess.
+ * directive words ("No salary in these documents. Type it here."), never a guess.
  */
 export type ExtractedField<T> =
   { source: "letter"; value: T } | { source: "missing"; value: null; note: string };

@@ -32,6 +32,7 @@ const SECTIONS = [
   { id: "employer-money", title: "Money the employer adds" },
   { id: "health", title: "Choosing a health plan" },
   { id: "elections", title: "The recommended elections" },
+  { id: "monthly-plan", title: "Your monthly plan" },
   { id: "life", title: "Life insurance" },
   { id: "checklist", title: "The day-one checklist" },
   { id: "constants", title: "The 2026 numbers and where they come from" },
@@ -76,7 +77,7 @@ export function MethodPage() {
       <h1 className="mt-8 mb-3">How the numbers work</h1>
       <p className="mt-0">
         Offer Decoder figures each offer the way a pay stub would, then adds what the employer puts
-        in your name and subtracts the medical bills you expect. Every rule and number comes from
+        in your name and subtracts the medical bills you expect. The tax and benefit rules follow
         three course lectures: {listJoin(LECTURES.map((l) => `${l.name} (${l.code})`))}. Slide
         numbers are listed in the table of 2026 numbers below.
       </p>
@@ -98,7 +99,7 @@ export function MethodPage() {
         <Section id="bottom-line">
           <p>
             Net pay alone favors the offer that saves the least for you. So each stub ends with one
-            number that counts everything that is yours by the end of the year:
+            estimate that combines take-home cash with retirement and HSA savings:
           </p>
           <Formula>
             Your yearly bottom line = net pay + savings in your name after future tax − expected
@@ -106,9 +107,13 @@ export function MethodPage() {
           </Formula>
           <p>
             Savings in your name after future tax is your traditional 401(k) plus the employer
-            match, times {keep} (the {ret} tax you pay when you take it out in retirement), plus
-            your Roth 401(k), your HSA contributions, and the employer&apos;s HSA deposit. Roth and
-            HSA dollars aren&apos;t taxed again when you spend them as the rules allow.
+            match, times {keep} (using an assumed {ret} tax rate at withdrawal), plus your Roth
+            401(k), your HSA contributions, and the employer&apos;s HSA deposit. Roth and HSA
+            dollars aren&apos;t taxed again when you spend them as the rules allow.
+          </p>
+          <p>
+            This total is not cash available to spend. It includes savings and assumes you keep the
+            full employer match; leaving before vesting can reduce its value.
           </p>
           <p>
             Expected medical bills are what you pay out of pocket under the chosen plan at the
@@ -241,13 +246,56 @@ export function MethodPage() {
               {formatMoney(HSA_LIMIT.self)} just you, {formatMoney(HSA_LIMIT.family)} family),
               counting the employer&apos;s deposit.
             </li>
-            <li>The site never recommends less than the employer&apos;s default percent.</li>
+            <li>
+              The employer default is a comparison, not a minimum. A suggestion may lower it when
+              the savings target or debt and cash-buffer priorities call for it.
+            </li>
             <li>
               Pick Roth if the plan offers it and your federal marginal rate is {roth} or less. You
               pay tax at a low rate now instead of a likely higher one later. Otherwise pick
               traditional.
             </li>
           </ol>
+        </Section>
+
+        <Section id="monthly-plan">
+          <p>
+            The monthly budget follows the planning framework in Budgeting and Financial Planning
+            (1B, slide 28). Choose Employer defaults, Suggested plan, or My plan. My plan lets you
+            change the health plan, 401(k) percentage and tax treatment, and yearly payroll HSA
+            contribution. All three use the same tax and matching calculations. The 15% starting
+            target is retirement contributions including the employer match; HSA contributions are
+            additional.
+          </p>
+          <Formula>
+            Monthly amount remaining = annual take-home pay ÷ 12 − living expenses − minimum debt
+            payments − additional cash savings − medical bills reserved from cash
+          </Formula>
+          <p>
+            All three monthly amounts must be entered before affordability is shown. Zero is valid.
+            Exclude medical bills and payroll deductions from living expenses: the health premium,
+            401(k), and payroll HSA contribution are already deducted from take-home pay. Employer
+            contributions are savings, not paycheck income.
+          </p>
+          <p>
+            If you choose to use this year's HSA contributions for eligible medical bills, the
+            budget uses at most those contributions and reduces retained HSA savings by the same
+            amount. Any remaining medical bills are reserved from cash. Otherwise, the budget
+            assumes you pay those bills from cash and retain the HSA contributions.
+          </p>
+          <p>
+            Monthly amounts are annual averages even with 26 paychecks. They do not predict when a
+            bill arrives or when HSA deposits become available. The budget covers the selected job,
+            not all household income. Spouse wages affect taxes but are not added to the spending
+            budget.
+          </p>
+          <p>
+            The suggested plan is a starting point. A monthly shortfall means the entered expenses
+            and savings do not fit the estimated income; change the contributions or budget to see
+            what fits. The app does not automatically redistribute savings. Contribution estimates
+            use basic 2026 limits and assume full-year eligibility with no contributions allocated
+            elsewhere. Catch-ups and remaining-year payroll planning are not included.
+          </p>
         </Section>
 
         <Section id="life">

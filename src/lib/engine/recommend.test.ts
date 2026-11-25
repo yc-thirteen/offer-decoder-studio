@@ -78,9 +78,14 @@ describe("recommend (7B funds hierarchy)", () => {
     expect(r.employeeHsa).toBe(0);
   });
 
-  it("never less than the default %", () => {
+  it("does not let the employer default override the savings target", () => {
     const r = recommend(makeOffer(150_000, { defaultEmployeePct: 13 }), profile);
-    expect(r.employeePct).toBe(13);
+    expect(r.employeePct).toBe(11);
+    const debt = recommend(makeOffer(150_000, { defaultEmployeePct: 13 }), {
+      ...profile,
+      hasHighInterestDebt: true,
+    });
+    expect(debt.employeePct).toBe(5);
   });
 
   it("Roth when offered and the marginal rate is at most 12%", () => {

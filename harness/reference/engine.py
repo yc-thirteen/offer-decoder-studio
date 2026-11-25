@@ -194,7 +194,6 @@ def recommend(offer, profile):
     pct = cap
     if ready:
         pct = max(cap, math.ceil(100 * TARGET_SAVINGS_RATE - max_match_pct(offer) - 1e-9))
-    pct = max(pct, offer["retirement"]["defaultEmployeePct"])
     hsa = 0
     if plan["hsaEligible"] and ready:
         hsa = max(0, HSA_LIMIT[profile["coverage"]] - employer_hsa(plan))

@@ -81,10 +81,12 @@ describe("memoText", () => {
 
   it("gives direction when there is nothing to compare", () => {
     const empty = initialDecoderState(null);
-    expect(memoText(deriveView(empty), "default")).toMatch(/^Load a sample or fill in two offers/);
+    expect(memoText(deriveView(empty), "default")).toMatch(/^Load a sample or enter one offer/);
     const s0 = initialDecoderState("chicago-vs-austin");
     const lone = decoderReducer(s0, { type: "setOffer", slot: 1, offer: null });
-    expect(memoText(deriveView(lone), "default")).toMatch(/^Fill in a second offer/);
+    expect(memoText(deriveView(lone), "default")).toMatch(
+      /^Northfield Health has an estimated yearly bottom line/,
+    );
     const bad = { ...s0.offers[1]!, defaultPlanId: "missing" };
     const broken = decoderReducer(s0, { type: "setOffer", slot: 1, offer: bad });
     expect(memoText(deriveView(broken), "default")).toMatch(/^Fix the offer marked in red/);
@@ -102,7 +104,7 @@ describe("<MemoLine />", () => {
     const memo = screen.getByTestId("memo-line");
     expect(screen.getByRole("region", { name: "Memo" })).toContainElement(memo);
     expect(memo).toHaveTextContent(/^Memo:\s*With the defaults, Lakeshore Systems looks \$3,205/);
-    fireEvent.click(screen.getByRole("switch", { name: /recommended/i }));
+    fireEvent.click(screen.getByRole("radio", { name: "Suggested plan" }));
     expect(memo).toHaveTextContent(/^Memo:\s*With the recommended elections, Northfield Health/);
   });
 

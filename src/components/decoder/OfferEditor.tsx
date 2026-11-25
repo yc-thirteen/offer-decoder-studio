@@ -3,8 +3,8 @@
  * Health plans and match tiers can be added and removed, vesting picks its type, and "Save
  * offer" validates the draft (offerDraft.ts). Errors appear under each field in correction
  * red, state the fix, and focus moves to the first one. Nothing reaches the store until the
- * draft is valid. Opened from "Upload offer letter", it is the review state: fields the letter
- * filled carry a carbon "from letter" marker until edited or saved, and fields it left blank
+ * draft is valid. Opened from "Upload documents", it is the review state: fields the letter
+ * filled carry a carbon "from documents" marker until edited or saved, and fields it left blank
  * are underlined in correction red with the reader's note on what is missing.
  */
 import {
@@ -17,7 +17,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Offer, StateCode } from "@/lib/engine";
+import type { CoverageTier, Offer, StateCode } from "@/lib/engine";
 import {
   blankPlan,
   blankStep,
@@ -59,7 +59,7 @@ interface MarksValue {
 }
 const MarksContext = createContext<MarksValue>({ marks: NO_MARKS, touch: () => {} });
 
-/** A field's review marks: the "from letter" marker, or the note on what the letter lacks. */
+/** A field's review marks: the "from documents" marker, or the note on what the letter lacks. */
 function useFieldMarks(name: string | undefined, id: string) {
   const { marks, touch } = useContext(MarksContext);
   const fromLetter = name !== undefined && marks.fromLetter.has(name);
@@ -110,7 +110,7 @@ function FieldShell({
         </label>
         {marks.fromLetter ? (
           <span id={marks.markId} className="text-xs text-carbon">
-            from letter
+            from documents
           </span>
         ) : null}
       </div>
@@ -296,10 +296,10 @@ function AddButton({ onClick, children }: { onClick: () => void; children: React
 
 /** The review state's opening sentence: what the reader filled and what is left to you. */
 function reviewSentence({ filled, missing }: { filled: number; missing: number }): string {
-  const marked = `Check the ${filled === 1 ? "field" : `${filled} fields`} marked "from letter"`;
+  const marked = `Check the ${filled === 1 ? "field" : `${filled} fields`} marked "from documents"`;
   return missing === 0
     ? `${marked}, then save the offer.`
-    : `${marked} and fill in what the letter left out, underlined in red. Then save the offer.`;
+    : `${marked} and fill in what the documents left out, underlined in red. Then save the offer.`;
 }
 
 /** A section-level note from the letter reader (no match tiers, no plan details). */
@@ -316,12 +316,14 @@ function SectionNote({ name }: { name: string }) {
 
 export function OfferEditor({
   initial,
+  coverage = "self",
   marks: initialMarks,
   onSave,
   onCancel,
 }: {
   initial: OfferDraft;
-  /** Present when the draft came from "Upload offer letter": the review state. */
+  coverage?: CoverageTier;
+  /** Present when the draft came from "Upload documents": the review state. */
   marks?: LetterMarks | undefined;
   onSave: (offer: Offer) => void;
   onCancel: () => void;
@@ -398,7 +400,8 @@ export function OfferEditor({
           </p>
         ) : (
           <p className="m-0 text-sm text-ink-soft">
-            Type what the offer letter says. Amounts are yearly; the stub updates when you save.
+            Type the details from your offer letter and benefits guide. Amounts are yearly; the stub
+            updates when you save.
           </p>
         )}
 
@@ -570,6 +573,11 @@ export function OfferEditor({
         </Section>
 
         <Section title="Health plans">
+          <p className="m-0 text-sm text-ink-soft sm:col-span-2">
+            Check every plan's premium, deductible, out-of-pocket maximum, and HSA deposit for{" "}
+            {coverage === "self" ? "employee-only" : "family"} coverage. Premiums and employer
+            deposits are yearly amounts.
+          </p>
           <SectionNote name="plans" />
           {draft.plans.map((p, i) => (
             <Group

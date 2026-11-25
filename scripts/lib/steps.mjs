@@ -23,13 +23,14 @@ export async function clickIfPresent(page, locator, what) {
 }
 
 export async function turnOnRecommended(page) {
-  const name = /use recommended elections/i;
-  const sw = page.getByRole("switch", { name }).or(page.getByRole("checkbox", { name }));
-  const el = sw.first();
-  if ((await el.count()) === 0) return console.log("  skipped: recommended switch not found");
-  const state = (await el.getAttribute("aria-checked")) ?? String(await el.isChecked());
-  if (state !== "true") await el.click();
-  await page.waitForTimeout(600); // let the 180ms correction strike finish
+  const suggested = page.getByRole("radio", { name: "Suggested plan", exact: true });
+  if (await suggested.count()) {
+    await suggested.check();
+    return;
+  }
+  // The component showcase retains its isolated correction switch.
+  const showcase = page.getByRole("switch", { name: /use recommended elections/i });
+  if (await showcase.count()) await showcase.check();
 }
 
 /**
@@ -86,8 +87,8 @@ export async function editWithErrors(page) {
 export function openLetterReader(page) {
   return clickIfPresent(
     page,
-    page.getByRole("button", { name: /^upload offer letter$/i }),
-    "Upload offer letter button",
+    page.getByRole("button", { name: /^upload documents$/i }),
+    "Upload documents button",
   );
 }
 
@@ -95,10 +96,7 @@ export function openLetterReader(page) {
 export async function letterReview(page) {
   if (!(await openLetterReader(page))) return;
   await page.getByRole("button", { name: "Lakeshore Systems" }).first().click();
-  await page
-    .getByRole("button", { name: /^upload offer letter$/i })
-    .first()
-    .click();
+  await page.getByRole("button", { name: "Fill from documents", exact: true }).click();
   await page.getByLabel("Yearly salary").first().waitFor();
 }
 

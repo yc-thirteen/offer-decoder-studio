@@ -17,7 +17,11 @@ export function TaxPanel() {
   let names = view.stubs.map((s) => memoName(s.offer?.employer, s.slot));
   if (names[0] === names[1]) names = names.map((n, i) => `${n} (offer ${i + 1})`);
   const elections =
-    state.electionsMode === "recommended" ? "the recommended elections" : "the default elections";
+    state.electionsMode === "custom"
+      ? "your selected contribution settings"
+      : state.electionsMode === "recommended"
+        ? "the recommended elections"
+        : "the default elections";
 
   return (
     <article aria-labelledby="why-tax" className="border border-ink bg-stub p-4 md:p-6">

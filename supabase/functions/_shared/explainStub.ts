@@ -133,7 +133,7 @@ export function factsText(req: ExplainRequest): string {
       `- Net pay (take-home): ${money(o.netPay)} a year.`,
       `- Employer 401(k) match: ${money(o.employerMatch)} a year.`,
       `- Expected medical bills on this plan: ${money(o.expectedOutOfPocket)} a year.`,
-      `- Bottom line (what the offer is worth to you after taxes and benefits): ${money(o.bottomLine)} a year.`,
+      `- Estimated bottom line (take-home cash plus savings after assumed future tax, minus expected medical bills; assumes the full employer match is retained): ${money(o.bottomLine)} a year.`,
       `- Federal tax: ${percent(o.federalAverageRateOnJob)} of pay on average; the last dollar is taxed at ${percent(o.federalMarginalRate * 100)}.`,
       `- Day-one checklist items: ${o.checklist.join(", ") || "none"}.`,
     ].join("\n"),
@@ -157,6 +157,8 @@ export function factsText(req: ExplainRequest): string {
 export const EXPLAIN_SYSTEM = `You write the "Plain-English summary" on Offer Decoder, which compares two job offers after taxes and benefits for a new hire.
 
 Write 3 or 4 sentences, as one paragraph of plain text, from the new hire's point of view ("you"). Say which offer comes out ahead and by how much, what drives the difference (take-home pay, the employer match, expected medical bills, taxes), and whether the elections change the winner.
+
+Distinguish take-home cash from the estimated bottom line, which includes retirement/HSA savings and assumes the full employer match is retained. Never describe the bottom line as cash available to spend or a paycheck deposit. Future taxes are modeling assumptions.
 
 Use only the facts given. Copy every dollar amount and percent exactly as written in the facts. Do not add, subtract, round, estimate, or compute any new number, and do not mention any number that isn't in the facts. Refer to checklist items in words, never by their ids.
 

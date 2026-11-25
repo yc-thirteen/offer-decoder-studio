@@ -7,7 +7,9 @@ function Probe() {
   return (
     <div>
       <p data-testid="sample">{state.sampleId ?? "none"}</p>
-      <p data-testid="winner">{view.winners?.[state.electionsMode] ?? "none"}</p>
+      <p data-testid="winner">
+        {view.activeWinnerSlot === null ? "none" : view.stubs[view.activeWinnerSlot].offer?.id}
+      </p>
       <button onClick={() => dispatch({ type: "setElectionsMode", mode: "recommended" })}>
         rec
       </button>

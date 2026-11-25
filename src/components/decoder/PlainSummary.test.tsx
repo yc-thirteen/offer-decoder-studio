@@ -9,11 +9,11 @@ import {
   type ExplainResult,
 } from "@/lib/ai";
 import { AIClientProvider } from "@/state/AIClientContext";
-import { DecoderProvider } from "@/state/DecoderContext";
+import { DecoderProvider, useDecoder } from "@/state/DecoderContext";
 import { SAMPLE_CASES, deriveView, initialDecoderState } from "@/state/decoderState";
 import { DecoderControls } from "./DecoderHeader";
 import { MemoLine } from "./MemoLine";
-import { SUMMARY_COPY, summaryRequest } from "./summaryText";
+import { SUMMARY_COPY, singleOfferSummary, summaryRequest } from "./summaryText";
 
 function setup(client: AIClient, sampleId: string | null = "chicago-vs-austin") {
   render(
@@ -28,7 +28,13 @@ function setup(client: AIClient, sampleId: string | null = "chicago-vs-austin") 
 
 const summary = () => screen.queryByTestId("plain-summary");
 const toggleRecommended = () =>
-  fireEvent.click(screen.getByRole("switch", { name: /use recommended elections/i }));
+  fireEvent.click(
+    screen.getByRole("radio", {
+      name: (screen.getByRole("radio", { name: "Suggested plan" }) as HTMLInputElement).checked
+        ? "Employer defaults"
+        : "Suggested plan",
+    }),
+  );
 
 /** An HTTP-like client whose answers the test releases by hand. */
 function manualClient() {
@@ -48,6 +54,26 @@ function manualClient() {
 }
 
 describe("summaryRequest", () => {
+  it("formats either single-offer slot in both modes and keeps its amounts annual", () => {
+    for (const sample of SAMPLE_CASES) {
+      for (const slot of [0, 1] as const) {
+        const state = initialDecoderState(sample.id);
+        state.offers[slot === 0 ? 1 : 0] = null;
+        state.periodMode = "perPaycheck";
+        const view = deriveView(state);
+        for (const mode of ["default", "recommended"] as const) {
+          const calc = view.stubs[slot].result![mode];
+          const text = singleOfferSummary(view, mode)!;
+          expect(text).toContain(state.offers[slot]!.employer);
+          expect(text).toContain(Math.round(calc.netPay).toLocaleString("en-US"));
+          expect(text).toContain(Math.round(calc.savingsAfterFutureTax).toLocaleString("en-US"));
+          expect(text).toContain(Math.round(calc.bottomLine).toLocaleString("en-US"));
+          expect(text).toContain("not cash available to spend");
+        }
+        expect(summaryRequest(view, "default")).toBeNull();
+      }
+    }
+  });
   it("is null until both offers have results", () => {
     expect(summaryRequest(deriveView(initialDecoderState(null)), "default")).toBeNull();
   });
@@ -66,6 +92,40 @@ describe("summaryRequest", () => {
       }
     }
   });
+});
+
+function LoadOneOffer() {
+  const { dispatch } = useDecoder();
+  return (
+    <button
+      onClick={() => dispatch({ type: "setOffer", slot: 1, offer: SAMPLE_CASES[0]!.offers[0]! })}
+    >
+      Load one offer
+    </button>
+  );
+}
+
+it("shows a single-offer summary without calling the HTTP summary writer", () => {
+  const { client, calls } = manualClient();
+  render(
+    <AIClientProvider client={client}>
+      <DecoderProvider initialSampleId={null}>
+        <LoadOneOffer />
+        <DecoderControls />
+        <MemoLine />
+      </DecoderProvider>
+    </AIClientProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Load one offer" }));
+  expect(screen.getByRole("region", { name: SUMMARY_COPY.heading })).toHaveTextContent(
+    "estimated annual take-home pay is $101,647",
+  );
+  expect(screen.getByTestId("memo-line")).toHaveTextContent("$106,585, including savings");
+  expect(screen.queryByRole("button", { name: SUMMARY_COPY.write })).toBeNull();
+  expect(calls).toHaveLength(0);
+  fireEvent.click(screen.getByRole("radio", { name: "Suggested plan" }));
+  expect(screen.getByRole("region", { name: SUMMARY_COPY.heading })).toHaveTextContent("$112,566");
+  expect(calls).toHaveLength(0);
 });
 
 describe("PlainSummary on the mock client", () => {
@@ -106,6 +166,18 @@ describe("PlainSummary on the mock client", () => {
 });
 
 describe("PlainSummary on the HTTP client", () => {
+  it("cancels a preset request in flight when My plan is selected", async () => {
+    const { client, calls } = manualClient();
+    setup(client);
+    fireEvent.click(screen.getByRole("button", { name: SUMMARY_COPY.write }));
+    fireEvent.click(screen.getByRole("radio", { name: "My plan" }));
+    expect(calls[0]!.signal?.aborted).toBe(true);
+    expect(summary()).toHaveTextContent("your selected settings");
+    await act(async () => calls[0]!.resolve({ summary: "Outdated preset numbers." }));
+    expect(screen.queryByText("Outdated preset numbers.")).toBeNull();
+    expect(calls).toHaveLength(1);
+  });
+
   it("waits for the button, shows progress, then the summary", async () => {
     const { client, calls } = manualClient();
     setup(client);

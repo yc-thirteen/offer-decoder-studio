@@ -16,7 +16,7 @@ export function isReady(profile: Profile): boolean {
 /**
  * 1. Always at least the full match. 2. Not ready → stop at the match, no HSA.
  * 3. Ready → max(match cap, ceil(15 − match % at the cap)) and fill the HSA to the
- * tier limit minus the employer deposit. 4. Never below the default %.
+ * tier limit minus the employer deposit. Employer defaults are only a comparison.
  * 5. Roth if offered and the marginal rate under traditional elections is ≤ 12%.
  */
 export function recommend(offer: Offer, profile: Profile): Elections {
@@ -29,7 +29,6 @@ export function recommend(offer: Offer, profile: Profile): Elections {
   const cap = matchCapPct(offer);
   let pct = cap;
   if (ready) pct = Math.max(cap, Math.ceil(100 * TARGET_SAVINGS_RATE - maxMatchPct(offer) - 1e-9));
-  pct = Math.max(pct, offer.retirement.defaultEmployeePct);
 
   const employeeHsa =
     plan.hsaEligible && ready

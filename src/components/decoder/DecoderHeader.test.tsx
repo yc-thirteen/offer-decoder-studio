@@ -61,15 +61,13 @@ describe("DecoderHeader and controls", () => {
     expect(read()).toContain("|annual|");
   });
 
-  it("switches between default and recommended elections", () => {
+  it("selects defaults, suggested settings, or My plan", () => {
     const read = setup();
-    const sw = screen.getByRole("switch", {
-      name: "Use recommended elections",
-    }) as HTMLInputElement;
-    expect(sw.checked).toBe(false);
-    act(() => sw.click());
+    fireEvent.click(screen.getByRole("radio", { name: "Suggested plan" }));
     expect(read()).toMatch(/\|recommended$/);
-    act(() => sw.click());
+    fireEvent.click(screen.getByRole("radio", { name: "My plan" }));
+    expect(read()).toMatch(/\|custom$/);
+    fireEvent.click(screen.getByRole("radio", { name: "Employer defaults" }));
     expect(read()).toMatch(/\|default$/);
   });
 });

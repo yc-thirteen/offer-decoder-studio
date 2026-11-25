@@ -23,28 +23,28 @@ import {
 
 /** What the UI shows under a field the letter doesn't state (DESIGN.md empty states). */
 export const MISSING_NOTES: Record<ExtractFieldKey, string> = {
-  employer: "No employer name in this letter. Type it here.",
-  city: "No city in this letter. Type it here.",
-  state: "No state in this letter. Choose it here.",
+  employer: "No employer name in these documents. Type it here.",
+  city: "No city in these documents. Type it here.",
+  state: "No state in these documents. Choose it here.",
   customStateRate: "Only needed for a state not on the list. Type its flat rate here if so.",
-  salary: "No salary in this letter. Type it here.",
-  payPeriods: "No pay schedule in this letter. Type the paychecks per year here.",
-  match: "No 401(k) match in this letter. Add the match tiers here.",
-  defaultEmployeePct: "No automatic 401(k) rate in this letter. Type it here.",
-  vesting: "No vesting schedule in this letter. Choose it here.",
-  rothAvailable: "The letter doesn't say whether Roth 401(k) is offered. Choose it here.",
+  salary: "No salary in these documents. Type it here.",
+  payPeriods: "No pay schedule in these documents. Type the paychecks per year here.",
+  match: "No 401(k) match in these documents. Add the match tiers here.",
+  defaultEmployeePct: "No automatic 401(k) rate in these documents. Type it here.",
+  vesting: "No vesting schedule in these documents. Choose it here.",
+  rothAvailable: "The documents don't say whether Roth 401(k) is offered. Choose it here.",
   healthPlans:
-    "The letter doesn't give each plan's premium, deductible, coinsurance, and out-of-pocket maximum. Type them here.",
-  defaultPlanId: "The letter doesn't say which plan you get if you elect nothing. Choose it here.",
+    "The documents don't give each plan's premium, deductible, coinsurance, and out-of-pocket maximum. Type them here.",
+  defaultPlanId: "The documents don't say which plan you get if you elect nothing. Choose it here.",
   lifeBasicMultiple:
-    "No company-paid life insurance in this letter. Type the multiple of salary here.",
+    "No company-paid life insurance in these documents. Type the multiple of salary here.",
   lifeSupplementalMaxMultiple:
-    "No supplemental life insurance in this letter. Type the most you can buy, or 0.",
+    "No supplemental life insurance in these documents. Type the most you can buy, or 0.",
 };
 
 /** The note on every field when the sample reader doesn't recognize the letter. */
 export const UNKNOWN_LETTER_NOTE =
-  "The sample reader only reads the three sample letters. Type this in by hand.";
+  "Real-document extraction is not connected in this version. Ask the project owner to enable the AI reader, or enter the offer manually.";
 
 /** Employers of the three sample letters (harness/fixtures/letters). */
 export const SAMPLE_EMPLOYERS = ["Northfield Health", "Lakeshore Systems", "Cascade Robotics"];

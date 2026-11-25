@@ -4,7 +4,7 @@
  * even in per-paycheck mode, because the two offers can have different pay periods.
  */
 import { formatMoney } from "@/components/stub";
-import type { DecoderView, ElectionsMode } from "@/state/decoderState";
+import type { DecoderView, ElectionsMode, PlanMode } from "@/state/decoderState";
 
 /** "Midway University (staff plan)" → "Midway University". Falls back to "Offer N". */
 export function memoName(employer: string | undefined, slot: number): string {
@@ -18,14 +18,29 @@ const LEAD: Record<ElectionsMode, string> = {
 };
 
 /** The memo sentences for the current view, or a direction when there is nothing to compare. */
-export function memoText(view: DecoderView, mode: ElectionsMode): string {
+export function memoText(view: DecoderView, mode: PlanMode): string {
   const [a, b] = view.stubs;
   if (a.error || b.error) return "Fix the offer marked in red to see which one is worth more.";
   if (!a.result && !b.result) {
-    return "Load a sample or fill in two offers to see which one is worth more.";
+    return "Load a sample or enter one offer to see its yearly result. Add a second offer to compare.";
+  }
+  if (mode === "custom") {
+    const ready = view.stubs.filter((s) => s.calc && s.offer);
+    if (ready.length === 1)
+      return `${memoName(ready[0]!.offer?.employer, ready[0]!.slot)} has an estimated yearly bottom line of ${formatMoney(ready[0]!.calc!.bottomLine)}, including savings, with your plan. Add a second offer if you'd like to compare.`;
+    if (a.calc && b.calc) {
+      const gap = Math.abs(Math.round(a.calc.bottomLine - b.calc.bottomLine));
+      if (gap === 0) return "With your plan, the two offers come out even.";
+      const winner = view.activeWinnerSlot ?? 0;
+      const name = memoName(view.stubs[winner].offer?.employer, winner);
+      const duplicate = memoName(a.offer?.employer, 0) === memoName(b.offer?.employer, 1);
+      return `With your plan, ${name}${duplicate ? ` (offer ${winner + 1})` : ""} is worth ${formatMoney(gap)} more a year, including savings.`;
+    }
+    return "Finish your contribution settings to see the yearly result.";
   }
   if (!a.result || !b.result || !view.winners) {
-    return "Fill in a second offer to see which one is worth more.";
+    const stub = a.result ? a : b;
+    return `${memoName(stub.offer?.employer, stub.slot)} has an estimated yearly bottom line of ${formatMoney(stub.result![mode].bottomLine)}, including savings. Add a second offer if you'd like to compare.`;
   }
 
   let names = [memoName(a.offer?.employer, 0), memoName(b.offer?.employer, 1)];

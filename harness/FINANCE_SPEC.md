@@ -1,27 +1,27 @@
 # Finance spec
 
-The source of truth for every number on the site. `harness/reference/engine.py` implements this file exactly and generates `fixtures/expected.json`. The TypeScript engine in `src/lib/engine/` must match the fixtures to within $1. If this file and the Python disagree, the Python wins, and you note the discrepancy in PROGRESS.md. Never edit the fixtures by hand; never edit engine.py or this file except to fix a documented bug.
+The source of truth for every number on the site. `harness/reference/engine.py` implements this file exactly and generates `fixtures/expected.json`. The TypeScript engine in `src/lib/engine/` must match the fixtures to within $1. If this file and the Python disagree, the Python wins, and you note the discrepancy in PROGRESS.md. Never edit the fixtures by hand; change engine.py and this file together only for a documented bug or an explicitly approved product-policy change.
 
 Lecture references: 4B = Taxes, 7A = Insurance, 7B = Retirement (Pascal Noel, Personal Finance).
 
 ## Constants (2026)
 
-| Constant | Value | Source |
-|---|---|---|
-| Federal brackets, single | 10% to 12,400 / 12% to 50,400 / 22% to 105,700 / 24% to 201,775 / 32% to 256,225 / 35% to 640,600 / 37% above | 4B slide 7 |
-| Federal brackets, married filing jointly | 10% to 24,800 / 12% to 100,800 / 22% to 211,400 / 24% to 403,550 / 32% to 512,450 / 35% to 768,700 / 37% above | 4B slide 7 |
-| Standard deduction | 16,100 single, 32,200 joint | 4B slide 17 |
-| Social Security | 6.2% up to 184,500 of wages | 4B slide 6 |
-| Medicare | 1.45%, plus 0.9% above 200,000 single / 250,000 joint | 4B slide 6 |
-| 401(k) employee limit | 24,500 | 7B slide 33 |
-| HSA limit (employee + employer combined) | 4,400 self, 8,750 family | 4B slide 47, 7A slide 36 |
-| Retirement savings target | 15% of pay, employee + employer | 7B slides 24, 49 |
-| Tax rate in retirement | 15% | 7B slide 7 |
-| Roth threshold | Roth if federal marginal rate ≤ 12% | 7B slide 40 |
-| Life insurance markup | 20% through employer, 100% individually | 7A slide 28 |
-| Risk aversion γ | 3 | 7A slide 27 |
-| Human capital | wage growth 5%, discount 10%, retire at 67 | 7A slide 27 (reproduces its $1.6M) |
-| State income tax on wages | IL 4.95%; 0% for TX, FL, WA, NV, TN, SD, WY, AK, NH; "Other" = user-entered flat rate | |
+| Constant                                 | Value                                                                                                          | Source                             |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Federal brackets, single                 | 10% to 12,400 / 12% to 50,400 / 22% to 105,700 / 24% to 201,775 / 32% to 256,225 / 35% to 640,600 / 37% above  | 4B slide 7                         |
+| Federal brackets, married filing jointly | 10% to 24,800 / 12% to 100,800 / 22% to 211,400 / 24% to 403,550 / 32% to 512,450 / 35% to 768,700 / 37% above | 4B slide 7                         |
+| Standard deduction                       | 16,100 single, 32,200 joint                                                                                    | 4B slide 17                        |
+| Social Security                          | 6.2% up to 184,500 of wages                                                                                    | 4B slide 6                         |
+| Medicare                                 | 1.45%, plus 0.9% above 200,000 single / 250,000 joint                                                          | 4B slide 6                         |
+| 401(k) employee limit                    | 24,500                                                                                                         | 7B slide 33                        |
+| HSA limit (employee + employer combined) | 4,400 self, 8,750 family                                                                                       | 4B slide 47, 7A slide 36           |
+| Retirement savings target                | 15% of pay, employee + employer                                                                                | 7B slides 24, 49                   |
+| Tax rate in retirement                   | 15%                                                                                                            | 7B slide 7                         |
+| Roth threshold                           | Roth if federal marginal rate ≤ 12%                                                                            | 7B slide 40                        |
+| Life insurance markup                    | 20% through employer, 100% individually                                                                        | 7A slide 28                        |
+| Risk aversion γ                          | 3                                                                                                              | 7A slide 27                        |
+| Human capital                            | wage growth 5%, discount 10%, retire at 67                                                                     | 7A slide 27 (reproduces its $1.6M) |
+| State income tax on wages                | IL 4.95%; 0% for TX, FL, WA, NV, TN, SD, WY, AK, NH; "Other" = user-entered flat rate                          |                                    |
 
 Filing statuses supported: single and married filing jointly. Head of household is out of scope for v1 (the lectures don't give its standard deduction). The UI must say so plainly.
 
@@ -65,7 +65,7 @@ Savings after future tax = (traditional 401(k) + employer match) × (1 − 15%) 
 1. Always contribute at least enough to get the full match.
 2. "Ready" means an emergency fund and no high-interest debt. If not ready, stop at the full match, with no HSA contribution, and the checklist says to pay down the debt and build the buffer first.
 3. If ready: employee % = max(match cap %, ceil(15 − employer match % at the cap)). Dollars are capped at 24,500, and `hitsLimit401k` is true when the cap binds. HSA employee contribution = tier limit − employer deposit.
-4. Never recommend less than the default %.
+4. Employer defaults are a comparison, not a minimum recommendation. The suggested percentage may be lower when the target or debt/buffer priority calls for it. This is the monthly-plan milestone policy change.
 5. Roth if offered and the federal marginal rate (under traditional elections) is ≤ 12%; otherwise traditional.
 
 ## Life insurance (7A slides 27–28), only when someone depends on your income
@@ -93,3 +93,13 @@ Order in the UI follows the funds hierarchy: match → debt → buffer → healt
 - 9,525 single → 952.50.
 - Human capital of 100k over 35 years ≈ 1.6M.
 - Life fraction 0.90 through work vs 0.48 individually.
+
+## Monthly planning and custom elections (monthly-plan milestone)
+
+The UI offers employer defaults, the suggested plan, and My plan. My plan starts from the viewed preset, stores elections independently per offer, and uses the same calculate() function for taxes, payroll, matching, and the annual bottom line. Basic annual contribution bounds apply; no new tax rates are introduced. Its comparisons and summaries use the active calculation. Custom summaries are local templates and do not extend the cloud contract.
+
+Each offer has monthly living expenses, minimum debt payments, and additional cash savings. These start unknown, not zero. All must be explicitly entered (zero is valid) before reporting affordability. Monthly take-home is annual netPay / 12, regardless of paycheck frequency. The budget covers the selected job only; spouse wages still affect attributed tax but are not additional spending income.
+
+If the user chooses HSA-funded eligible medical bills, hsaUsed = min(expectedOutOfPocket, employeeHsa + employerHsa); otherwise hsaUsed = 0. Retained HSA savings = employeeHsa + employerHsa - hsaUsed. Cash medical reserve = expectedOutOfPocket - hsaUsed. Monthly remaining = netPay / 12 - cash medical reserve / 12 - living expenses - minimum debt payments - additional cash savings. Payroll contributions and premiums are already in netPay. Employer deposits never become spending income. The annual bottom-line identity is unchanged by which account funds medical bills.
+
+These are annual averages, not a bill calendar or a remaining-year payroll forecast. Supported basic 2026 limits assume full-year eligibility and no contributions allocated elsewhere. Catch-ups, contributions to other employers/accounts, existing HSA balances, and partial-year eligibility remain outside this milestone. Spending or contributions are adjusted by the user; an unaffordable suggestion is flagged, not automatically redistributed.
