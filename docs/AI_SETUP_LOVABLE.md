@@ -14,7 +14,7 @@ The browser switches from the mock client to these functions on its own when `VI
 
 ## How it's set up
 
-The original hosted project has Cloud and AI configured. A local checkout still needs the public frontend environment values, and branch changes to edge functions require deployment. The existing setup is:
+The live site is fully set up: Lovable Cloud and AI are on, and both functions run the code on `main` (last redeployed on 2026-11-25). A local copy needs only two public settings to use the real reader; see [Running the real reader locally](#running-the-real-reader-locally). The setup is:
 
 - Lovable Cloud and Lovable AI are on for the project.
 - Lovable creates and manages `LOVABLE_API_KEY`. The functions read it with `Deno.env.get("LOVABLE_API_KEY")` and pass it to the SDK. It never reaches the browser, and it shouldn't go in the repo or in `.env` files.
@@ -113,27 +113,30 @@ The edge function puts validated coverage context in the system instructions and
 
 The 400,000-character upload limit applies to the complete serialized text envelope. Up to 40,000 characters use one model call. Longer requests are read in overlapping source sections, with three calls at most in flight, followed by a reconciliation pass. Every source section is covered; no text is silently truncated. For long guides, paste the medical and retirement sections that apply. Switching profile coverage during extraction cancels the request; review every plan’s costs for the selected tier before saving. The offline sample reader cannot establish real-document extraction quality.
 
-## Check the feature branch against the deployed function
+## Long documents
 
-Changes on `codex/offer-intake-v1` do not update the connected `main` deployment automatically. To test the new server instructions, deploy the updated `decode-offer` shared files to a suitable project using the existing managed Lovable gateway and secret. The explanatory wording update also touches the `explain-stub` shared handler. Preserve no-login access, existing endpoint contracts, and the managed secret; no database changes are required.
+Long reads can take a couple of minutes and use several AI calls, so they cost more credits than a short letter. The server gives a long read 135 seconds and the browser waits up to 145 seconds; each model call still has 18 seconds. If any section fails, the whole read fails, so you never see partial results presented as complete. Conflicting values, and different terms for the same named health plan, are left blank for you to fill in. Reconciled values are checked against what each section found, so invented figures are rejected.
 
-Use a fictional offer stating salary and pay frequency, plus a separate fictional guide stating monthly employee premiums, both self/family tiers, match, vesting, and HSA terms. Test both coverage choices; verify every extracted annual premium and tier against the source before saving. Repeat with a conflicting salary and an unspecified premium frequency: unresolved fields should be left for manual review. Local tests use a mocked gateway and do not prove the model will extract these cases correctly in a deployed environment.
+Before uploading private documents, try a fictional offer plus a long fictional benefits guide with a fact on its last page. Test both coverage choices, and check the premium frequency, each plan's costs, and any contradictions before saving.
 
-With no frontend cloud environment configured, the local app explicitly remains in sample-reader mode. Configure the public project URL and publishable key in the ignored `.env.local` to connect to a deployed function. Never put `LOVABLE_API_KEY` in that file or browser code.
+## My plan and the monthly budget
 
-The monthly planner and custom elections use the local finance engine. In **My plan**, both one-offer and two-offer summaries are formatted locally from the active calculations; no custom mode is sent to the legacy `explain-stub` endpoint. This feature requires no database, secret, or edge-function changes. The document-intake deployment steps above remain a separate integration task.
+**My plan** and the monthly budget run entirely on the site's own finance engine. Their summaries are written in the browser from the same calculations, and nothing about them is sent to `explain-stub`. They need no database, secret, or function changes.
 
-## Local real-document reader: action for the project owner
+## Running the real reader locally
 
-The local checkout uses demo mode when it has no frontend project settings. The UI says: "Demo mode: real-document AI is not connected. Only the bundled samples can be filled automatically." Increasing the upload size does not connect the LLM.
+Without the two public settings, a local copy runs in demo mode, and the upload panel says: "Demo mode: real-document AI is not connected. Only the bundled samples can be filled automatically."
 
-The owner of the existing Lovable project needs to:
+1. Get `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` from Lovable under **Cloud → Settings**. They're public frontend values, safe to share with teammates.
+2. Copy `.env.example` to `.env.local` (it's ignored by git) and fill in those two values. Never put `LOVABLE_API_KEY` there or in browser code; it stays in Lovable's managed secrets.
+3. Restart `npm run dev`. The upload panel should say **Cloud AI reader configured**. That only confirms the settings are present; read a fictional document to confirm the connection works.
 
-1. Deploy `supabase/functions/decode-offer` and its `_shared` dependencies from `codex/long-document-reader-v1`, preserving the managed Lovable gateway and existing no-login endpoint configuration. The new dependency is `supabase/functions/_shared/documentSections.ts`; there are no database changes.
-2. Provide the project's public `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` to the local developer. These public frontend values belong in the ignored `.env.local`, using `.env.example` as the template. `LOVABLE_API_KEY` stays in managed server secrets.
-3. Restart Vite after setting the frontend environment. The upload panel should say **Cloud AI reader configured**. This label confirms configuration only; a successful synthetic-document read is still required to verify connectivity.
-4. Test a fictional eight-page offer and 38-page benefits guide, including a fact on the final page. Confirm both employee-only and family coverage, premium frequency, contradictions, and manual review of incomplete plan tables before using private documents.
+## After changing the functions
 
-Long reads have a 135-second server deadline and a 145-second browser budget, below the hosting request timeout. Individual model calls retain their 18-second budget. Reads use multiple LLM calls and consume more workspace credits than a short letter. A failed section fails the read instead of presenting partial results as complete. Scalar conflicts and incompatible terms for the same named health plan are left missing. Missing or ambiguous default-plan references require manual selection. Reconciled scalar values and health-plan amounts are checked against the section candidates to reject invented values.
+Edits to `supabase/functions/` reach the live site only after Lovable redeploys them. After pushing such a change, paste this into the Lovable chat:
 
-The local regression tests stub the gateway. They verify the pipeline and response contract, not the quality or availability of a live model. This branch has not been deployed by local tests.
+```text
+Redeploy the decode-offer and explain-stub edge functions exactly as they are in the repo, including supabase/functions/_shared/ and its import_map.json. Keep verify_jwt = false and the Lovable AI Gateway with the managed LOVABLE_API_KEY. Don't change their code, add a secret, or add a database table. Then publish the site.
+```
+
+To confirm which version is live without spending credits, send `decode-offer` a request over the 400,000-character limit, as in the terminal check above but with longer text. The current version answers HTTP 400 with "These documents exceed the 400,000-character upload limit…". Local tests use a stubbed gateway, so they check the code, not the live model.

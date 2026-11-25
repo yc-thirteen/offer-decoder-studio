@@ -140,7 +140,7 @@ The site uses no image files. It draws an SVG favicon and the guilloché backgro
 
 ## Connect the AI
 
-The original hosted project uses the Lovable AI Gateway. Local development needs the public cloud environment values, and the updated function code must be deployed before verifying its new extraction instructions. Both edge functions call the gateway with `LOVABLE_API_KEY`, which Lovable creates and manages, and usage comes out of the workspace's Lovable AI credits. There's no separate AI key to add. [`docs/AI_SETUP_LOVABLE.md`](docs/AI_SETUP_LOVABLE.md) covers:
+It's already connected on the live site. Both edge functions call the Lovable AI Gateway with `LOVABLE_API_KEY`, which Lovable creates and manages, and usage comes out of the workspace's Lovable AI credits. There's no separate AI key to add. [`docs/AI_SETUP_LOVABLE.md`](docs/AI_SETUP_LOVABLE.md) covers:
 
 - how the functions and gateway are set up
 - how to confirm it works
@@ -177,6 +177,6 @@ These are also listed on `/method`:
 
 ### Long-document AI reader
 
-`codex/long-document-reader-v1` adds complete source-section reads for guides that exceed the former 40,000-character cap, accepting up to 400,000 serialized characters. The offer is read first so an unambiguous pay frequency can be used to annualize benefits premiums. The guide is read with overlapping sections and at most three model calls in flight. A final pass reconciles candidates; contradictions and unsupported values are left for manual review. Nothing is silently truncated. Long reads can take a couple of minutes and use multiple gateway calls.
+The reader handles long documents, up to 400,000 characters in total, by reading them in overlapping sections. The offer is read first so an unambiguous pay frequency can be used to annualize benefits premiums. The guide is read with overlapping sections and at most three model calls in flight. A final pass reconciles candidates; contradictions and unsupported values are left for manual review. Nothing is silently truncated. Long reads can take a couple of minutes and use multiple gateway calls.
 
-Real-document extraction still requires the existing project's deployed function and public frontend environment values. A developer with only GitHub access cannot retrieve its managed cloud secret. See the project-owner checklist in [the AI setup guide](docs/AI_SETUP_LOVABLE.md). Files stay in the browser; extracted text is sent to the configured cloud LLM service only after **Fill from documents**. Local tests use synthetic data and a stubbed gateway; they do not prove a live deployment works.
+This works as is on the live site. To use the real reader on a local copy, add the two public settings described under "Running the real reader locally" in [the AI setup guide](docs/AI_SETUP_LOVABLE.md); the managed AI key never leaves Lovable. Files stay in the browser; extracted text is sent to the configured cloud LLM service only after **Fill from documents**. Local tests use synthetic data and a stubbed gateway; they do not prove a live deployment works.
