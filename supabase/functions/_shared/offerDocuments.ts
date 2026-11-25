@@ -1,6 +1,6 @@
 /** Shared document envelope. The HTTP contract stays { text: string }; older
  * callers can still send plain letter text. */
-export const MAX_LETTER_CHARS = 40_000;
+export const MAX_LETTER_CHARS = 400_000;
 export const DOCUMENT_KIND = "offer-decoder-documents-v1";
 
 export interface OfferDocuments {
@@ -12,7 +12,7 @@ export interface OfferDocuments {
 
 export const DOCUMENT_ERRORS = {
   empty: "Add an offer letter or benefits guide, or fill in the offer by hand.",
-  long: "These documents are too long to read together. Paste only the offer and relevant benefits sections (up to 40,000 characters combined).",
+  long: "These documents exceed the 400,000-character upload limit. Include the offer and the benefits sections that apply to you.",
 } as const;
 
 export function buildOfferDocumentText(input: Omit<OfferDocuments, "kind">): string {

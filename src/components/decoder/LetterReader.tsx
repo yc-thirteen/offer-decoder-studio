@@ -7,6 +7,7 @@ import sampleOffer from "@/data/documents/northfield-offer.txt?raw";
 import sampleBenefits from "@/data/documents/northfield-benefits.txt?raw";
 import { AIError } from "@/lib/ai";
 import type { CoverageTier } from "@/lib/engine";
+import { SINGLE_READ_CHARS } from "../../../supabase/functions/_shared/documentSections";
 import { buildOfferDocumentText, DOCUMENT_ERRORS } from "@/lib/offerDocuments";
 import { useAIClient } from "@/state/AIClientContext";
 import { DocumentInput } from "./DocumentInput";
@@ -14,7 +15,8 @@ import { draftFromLetter, type LetterReview } from "./letterDraft";
 
 export { MAX_LETTER_CHARS } from "@/lib/offerDocuments";
 export const READER_COPY = {
-  sampleNote: "Sample reader: works on the three sample letters until the AI is connected.",
+  sampleNote:
+    "Demo mode: real-document AI is not connected. Only the bundled samples can be filled automatically.",
   empty: DOCUMENT_ERRORS.empty,
   long: DOCUMENT_ERRORS.long,
   nothingFound: "No offer details were found. Check the documents or fill in the offer by hand.",
@@ -52,6 +54,8 @@ export function LetterReader({
   const samplesId = useId();
   const abort = useRef<AbortController | null>(null);
   const opening = openingOffer || openingBenefits;
+  const characterCount = offerLetter.length + benefitsGuide.length;
+  const longDocuments = characterCount > SINGLE_READ_CHARS;
 
   // Changing coverage while reading must not apply costs for the old tier.
   useEffect(() => {
@@ -108,7 +112,16 @@ export function LetterReader({
         Files are read in your browser. Only their text is sent to the reader when you choose Fill
         from documents.
       </p>
-      {client.kind === "mock" && <p className="m-0 mt-2 text-sm">{READER_COPY.sampleNote}</p>}
+      <div className="mt-3 border-l-2 border-carbon pl-3 text-sm">
+        <p className="m-0 font-semibold">
+          {client.kind === "mock" ? READER_COPY.sampleNote : "Cloud AI reader configured"}
+        </p>
+        <p className="m-0 mt-1 text-ink-soft">
+          {client.kind === "mock"
+            ? "Ask the project owner to connect the AI reader for your offer letter and benefits guide. You can try the samples or enter details manually while it is being connected."
+            : "The LLM reads the source text and returns fields for you to check. Long documents are read in overlapping sections and reconciled before review."}
+        </p>
+      </div>
       <form
         noValidate
         className="mt-4"
@@ -142,6 +155,12 @@ export function LetterReader({
             onOpeningChange={setOpeningBenefits}
           />
         </div>
+        <p className="m-0 mt-3 text-xs text-ink-soft">
+          {characterCount.toLocaleString("en-US")} characters loaded · up to 400,000 combined.{" "}
+          {longDocuments
+            ? "Long documents will be read in sections when cloud AI is configured."
+            : ""}
+        </p>
         <div className="mt-4" role="group" aria-labelledby={samplesId}>
           <p id={samplesId} className="m-0 text-xs text-ink-soft">
             Or try a sample letter (employee-only benefits)
@@ -184,7 +203,11 @@ export function LetterReader({
           </p>
         )}
         <p role="status" className="m-0 text-sm text-ink-soft">
-          {busy ? READER_COPY.reading : ""}
+          {busy
+            ? longDocuments && client.kind === "http"
+              ? "Reading document sections and combining the results… This may take a couple of minutes."
+              : READER_COPY.reading
+            : ""}
         </p>
         <div className="mt-4 flex flex-wrap gap-3 border-t-2 border-ink pt-4">
           <button

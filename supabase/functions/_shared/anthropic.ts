@@ -55,19 +55,26 @@ export interface ModelCall {
   copy: FailureCopy;
   fetch?: typeof fetch;
   timeoutMs?: number;
+  signal?: AbortSignal;
 }
 
 /** The response properties read here, so access stays dot-style under strict TS. */
 type Rec = Partial<Record<"stop_reason" | "content" | "type" | "text", unknown>>;
 const isRec = (v: unknown): v is Rec => typeof v === "object" && v !== null && !Array.isArray(v);
 
+let dependencies: Promise<[typeof import("@lovable.dev/ai-gateway"), typeof import("ajv")]> | null =
+  null;
+
 /** Calls the model and returns its JSON answer, or throws a FunctionError. */
 export async function callModel(call: ModelCall): Promise<unknown> {
   const { copy } = call;
   const apiKey = call.apiKey?.trim();
-  const { generateMessage, GatewayError } = await import("@lovable.dev/ai-gateway");
-  const { default: Ajv } = await import("ajv");
+  dependencies ??= Promise.all([import("@lovable.dev/ai-gateway"), import("ajv")]);
+  const [{ generateMessage, GatewayError }, { default: Ajv }] = await dependencies;
   const controller = new AbortController();
+  const onAbort = () => controller.abort();
+  call.signal?.addEventListener("abort", onAbort, { once: true });
+  if (call.signal?.aborted) controller.abort();
   const timer = setTimeout(() => controller.abort(), call.timeoutMs ?? UPSTREAM_TIMEOUT_MS);
 
   let body: unknown;
@@ -107,6 +114,7 @@ export async function callModel(call: ModelCall): Promise<unknown> {
     throw new FunctionError(502, copy.upstream);
   } finally {
     clearTimeout(timer);
+    call.signal?.removeEventListener("abort", onAbort);
   }
 
   if (!isRec(body)) throw new FunctionError(502, copy.upstream);

@@ -5,6 +5,10 @@
  * AIError the UI can show as is, and a response of the wrong shape is rejected
  * rather than shown.
  */
+import {
+  LONG_READER_TIMEOUT_MS,
+  SINGLE_READ_CHARS,
+} from "../../../supabase/functions/_shared/documentSections";
 import { assertExplainRequest } from "./explainTemplate";
 import {
   AIError,
@@ -66,6 +70,7 @@ export class HttpAIClient implements AIClient {
   readonly kind = "http" as const;
   private readonly fetchImpl: typeof fetch;
   private readonly timeoutMs: number;
+  private readonly longReaderTimeoutMs: number;
 
   constructor(
     readonly config: HttpAIConfig,
@@ -73,6 +78,7 @@ export class HttpAIClient implements AIClient {
   ) {
     this.fetchImpl = options.fetch ?? ((...args) => globalThis.fetch(...args));
     this.timeoutMs = options.timeoutMs ?? AI_TIMEOUT_MS;
+    this.longReaderTimeoutMs = options.timeoutMs ?? LONG_READER_TIMEOUT_MS;
   }
 
   async extractOffer(req: ExtractRequest, signal?: AbortSignal): Promise<ExtractResult> {
@@ -80,7 +86,21 @@ export class HttpAIClient implements AIClient {
     const text = typeof req?.text === "string" ? req.text : "";
     if (!text.trim())
       throw new AIError("The letter is empty. Paste its text or drop the letter's file.");
-    const body = await this.post("decode-offer", { text }, READER_ERRORS, signal);
+    const long = text.length > SINGLE_READ_CHARS;
+    const copy = long
+      ? {
+          ...READER_ERRORS,
+          timeout:
+            "The document reader could not finish in time. Try the offer and the benefits pages that apply to you, or fill in the details manually.",
+        }
+      : READER_ERRORS;
+    const body = await this.post(
+      "decode-offer",
+      { text },
+      copy,
+      signal,
+      long ? this.longReaderTimeoutMs : this.timeoutMs,
+    );
     const result = validateExtractResult(body);
     if (!result) throw new AIError(READER_ERRORS.invalid);
     return result;
@@ -101,13 +121,14 @@ export class HttpAIClient implements AIClient {
     payload: unknown,
     copy: Copy,
     signal?: AbortSignal,
+    timeoutMs = this.timeoutMs,
   ): Promise<unknown> {
     const controller = new AbortController();
     let timedOut = false;
     const timer = setTimeout(() => {
       timedOut = true;
       controller.abort();
-    }, this.timeoutMs);
+    }, timeoutMs);
     const onAbort = () => controller.abort();
     signal?.addEventListener("abort", onAbort, { once: true });
 
@@ -120,7 +141,9 @@ export class HttpAIClient implements AIClient {
           headers: {
             "Content-Type": "application/json",
             apikey: publishableKey,
-            Authorization: `Bearer ${publishableKey}`,
+            ...(!publishableKey.startsWith("sb_publishable_")
+              ? { Authorization: `Bearer ${publishableKey}` }
+              : {}),
           },
           body: JSON.stringify(payload),
           signal: controller.signal,

@@ -31,7 +31,7 @@ The project was built with [Lovable](https://lovable.dev/projects/1924fbbb-4710-
 
 1. In **About you**, choose employee-only or family coverage. Health-plan amounts must match this tier.
 2. On a stub, choose **Upload documents**. Add the offer letter and, optionally, a separate benefits guide. Each input accepts pasted text, PDF, Word (.docx), or .txt. Replacing one document preserves the other.
-3. Choose **Fill from documents**. Files are read in your browser; only their extracted text is sent to the reader on this action. The combined request, including its document envelope, must fit within 40,000 characters. For a long guide, paste only the relevant benefits sections. There is no silent truncation.
+3. Choose **Fill from documents**. Files are read in your browser; only their extracted text is sent to the reader on this action. The combined request, including its document envelope, must fit within 400,000 characters. Longer documents are read in overlapping sections and reconciled for review. The reader covers every section; documents above the upload limit need the applicable benefits pages. There is no silent truncation.
 4. Check the fields marked **from documents**, fill in missing details, and choose **Save offer**. Health costs are annual amounts for the selected coverage. Ambiguous or conflicting values need manual review; missing values are not treated as zero. The first version requires complete supported health-plan fields, so an incomplete table may need manual entry.
 5. Read the result for this offer. A second offer is optional; add it to compare. **Fill in offer** and **Edit offer** always allow manual entry, even without the AI connection.
 
@@ -39,7 +39,7 @@ The result distinguishes **Net pay** (take-home cash), **Savings in your name, a
 
 One offer gets a fixed, immediate plain-English summary from engine numbers. Two offers retain the existing optional AI comparison summary for defaults and suggestions. My plan uses an immediate local summary for either one or two offers; its custom settings are never sent under a misleading legacy AI mode.
 
-Try **Try two sample documents** in the upload panel for a fictional Northfield letter and separate benefits guide. The offline sample reader handles this pair and the existing three letters. These samples quote employee-only benefits; family costs are left for manual entry. Arbitrary documents require the configured Lovable Cloud reader. Scanned or password-protected PDFs and old Word .doc files need pasted text or manual entry.
+Try **Try two sample documents** in the upload panel for a fictional Northfield letter and separate benefits guide. The offline sample reader handles this pair and the existing three letters. These samples quote employee-only benefits; family costs are left for manual entry. Arbitrary documents require the configured Lovable Cloud reader. Without the public cloud settings, the local preview clearly labels itself demo mode. Scanned or password-protected PDFs and old Word .doc files need pasted text or manual entry.
 
 Offers and document drafts are held in memory; refreshing the page clears them. Original document files are not stored by this app. Text sent for extraction is processed by the configured cloud service.
 
@@ -174,3 +174,9 @@ These are also listed on `/method`:
 | `docs/`                               | `AI_SETUP_LOVABLE.md`: how the AI is connected, checks, and troubleshooting            |
 | `scripts/`                            | Screenshot, accessibility, and responsive checks                                       |
 | `harness/`                            | The spec, design rules, fixtures, and the overnight build log                          |
+
+### Long-document AI reader
+
+`codex/long-document-reader-v1` adds complete source-section reads for guides that exceed the former 40,000-character cap, accepting up to 400,000 serialized characters. The offer is read first so an unambiguous pay frequency can be used to annualize benefits premiums. The guide is read with overlapping sections and at most three model calls in flight. A final pass reconciles candidates; contradictions and unsupported values are left for manual review. Nothing is silently truncated. Long reads can take a couple of minutes and use multiple gateway calls.
+
+Real-document extraction still requires the existing project's deployed function and public frontend environment values. A developer with only GitHub access cannot retrieve its managed cloud secret. See the project-owner checklist in [the AI setup guide](docs/AI_SETUP_LOVABLE.md). Files stay in the browser; extracted text is sent to the configured cloud LLM service only after **Fill from documents**. Local tests use synthetic data and a stubbed gateway; they do not prove a live deployment works.

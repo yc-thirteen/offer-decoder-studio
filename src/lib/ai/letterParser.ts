@@ -44,7 +44,7 @@ export const MISSING_NOTES: Record<ExtractFieldKey, string> = {
 
 /** The note on every field when the sample reader doesn't recognize the letter. */
 export const UNKNOWN_LETTER_NOTE =
-  "The sample reader only reads the three sample letters. Type this in by hand.";
+  "Real-document extraction is not connected in this version. Ask the project owner to enable the AI reader, or enter the offer manually.";
 
 /** Employers of the three sample letters (harness/fixtures/letters). */
 export const SAMPLE_EMPLOYERS = ["Northfield Health", "Lakeshore Systems", "Cascade Robotics"];

@@ -1,3 +1,4 @@
+import { LONG_READER_TIMEOUT_MS } from "../../../supabase/functions/_shared/documentSections";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -231,5 +232,31 @@ describe("validateExtractResult", () => {
     const fields = letterFields();
     fields.defaultPlanId = { source: "letter", value: "no-such-plan" };
     expect(validateExtractResult({ fields })!.fields.defaultPlanId.source).toBe("missing");
+  });
+});
+
+describe("long-document client and current public keys", () => {
+  it("allows the long-document budget without changing the short-call timeout", async () => {
+    vi.useFakeTimers();
+    const client = new HttpAIClient(config, { fetch: hangingFetch });
+    const result = client
+      .extractOffer({ text: "long document ".repeat(4000) })
+      .catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(AI_TIMEOUT_MS);
+    expect((hangingFetch.mock.calls[0]![1] as RequestInit).signal?.aborted).toBe(false);
+    await vi.advanceTimersByTimeAsync(LONG_READER_TIMEOUT_MS - AI_TIMEOUT_MS);
+    expect(((await result) as AIError).message).toContain("document reader could not finish");
+  });
+
+  it("sends an opaque publishable key only as apikey, not as a bearer JWT", async () => {
+    const fetch = vi.fn(async () => json({ fields: letterFields() }));
+    const client = new HttpAIClient(
+      { ...config, publishableKey: "sb_publishable_test" },
+      { fetch },
+    );
+    await client.extractOffer({ text: "offer" });
+    const init = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(init[1].headers).toMatchObject({ apikey: "sb_publishable_test" });
+    expect(init[1].headers).not.toHaveProperty("Authorization");
   });
 });

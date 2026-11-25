@@ -40,8 +40,8 @@ describe("offer documents", () => {
     ).toThrow(DOCUMENT_ERRORS.empty);
     expect(() =>
       buildOfferDocumentText({
-        offerLetter: "x".repeat(21_000),
-        benefitsGuide: "y".repeat(21_000),
+        offerLetter: "x".repeat(MAX_LETTER_CHARS / 2),
+        benefitsGuide: "y".repeat(MAX_LETTER_CHARS / 2),
         coverage: "self",
       }),
     ).toThrow(DOCUMENT_ERRORS.long);

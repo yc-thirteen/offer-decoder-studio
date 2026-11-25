@@ -355,3 +355,17 @@ describe("Upload documents", () => {
     expect(within(s).getByRole("button", { name: "Upload documents" })).toHaveFocus();
   });
 });
+
+it("accepts a realistic long guide with an HTTP reader and makes demo mode explicit", async () => {
+  const client = partialClient();
+  const extract = vi.spyOn(client, "extractOffer");
+  setup(client);
+  const s = stub(1);
+  fireEvent.click(within(s).getByRole("button", { name: "Upload documents" }));
+  type(letterBox(s), "Fictional offer text. ".repeat(1000));
+  type(within(s).getByLabelText(/^Benefits guide.*text/), "Fictional benefits text. ".repeat(4000));
+  expect(within(s).getByText("Cloud AI reader configured")).toBeTruthy();
+  submit(s);
+  await within(s).findByLabelText("Yearly salary");
+  expect(extract.mock.calls[0]![0].text.length).toBeGreaterThan(40000);
+});
