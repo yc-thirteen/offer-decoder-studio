@@ -18,7 +18,7 @@ import {
 import { formatMoney } from "@/components/stub";
 
 export interface ChecklistItem {
-  id: ChecklistId;
+  id: ChecklistId | "lower-401k";
   text: string;
 }
 
@@ -159,6 +159,12 @@ export function checklistItems(
   profile: Profile,
 ): ChecklistItem[] {
   const items: ChecklistItem[] = [];
+  if (result.recommendedElections.employeePct < result.default.employeePct) {
+    items.push({
+      id: "lower-401k",
+      text: `The suggested plan lowers your 401(k) from ${result.default.employeePct}% to ${result.recommendedElections.employeePct}% of pay. Check that this fits your goals and monthly expenses.`,
+    });
+  }
   for (const id of result.checklist) {
     const text = checklistSentence(id, offer, result, profile);
     if (text) items.push({ id, text });

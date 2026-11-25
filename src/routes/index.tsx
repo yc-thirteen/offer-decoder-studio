@@ -6,6 +6,7 @@ import {
   DecoderControls,
   DecoderHeader,
   MemoLine,
+  MonthlyPlan,
   OfferStubs,
 } from "@/components/decoder";
 import { GuillocheBackground } from "@/components/stub";
@@ -54,6 +55,7 @@ function Index() {
           />
           <OfferStubs />
           <MemoLine />
+          <MonthlyPlan />
           <Checklist />
           <WhyElections />
         </main>

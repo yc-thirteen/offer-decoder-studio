@@ -14,6 +14,7 @@ import {
   DecoderControls,
   DecoderHeader,
   MemoLine,
+  MonthlyPlan,
   OfferStubs,
 } from "@/components/decoder";
 import { WhyElections } from "@/components/why";
@@ -28,6 +29,7 @@ function renderDecoder(sampleId: string | null) {
         <AboutYou />
         <OfferStubs />
         <MemoLine />
+        <MonthlyPlan />
         <Checklist />
         <WhyElections />
       </main>

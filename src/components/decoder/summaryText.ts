@@ -2,7 +2,7 @@
  * Words and the engine-numbers request for the plain-English summary (PlainSummary.tsx).
  */
 import { buildExplainRequest, type ExplainRequest } from "@/lib/ai";
-import type { DecoderView, ElectionsMode } from "@/state/decoderState";
+import type { DecoderView, PlanMode } from "@/state/decoderState";
 import { formatMoney } from "@/components/stub";
 
 export const SUMMARY_COPY = {
@@ -17,12 +17,13 @@ export const SUMMARY_COPY = {
 } as const;
 
 /** A single offer needs no comparison or model call. Only format engine results. */
-export function singleOfferSummary(view: DecoderView, mode: ElectionsMode): string | null {
+export function singleOfferSummary(view: DecoderView, mode: PlanMode): string | null {
   if (view.stubs.some((s) => s.error)) return null;
   const ready = view.stubs.filter((s) => s.offer && s.result);
   if (ready.length !== 1) return null;
   const stub = ready[0]!;
-  const calc = stub.result![mode];
+  const calc = mode === "custom" ? stub.calc : stub.result![mode];
+  if (!calc) return null;
   return (
     `At ${stub.offer!.employer}, estimated annual take-home pay is ${formatMoney(calc.netPay)}. ` +
     `Your retirement and HSA savings, including employer contributions and the assumed future tax adjustment, are ${formatMoney(calc.savingsAfterFutureTax)}. ` +
@@ -32,9 +33,10 @@ export function singleOfferSummary(view: DecoderView, mode: ElectionsMode): stri
 }
 
 /** The explain request for the current view, or null unless both offers have results. */
-export function summaryRequest(view: DecoderView, mode: ElectionsMode): ExplainRequest | null {
+export function summaryRequest(view: DecoderView, mode: PlanMode): ExplainRequest | null {
   const [a, b] = view.stubs;
-  if (!view.winners || !a.offer || !a.result || !b.offer || !b.result) return null;
+  if (mode === "custom" || !view.winners || !a.offer || !a.result || !b.offer || !b.result)
+    return null;
   return buildExplainRequest(
     [
       { offer: a.offer, result: a.result },
@@ -42,5 +44,19 @@ export function summaryRequest(view: DecoderView, mode: ElectionsMode): ExplainR
     ],
     view.winners,
     mode,
+  );
+}
+
+/** My plan is formatted locally; its mode never goes through the legacy AI contract. */
+export function customComparisonSummary(view: DecoderView): string | null {
+  const [a, b] = view.stubs;
+  if (!a.offer || !b.offer || !a.calc || !b.calc || a.error || b.error) return null;
+  const sentences = [a, b].map(
+    (s, i) =>
+      `At ${s.offer!.employer} (offer ${i + 1}), your selected settings give estimated annual take-home pay of ${formatMoney(s.calc!.netPay)} and a yearly bottom line of ${formatMoney(s.calc!.bottomLine)}.`,
+  );
+  return (
+    sentences.join(" ") +
+    " The bottom lines include retirement and HSA savings, assume the full employer match is retained, and subtract expected medical bills. They are not cash available to spend."
   );
 }

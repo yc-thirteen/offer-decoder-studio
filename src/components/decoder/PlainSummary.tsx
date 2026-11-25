@@ -9,7 +9,12 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import { AIError } from "@/lib/ai";
 import { useAIClient } from "@/state/AIClientContext";
 import { useDecoder } from "@/state/DecoderContext";
-import { SUMMARY_COPY, singleOfferSummary, summaryRequest } from "./summaryText";
+import {
+  SUMMARY_COPY,
+  customComparisonSummary,
+  singleOfferSummary,
+  summaryRequest,
+} from "./summaryText";
 
 type Status =
   | { key: string; kind: "writing" }
@@ -60,7 +65,9 @@ export function PlainSummary() {
     return () => abortRef.current?.abort();
   }, [auto, key]);
 
-  const single = singleOfferSummary(view, state.electionsMode);
+  const single =
+    singleOfferSummary(view, state.electionsMode) ??
+    (state.electionsMode === "custom" ? customComparisonSummary(view) : null);
   if (!request)
     return single ? (
       <section aria-labelledby={headingId} className="mt-6 max-w-prose" data-testid="plain-summary">

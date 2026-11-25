@@ -22,7 +22,7 @@ function setup(initialSampleId: string | null = "chicago-vs-austin") {
   );
   return {
     stub: (name: RegExp) => screen.getByRole("region", { name }),
-    switchOn: () => fireEvent.click(screen.getByRole("switch", { name: /recommended/i })),
+    switchOn: () => fireEvent.click(screen.getByRole("radio", { name: "Suggested plan" })),
   };
 }
 

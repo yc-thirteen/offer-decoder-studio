@@ -77,6 +77,12 @@ export function Checklist() {
         )}
       </div>
 
+      {slots.length > 0 && (
+        <p className="mb-4 max-w-prose text-sm text-ink-soft">
+          This checklist describes the suggested plan. Your selected contribution settings are shown
+          in the stub and monthly plan.
+        </p>
+      )}
       {!stub || !stub.offer ? (
         <p className="m-0 max-w-prose">
           Add an offer or load a sample to see what to elect on day one.

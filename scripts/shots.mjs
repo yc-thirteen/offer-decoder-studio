@@ -4,7 +4,7 @@
 // harness/shots/latest/ (wiped and rewritten every run).
 //
 // Controls are found by their accessible names from harness/DESIGN.md
-// ("Load a sample", "Use recommended elections", the checklist tab, "Clear offers").
+// ("Load a sample", "Suggested plan", the checklist tab, "Clear offers").
 // If a control doesn't exist yet, the step is logged as skipped and the
 // screenshot is still taken, so the run never fails just because the UI is
 // unfinished. Update the selectors here if the UI copy changes.

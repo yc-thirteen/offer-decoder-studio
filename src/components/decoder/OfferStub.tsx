@@ -1,12 +1,18 @@
 /**
  * The two pay stubs, bound to engine output (harness/DESIGN.md "Stub line items").
  * Every amount is the engine's number divided by the view's divisor (1 annual, pay periods
- * per paycheck); nothing here does finance. With "Use recommended elections" on, each
+ * per paycheck); nothing here does finance. With a suggested or custom plan selected, each
  * amount that changes is struck and the recommended amount written beside it in carbon.
  */
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Amount, LineItem, Perforation, Stamp, StubShell } from "@/components/stub";
-import type { CalcResult, CoverageTier, Offer, OfferResult } from "@/lib/engine";
+import {
+  fullMatchDollars,
+  type CalcResult,
+  type CoverageTier,
+  type Offer,
+  type OfferResult,
+} from "@/lib/engine";
 import type { StubView } from "@/state/decoderState";
 import { useDecoder } from "@/state/DecoderContext";
 import {
@@ -78,8 +84,8 @@ function FilledStub({
 }) {
   const { offer, divisor } = view;
   const d = result.default;
-  const r = result.recommended;
-  const now = corrected ? r : d;
+  const r = corrected ? (view.calc ?? result.recommended) : result.recommended;
+  const now = view.calc ?? (corrected ? r : d);
   const perPaycheck = divisor !== 1;
 
   const amount = (key: NumericKey, sign = 1) => (
@@ -94,7 +100,7 @@ function FilledStub({
 
   const plan = offer.healthPlans.find((p) => p.id === now.planId);
   const planDominated = result.dominatedPlanIds.includes(now.planId);
-  const matchUnclaimed = now.employeePct < result.matchCapPct;
+  const matchUnclaimed = now.employerMatch + 0.5 < fullMatchDollars(offer);
   const showHsa = d.employeeHsa > 0 || r.employeeHsa > 0;
   const showHsaDeposit = d.employerHsa > 0 || r.employerHsa > 0;
   const showMatch = d.employerMatch > 0 || r.employerMatch > 0 || result.matchCapPct > 0;
@@ -333,7 +339,7 @@ export function OfferStub({
           }}
           onCancel={leave}
         />
-      ) : offer && result ? (
+      ) : offer && result && view.calc ? (
         <FilledStub view={{ ...view, offer }} result={result} corrected={corrected} />
       ) : error ? (
         <p className="m-0 text-correction">{error}</p>
@@ -350,7 +356,7 @@ export function OfferStub({
  */
 export function OfferStubs() {
   const { state, view, dispatch } = useDecoder();
-  const corrected = state.electionsMode === "recommended";
+  const corrected = state.electionsMode !== "default";
   const perPaycheck = state.periodMode === "perPaycheck";
   const save = (slot: 0 | 1) => (offer: Offer) => dispatch({ type: "setOffer", slot, offer });
   return (

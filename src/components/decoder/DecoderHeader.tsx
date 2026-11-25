@@ -123,27 +123,37 @@ export function PeriodToggle() {
   );
 }
 
-export function RecommendedSwitch() {
+export function ElectionsSelector() {
   const { state, dispatch } = useDecoder();
-  const on = state.electionsMode === "recommended";
+  const name = useId();
   return (
-    <label className="flex h-10 cursor-pointer items-center gap-2 self-end">
-      <input
-        type="checkbox"
-        role="switch"
-        checked={on}
-        onChange={(e) =>
-          dispatch({
-            type: "setElectionsMode",
-            mode: e.target.checked ? "recommended" : "default",
-          })
-        }
-        className="size-5 accent-carbon"
-      />
-      <span className={on ? "font-semibold text-carbon" : undefined}>
-        Use recommended elections
-      </span>
-    </label>
+    <fieldset className="m-0 min-w-0 border-0 p-0">
+      <legend className="text-xs text-ink-soft">Contribution settings</legend>
+      <div className="mt-1 flex flex-wrap gap-2">
+        {(
+          [
+            { mode: "default", label: "Employer defaults" },
+            { mode: "recommended", label: "Suggested plan" },
+            { mode: "custom", label: "My plan" },
+          ] as const
+        ).map(({ mode, label }) => (
+          <label
+            key={mode}
+            className={`flex min-h-10 cursor-pointer items-center gap-2 border border-ink px-3 text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-carbon ${state.electionsMode === mode ? "bg-carbon font-semibold text-stub" : "bg-stub"}`}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={mode}
+              checked={state.electionsMode === mode}
+              onChange={() => dispatch({ type: "setElectionsMode", mode })}
+              className="sr-only"
+            />
+            {label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 
@@ -157,7 +167,7 @@ export function DecoderControls() {
       <SamplePicker />
       <ClearOffersButton />
       <PeriodToggle />
-      <RecommendedSwitch />
+      <ElectionsSelector />
     </div>
   );
 }

@@ -28,7 +28,13 @@ function setup(client: AIClient, sampleId: string | null = "chicago-vs-austin") 
 
 const summary = () => screen.queryByTestId("plain-summary");
 const toggleRecommended = () =>
-  fireEvent.click(screen.getByRole("switch", { name: /use recommended elections/i }));
+  fireEvent.click(
+    screen.getByRole("radio", {
+      name: (screen.getByRole("radio", { name: "Suggested plan" }) as HTMLInputElement).checked
+        ? "Employer defaults"
+        : "Suggested plan",
+    }),
+  );
 
 /** An HTTP-like client whose answers the test releases by hand. */
 function manualClient() {
@@ -117,7 +123,7 @@ it("shows a single-offer summary without calling the HTTP summary writer", () =>
   expect(screen.getByTestId("memo-line")).toHaveTextContent("$106,585, including savings");
   expect(screen.queryByRole("button", { name: SUMMARY_COPY.write })).toBeNull();
   expect(calls).toHaveLength(0);
-  fireEvent.click(screen.getByRole("switch", { name: /recommended/i }));
+  fireEvent.click(screen.getByRole("radio", { name: "Suggested plan" }));
   expect(screen.getByRole("region", { name: SUMMARY_COPY.heading })).toHaveTextContent("$112,566");
   expect(calls).toHaveLength(0);
 });
@@ -160,6 +166,18 @@ describe("PlainSummary on the mock client", () => {
 });
 
 describe("PlainSummary on the HTTP client", () => {
+  it("cancels a preset request in flight when My plan is selected", async () => {
+    const { client, calls } = manualClient();
+    setup(client);
+    fireEvent.click(screen.getByRole("button", { name: SUMMARY_COPY.write }));
+    fireEvent.click(screen.getByRole("radio", { name: "My plan" }));
+    expect(calls[0]!.signal?.aborted).toBe(true);
+    expect(summary()).toHaveTextContent("your selected settings");
+    await act(async () => calls[0]!.resolve({ summary: "Outdated preset numbers." }));
+    expect(screen.queryByText("Outdated preset numbers.")).toBeNull();
+    expect(calls).toHaveLength(1);
+  });
+
   it("waits for the button, shows progress, then the summary", async () => {
     const { client, calls } = manualClient();
     setup(client);

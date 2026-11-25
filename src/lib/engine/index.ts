@@ -103,3 +103,17 @@ export function runCase(c: { id: string; profile: Profile; offers: Offer[] }): C
     winnerBy_recommended: winner(offers, "recommended"),
   };
 }
+
+export {
+  blankMonthlyBudget,
+  calculateMonthlyPlan,
+  editableElections,
+  hsaAllowance,
+  validateElections,
+} from "./monthlyPlan";
+export type {
+  MonthlyBudget,
+  MonthlyPlanResult,
+  CustomElections,
+  ElectionErrors,
+} from "./monthlyPlan";

@@ -2,7 +2,7 @@ export {
   DecoderControls,
   DecoderHeader,
   PeriodToggle,
-  RecommendedSwitch,
+  ElectionsSelector,
   SamplePicker,
 } from "./DecoderHeader";
 export { AboutYou } from "./AboutYou";
@@ -24,3 +24,5 @@ export { Checklist } from "./Checklist";
 export { checklistItems, checklistSentence, vestingDateText } from "./checklistText";
 export { OfferEditor } from "./OfferEditor";
 export { blankDraft, draftFromOffer, validateDraft } from "./offerDraft";
+
+export { MonthlyPlan } from "./MonthlyPlan";

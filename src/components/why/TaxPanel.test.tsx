@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ClearOffersButton, RecommendedSwitch } from "@/components/decoder/DecoderHeader";
+import { ClearOffersButton, ElectionsSelector } from "@/components/decoder/DecoderHeader";
 import { BRACKETS, federalTaxOnJob, marginalRate, type CalcResult } from "@/lib/engine";
 import { SAMPLE_CASES, deriveView, initialDecoderState } from "@/state/decoderState";
 import { DecoderProvider } from "@/state/DecoderContext";
@@ -194,12 +194,12 @@ describe("TaxPanel", () => {
   it("recomputes when the recommended switch turns on, and gives direction when empty", () => {
     render(
       <DecoderProvider initialSampleId="chicago-vs-austin">
-        <RecommendedSwitch />
+        <ElectionsSelector />
         <ClearOffersButton />
         <TaxPanel />
       </DecoderProvider>,
     );
-    fireEvent.click(screen.getByRole("switch", { name: "Use recommended elections" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Suggested plan" }));
     const figure = document.querySelector<HTMLElement>("[data-tax-offer='0']")!;
     expect(within(figure).getByRole("img")).toHaveTextContent("Your taxable income, $111,900");
     expect(screen.getByText(/^Figures use the recommended elections\./)).toBeInTheDocument();
@@ -293,12 +293,12 @@ describe("the labels on the tax chart", () => {
         for (const mode of ["default", "recommended"] as const) {
           const { unmount, container } = render(
             <DecoderProvider initialSampleId={sample.id}>
-              {mode === "recommended" && <RecommendedSwitch />}
+              {mode === "recommended" && <ElectionsSelector />}
               <TaxPanel />
             </DecoderProvider>,
           );
           if (mode === "recommended") {
-            fireEvent.click(screen.getByRole("switch", { name: "Use recommended elections" }));
+            fireEvent.click(screen.getByRole("radio", { name: "Suggested plan" }));
           }
           const charts = [...container.querySelectorAll("svg[role=img]")];
           expect(charts.length).toBeGreaterThan(0);

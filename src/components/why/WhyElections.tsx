@@ -13,6 +13,10 @@ export function WhyElections() {
       <h2 id="why-heading" className="m-0 mb-4">
         Why these elections
       </h2>
+      <p className="mb-4 text-sm text-ink-soft">
+        Health and match charts compare the employer defaults with the suggested plan. The tax panel
+        follows your selected contribution settings.
+      </p>
       <div className="flex flex-col gap-6">
         <HealthCostsPanel />
         <MatchVestingPanel />

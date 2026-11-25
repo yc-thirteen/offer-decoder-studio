@@ -104,7 +104,7 @@ describe("<MemoLine />", () => {
     const memo = screen.getByTestId("memo-line");
     expect(screen.getByRole("region", { name: "Memo" })).toContainElement(memo);
     expect(memo).toHaveTextContent(/^Memo:\s*With the defaults, Lakeshore Systems looks \$3,205/);
-    fireEvent.click(screen.getByRole("switch", { name: /recommended/i }));
+    fireEvent.click(screen.getByRole("radio", { name: "Suggested plan" }));
     expect(memo).toHaveTextContent(/^Memo:\s*With the recommended elections, Northfield Health/);
   });
 
